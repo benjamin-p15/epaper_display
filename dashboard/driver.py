@@ -36,16 +36,17 @@ def wait_busy():
         time.sleep(0.05)
 
 # Initilize display and reset it
-GPIO.output(RST, GPIO.LOW)
-time.sleep(0.2)
-GPIO.output(RST, GPIO.HIGH)
-time.sleep(0.2)
+def int_display():
+    GPIO.output(RST, GPIO.LOW)
+    time.sleep(0.2)
+    GPIO.output(RST, GPIO.HIGH)
+    time.sleep(0.2)
 
-cmd(0x01); data(0x07); data(0x07); data(0x3F); data(0x3F)
-cmd(0x04); wait_busy()
-cmd(0x00); data(0x1F)
-cmd(0x61); data(0x03); data(0x20); data(0x01); data(0xE0)
-cmd(0x15); data(0x00)
+    cmd(0x01); data(0x07); data(0x07); data(0x3F); data(0x3F)
+    cmd(0x04); wait_busy()
+    cmd(0x00); data(0x1F)
+    cmd(0x61); data(0x03); data(0x20); data(0x01); data(0xE0)
+    cmd(0x15); data(0x00)
 
 # Clear whole display
 def clear_display():
