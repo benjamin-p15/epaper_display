@@ -18,14 +18,16 @@ try:
     FONT_LARGE = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 120)
     FONT_MEDIUM = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 50)
     FONT_SMALL = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 40)
+    FONT_TINY = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
 except:
     FONT_LARGE = ImageFont.load_default()
     FONT_MEDIUM = ImageFont.load_default()
     FONT_SMALL = ImageFont.load_default()
+    FONT_TINY = ImageFont.load_default()
 
 # Holiday fonts
-FONT_HOLIDAY = FONT_MEDIUM
-FONT_DAYS = FONT_SMALL
+FONT_HOLIDAY = FONT_SMALL
+FONT_DAYS = FONT_TINY
 
 # ================= US HOLIDAYS =================
 US_HOLIDAYS = {
