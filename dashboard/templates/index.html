@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>E-Paper Dashboard</title>
+</head>
+<body>
+    <h1>E-Paper Dashboard</h1>
+
+    <form action="/display" method="post">
+        <button name="layout" value="time">Time Layout</button>
+        <button name="layout" value="weather">Weather Layout</button>
+    </form>
+
+    <form action="/display_image" method="post" enctype="multipart/form-data">
+        <input type="file" name="image">
+        <button type="submit">Upload & Display</button>
+    </form>
+</body>
+</html>
