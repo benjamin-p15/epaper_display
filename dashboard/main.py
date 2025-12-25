@@ -76,7 +76,7 @@ def draw_clock_layout():
 
     # Draw AM/PM next to time
     time_width, time_height = draw.textsize(time_text, font=FONT_LARGE)
-    draw.text((x_time + time_width + 10, y_time), am_pm, font=FONT_MEDIUM, fill=0)
+    draw.text((x_time + time_width + 10, y_time + time_height+10), am_pm, font=FONT_MEDIUM, fill=0)
 
     # Draw date below
     draw.text((x_time, 250), date_str, font=FONT_MEDIUM, fill=0)
