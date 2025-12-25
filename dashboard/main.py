@@ -4,6 +4,25 @@ import datetime
 import os
 from driver import  display_image, clear_display, sleep_display, init_display
 from PIL import Image
+import threading
+import time
+
+UPDATE_INTERVAL = 10
+
+def draw_time_layout():
+    img = Image.new("1", (800, 480), 255)
+    draw = ImageDraw.Draw(img)
+    now = time.strftime("%H:%M:%S")
+    draw.text((200, 200), now, fill=0)
+    return img
+
+def time_updater():
+    while True:
+        img = draw_time_layout()
+        display_image(img)
+        time.sleep(UPDATE_INTERVAL)
+
+threading.Thread(target=time_updater, daemon=True).start()
 
 
 app = Flask(__name__)
@@ -56,4 +75,5 @@ def display_uploaded_image():  # renamed
 
 if __name__ == "__main__":
     init_display()
+    threading.Thread(target=time_updater, daemon=True).start()
     app.run(host="0.0.0.0", port=5000)
