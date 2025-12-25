@@ -25,33 +25,70 @@ except:
     FONT_SMALL = ImageFont.load_default()
     FONT_TINY = ImageFont.load_default()
 
-# Holiday fonts
 FONT_HOLIDAY = FONT_SMALL
 FONT_DAYS = FONT_TINY
 
 # ================= US HOLIDAYS =================
-US_HOLIDAYS = {
-    (1, 1): "New Year's Day",
-    (7, 4): "Independence Day",
-    (12, 25): "Christmas",
-    (11, 11): "Veterans Day",
-    (1, 20): "MLK Day",
-    # Add more holidays as needed
-}
+def nth_weekday(year, month, weekday, n):
+    d = datetime.date(year, month, 1)
+    count = 0
+    while True:
+        if d.weekday() == weekday:
+            count += 1
+            if count == n:
+                return d
+        d += datetime.timedelta(days=1)
+
+def first_weekday(year, month, weekday):
+    return nth_weekday(year, month, weekday, 1)
+
+def second_weekday(year, month, weekday):
+    return nth_weekday(year, month, weekday, 2)
+
+def third_weekday(year, month, weekday):
+    return nth_weekday(year, month, weekday, 3)
+
+def fourth_weekday(year, month, weekday):
+    return nth_weekday(year, month, weekday, 4)
+
+def last_weekday(year, month, weekday):
+    d = datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
+    while d.weekday() != weekday:
+        d -= datetime.timedelta(days=1)
+    return d
+
+def get_us_holidays(year=None):
+    if year is None:
+        year = datetime.date.today().year
+
+    holidays = {}
+    holidays[datetime.date(year, 1, 1)] = "New Year's Day"
+    holidays[datetime.date(year, 6, 19)] = "Juneteenth"
+    holidays[datetime.date(year, 7, 4)] = "Independence Day"
+    holidays[datetime.date(year, 11, 11)] = "Veterans Day"
+    holidays[datetime.date(year, 12, 25)] = "Christmas Day"
+    holidays[third_weekday(year, 1, 0)] = "Martin Luther King Jr. Day"
+    if (year - 2021) % 4 == 0:
+        holidays[datetime.date(year, 1, 20)] = "Inauguration Day"
+    holidays[third_weekday(year, 2, 0)] = "Presidents Day"
+    holidays[last_weekday(year, 5, 0)] = "Memorial Day"
+    holidays[first_weekday(year, 9, 0)] = "Labor Day"
+    holidays[second_weekday(year, 10, 0)] = "Columbus Day"
+    holidays[fourth_weekday(year, 11, 3)] = "Thanksgiving"
+
+    return holidays
 
 def get_holiday_info(today=None):
     if today is None:
-        today = datetime.date(2026, 12, 26)
-       # today = datetime.date.today()
-    today_key = (today.month, today.day)
-    if today_key in US_HOLIDAYS:
-        return US_HOLIDAYS[today_key], 0
+        today = datetime.date.today()
+    holidays = get_us_holidays(today.year)
+    if today in holidays:
+        return holidays[today], 0
     upcoming = []
-    for (month, day), name in US_HOLIDAYS.items():
-        holiday_date = datetime.date(today.year, month, day)
-        if holiday_date < today:
-            holiday_date = datetime.date(today.year + 1, month, day)
-        days_until = (holiday_date - today).days
+    for date, name in holidays.items():
+        if date < today:
+            date = datetime.date(today.year + 1, date.month, date.day)
+        days_until = (date - today).days
         upcoming.append((days_until, name))
     upcoming.sort()
     days, name = upcoming[0]
@@ -62,7 +99,7 @@ def draw_clock_layout():
     now = datetime.datetime.now()
     hour = now.strftime("%I")       # 12-hour format
     minute = now.strftime("%M")
-    am_pm = now.strftime("%p")      # AM/PM
+    am_pm = now.strftime("%p")
     time_text = f"{hour}:{minute}"
 
     holiday_name, days_until = get_holiday_info()
@@ -74,39 +111,37 @@ def draw_clock_layout():
     date_str = now.strftime("%m/%d/%y")
     day_str = now.strftime("%A")
 
-    img = Image.new("1", (800, 480), 255)  # white background
+    img = Image.new("1", (800, 480), 255)
     draw = ImageDraw.Draw(img)
 
     # Draw time
     x_time, y_time = 50, 50
     draw.text((x_time, y_time), time_text, font=FONT_LARGE, fill=0)
 
-    # Draw AM/PM next to time (slightly lower)
+    # Draw AM/PM next to time
     time_width, time_height = draw.textsize(time_text, font=FONT_LARGE)
     draw.text((x_time + time_width + 10, y_time + time_height//2 + 10), am_pm, font=FONT_MEDIUM, fill=0)
 
-    # Draw date below
+    # Draw date
     draw.text((x_time, 250), date_str, font=FONT_MEDIUM, fill=0)
 
-    # Draw day below date
+    # Draw day
     draw.text((x_time, 320), day_str, font=FONT_MEDIUM, fill=0)
 
-    # Draw holiday at bottom-right corner with smaller days text
+    # Draw holiday bottom-right
     lines = holiday_text.split("\n")
     line_sizes = []
     total_height = 0
-
-    # Measure lines
     for i, line in enumerate(lines):
         font = FONT_HOLIDAY if i == 0 else FONT_DAYS
         _, line_height = draw.textsize(line, font=font)
         line_sizes.append((line, font, line_height))
         total_height += line_height
 
-    y = 480 - total_height - 20  # bottom padding
+    y = 480 - total_height - 20
     for line, font, line_height in line_sizes:
         line_width, _ = draw.textsize(line, font=font)
-        x = 800 - line_width - 20  # right-aligned
+        x = 800 - line_width - 20
         draw.text((x, y), line, font=font, fill=0)
         y += line_height
 
@@ -133,7 +168,6 @@ def clock_updater():
 
 # ================= FLASK APP =================
 app = Flask(__name__)
-
 @app.route("/")
 def index():
     return render_template("index.html")
