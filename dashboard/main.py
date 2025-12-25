@@ -39,7 +39,8 @@ US_HOLIDAYS = {
 
 def get_holiday_info(today=None):
     if today is None:
-        today = datetime.date.today()
+        today = datetime.date(2026, 12, 26)
+       # today = datetime.date.today()
     today_key = (today.month, today.day)
     if today_key in US_HOLIDAYS:
         return US_HOLIDAYS[today_key], 0
