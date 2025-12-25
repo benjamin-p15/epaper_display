@@ -1,114 +1,79 @@
 import spidev
 import RPi.GPIO as GPIO
 import time
-import sys
+from PIL import Image
 
-print("===== WAVESHARE 7.5\" DEBUG START =====", flush=True)
+# Setup used pins, screen size, and buffer size
+DC, RST, BUSY = 25, 17, 24
+WIDTH, HEIGHT = 800, 480
+BUF_LEN = WIDTH * HEIGHT // 8
 
-# ================= GPIO (BCM) =================
-DC   = 25
-RST  = 17
-BUSY = 24
-
-# ================= DISPLAY =================
-WIDTH  = 800
-HEIGHT = 480
-BUF_LEN = WIDTH * HEIGHT // 8  # 48000
-
-# ================= SPI =================
-print("[1] SPI INIT", flush=True)
+# Startup display
 spi = spidev.SpiDev()
 spi.open(0, 0)
 spi.max_speed_hz = 2_000_000
 spi.mode = 0b00
-print("    SPI OK", flush=True)
 
-# ================= GPIO =================
-print("[2] GPIO INIT", flush=True)
+# Set screen settings
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(DC, GPIO.OUT)
 GPIO.setup(RST, GPIO.OUT)
 GPIO.setup(BUSY, GPIO.IN)
-print("    GPIO OK", flush=True)
 
-# ================= LOW LEVEL =================
-def cmd(c):
+# Send command to display
+def cmd(data):
     GPIO.output(DC, GPIO.LOW)
-    spi.writebytes([c])
-    print(f"CMD 0x{c:02X}", flush=True)
+    spi.writebytes([data])
 
-def data(d):
+# Send data to the display
+def data(data):
     GPIO.output(DC, GPIO.HIGH)
-    spi.writebytes([d])
+    spi.writebytes([data])
 
-def wait_busy(tag=""):
-    print(f"[BUSY] {tag}", flush=True)
-    t0 = time.time()
+# Busy pin detector, to delay code
+def wait_busy():
     while GPIO.input(BUSY) == 1:
-        if time.time() - t0 > 30:
-            print("    BUSY TIMEOUT", flush=True)
-            sys.exit(1)
         time.sleep(0.05)
-    print("    BUSY RELEASED", flush=True)
 
-# ================= RESET =================
-print("[3] HARD RESET", flush=True)
+# Initilize display and reset it
 GPIO.output(RST, GPIO.LOW)
 time.sleep(0.2)
 GPIO.output(RST, GPIO.HIGH)
 time.sleep(0.2)
-print("    RESET DONE", flush=True)
 
-# ================= INIT (UC8179 / SSD1677) =================
-print("[4] INIT SEQUENCE", flush=True)
+cmd(0x01); data(0x07); data(0x07); data(0x3F); data(0x3F)
+cmd(0x04); wait_busy()
+cmd(0x00); data(0x1F)
+cmd(0x61); data(0x03); data(0x20); data(0x01); data(0xE0)
+cmd(0x15); data(0x00)
 
-cmd(0x01)          # POWER SETTING
-data(0x07)
-data(0x07)
-data(0x3F)
-data(0x3F)
+# Clear whole display
+def clear_display():
+    cmd(0x13)
+    for i in range(BUF_LEN):
+        data(0xFF)
+    cmd(0x12)
+    wait_busy()
 
-cmd(0x04)          # POWER ON
-wait_busy("POWER ON")
+# Write image to display
+def display_image(img: Image.Image):
+    img = img.convert("L").resize((WIDTH, HEIGHT))
+    img = img.point(lambda x: 0 if x > 128 else 255, mode="1")
+    pixels = img.load()
+    cmd(0x13)
+    for y in range(HEIGHT):
+        for x in range(0, WIDTH, 8):
+            byte = 0xFF
+            for bit in range(8):
+                if pixels[x + bit, y] == 0:
+                    byte &= ~(1 << (7 - bit))
+            data(byte)
+    cmd(0x12)
+    wait_busy()
 
-cmd(0x00)          # PANEL SETTING
-data(0x1F)         # LUT from OTP, 480x800
-
-cmd(0x61)          # RESOLUTION
-data(0x03)         # 800 >> 8
-data(0x20)         # 800 & 0xFF
-data(0x01)         # 480 >> 8
-data(0xE0)         # 480 & 0xFF
-
-cmd(0x15)          # VCOM
-data(0x00)
-
-print("    INIT OK", flush=True)
-
-# ================= FULL CLEAR =================
-print("[5] FULL CLEAR (WHITE)", flush=True)
-
-cmd(0x13)          # WRITE RAM
-for i in range(BUF_LEN):
-    if i % 4000 == 0:
-        print(f"    DATA {i}/{BUF_LEN}", flush=True)
-    data(0xFF)     # WHITE
-
-cmd(0x12)          # DISPLAY REFRESH
-wait_busy("REFRESH")
-
-print("    CLEAR DONE", flush=True)
-
-# ================= SLEEP =================
-print("[6] SLEEP", flush=True)
-cmd(0x02)          # POWER OFF
-wait_busy("POWER OFF")
-cmd(0x07)
-data(0xA5)
-
-# ================= CLEANUP =================
-print("[7] CLEANUP", flush=True)
-spi.close()
-GPIO.cleanup()
-
-print("===== DONE =====", flush=True)
+# Shutdown display power while not in use
+def sleep_display():
+    cmd(0x02); wait_busy()
+    cmd(0x07); data(0xA5)
+    spi.close()
+    GPIO.cleanup()

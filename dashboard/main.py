@@ -2,7 +2,9 @@ from flask import Flask, render_template, request
 from PIL import Image, ImageDraw
 import datetime
 import os
-import e_paper_driver  # your existing driver with display_image(img) function
+from driver import init_display, display_image, clear_display, sleep_display
+from PIL import Image
+
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "images"
@@ -38,19 +40,20 @@ def display_layout():
         img = draw_weather_layout()
     else:
         return "Unknown layout", 400
-    e_paper_driver.display_image(img)
+    display_image(img)
     return "Layout displayed successfully!"
 
 @app.route("/display_image", methods=["POST"])
-def display_image():
+def display_uploaded_image():  # renamed
     file = request.files.get("image")
     if not file:
         return "No file uploaded", 400
     path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(path)
     img = Image.open(path)
-    e_paper_driver.display_image(img)
+    display_image(img)  # driver function
     return "Image displayed successfully!"
 
 if __name__ == "__main__":
+    init_display()
     app.run(host="0.0.0.0", port=5000)
