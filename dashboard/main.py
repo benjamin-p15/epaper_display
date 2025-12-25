@@ -23,6 +23,10 @@ except:
     FONT_MEDIUM = ImageFont.load_default()
     FONT_SMALL = ImageFont.load_default()
 
+# Holiday fonts
+FONT_HOLIDAY = FONT_MEDIUM
+FONT_DAYS = FONT_SMALL
+
 # ================= US HOLIDAYS =================
 US_HOLIDAYS = {
     (1, 1): "New Year's Day",
@@ -35,8 +39,7 @@ US_HOLIDAYS = {
 
 def get_holiday_info(today=None):
     if today is None:
-        #today = datetime.date.today()
-        today = datetime.date(2026, 12, 26)
+        today = datetime.date.today()
     today_key = (today.month, today.day)
     if today_key in US_HOLIDAYS:
         return US_HOLIDAYS[today_key], 0
@@ -75,9 +78,9 @@ def draw_clock_layout():
     x_time, y_time = 50, 50
     draw.text((x_time, y_time), time_text, font=FONT_LARGE, fill=0)
 
-    # Draw AM/PM next to time
+    # Draw AM/PM next to time (slightly lower)
     time_width, time_height = draw.textsize(time_text, font=FONT_LARGE)
-    draw.text((x_time + time_width + 10, y_time + time_height//2+10), am_pm, font=FONT_MEDIUM, fill=0)
+    draw.text((x_time + time_width + 10, y_time + time_height//2 + 10), am_pm, font=FONT_MEDIUM, fill=0)
 
     # Draw date below
     draw.text((x_time, 250), date_str, font=FONT_MEDIUM, fill=0)
@@ -85,15 +88,24 @@ def draw_clock_layout():
     # Draw day below date
     draw.text((x_time, 320), day_str, font=FONT_MEDIUM, fill=0)
 
-    # Draw holiday at bottom-right corner
+    # Draw holiday at bottom-right corner with smaller days text
     lines = holiday_text.split("\n")
-    total_height = sum(draw.textsize(line, font=FONT_MEDIUM)[1] for line in lines)
-    y_start = 480 - total_height - 20
+    line_sizes = []
+    total_height = 0
+
+    # Measure lines
     for i, line in enumerate(lines):
-        line_width, line_height = draw.textsize(line, font=FONT_MEDIUM)
-        x = 800 - line_width - 20
-        y = y_start + i * line_height
-        draw.text((x, y), line, font=FONT_MEDIUM, fill=0)
+        font = FONT_HOLIDAY if i == 0 else FONT_DAYS
+        _, line_height = draw.textsize(line, font=font)
+        line_sizes.append((line, font, line_height))
+        total_height += line_height
+
+    y = 480 - total_height - 20  # bottom padding
+    for line, font, line_height in line_sizes:
+        line_width, _ = draw.textsize(line, font=font)
+        x = 800 - line_width - 20  # right-aligned
+        draw.text((x, y), line, font=font, fill=0)
+        y += line_height
 
     return img
 
