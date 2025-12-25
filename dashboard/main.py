@@ -2,7 +2,7 @@ from flask import Flask, render_template, request
 from PIL import Image, ImageDraw
 import datetime
 import os
-from driver import  display_image, clear_display, sleep_display, int_display
+from driver import  display_image, clear_display, sleep_display, init_display
 from PIL import Image
 
 
