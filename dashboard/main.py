@@ -30,7 +30,7 @@ US_HOLIDAYS = {
     (12, 25): "Christmas",
     (11, 11): "Veterans Day",
     (1, 20): "MLK Day",
-    # Add more as needed
+    # Add more holidays as needed
 }
 
 def get_holiday_info(today=None):
@@ -53,8 +53,9 @@ def get_holiday_info(today=None):
 # ================= LAYOUT FUNCTIONS =================
 def draw_clock_layout():
     now = datetime.datetime.now()
-    hour = now.strftime("%I")
+    hour = now.strftime("%I")       # 12-hour format
     minute = now.strftime("%M")
+    am_pm = now.strftime("%p")      # AM/PM
     time_text = f"{hour}:{minute}"
 
     holiday_name, days_until = get_holiday_info()
@@ -66,21 +67,32 @@ def draw_clock_layout():
     date_str = now.strftime("%m/%d/%y")
     day_str = now.strftime("%A")
 
-    img = Image.new("1", (800, 480), 255)
+    img = Image.new("1", (800, 480), 255)  # white background
     draw = ImageDraw.Draw(img)
 
     # Draw time
-    draw.text((50, 50), time_text, font=FONT_LARGE, fill=0)
+    x_time, y_time = 50, 50
+    draw.text((x_time, y_time), time_text, font=FONT_LARGE, fill=0)
 
-    # Draw holiday/AMPM next to time
-    time_width, _ = draw.textsize(time_text, font=FONT_LARGE)
-    draw.text((50 + time_width + 20, 70), holiday_text, font=FONT_MEDIUM, fill=0)
+    # Draw AM/PM next to time
+    time_width, time_height = draw.textsize(time_text, font=FONT_LARGE)
+    draw.text((x_time + time_width + 10, y_time + time_height//4), am_pm, font=FONT_MEDIUM, fill=0)
 
     # Draw date below
-    draw.text((50, 250), date_str, font=FONT_MEDIUM, fill=0)
+    draw.text((x_time, 250), date_str, font=FONT_MEDIUM, fill=0)
 
     # Draw day below date
-    draw.text((50, 320), day_str, font=FONT_MEDIUM, fill=0)
+    draw.text((x_time, 320), day_str, font=FONT_MEDIUM, fill=0)
+
+    # Draw holiday at bottom-right corner
+    lines = holiday_text.split("\n")
+    total_height = sum(draw.textsize(line, font=FONT_MEDIUM)[1] for line in lines)
+    y_start = 480 - total_height - 20
+    for i, line in enumerate(lines):
+        line_width, line_height = draw.textsize(line, font=FONT_MEDIUM)
+        x = 800 - line_width - 20
+        y = y_start + i * line_height
+        draw.text((x, y), line, font=FONT_MEDIUM, fill=0)
 
     return img
 
