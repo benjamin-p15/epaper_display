@@ -36,7 +36,7 @@ def wait_busy():
         time.sleep(0.05)
 
 # Initilize display and reset it
-def int_display():
+def init_display():
     GPIO.output(RST, GPIO.LOW)
     time.sleep(0.2)
     GPIO.output(RST, GPIO.HIGH)
