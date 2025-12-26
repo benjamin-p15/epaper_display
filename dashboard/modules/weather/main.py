@@ -136,6 +136,8 @@ def choose_weather_icon(wx):
 # ================= RENDER =================
 def render():
     data = fetch_metar()
+    print("Full METAR data:")
+    print(data)
 
     temp_f = c_to_f(data["temp_c"])
     feels_f = c_to_f(data["dewpoint_c"])
