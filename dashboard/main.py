@@ -8,7 +8,7 @@ from driver import init_display, display_image
 
 # FIX: import the module as `clock`
 from modules.clock import main as clock
-from modules.weather import weather
+from modules.weather import main as weather
 
 # ================= CONFIG =================
 CLOCK_CHECK_INTERVAL = 5        # seconds
