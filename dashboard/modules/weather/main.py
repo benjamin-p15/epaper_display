@@ -17,7 +17,7 @@ try:
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 32
     )
     FONT_SMALL = ImageFont.truetype(
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24
     )
 except:
     FONT_LARGE = ImageFont.load_default()
@@ -50,7 +50,6 @@ def get_location():
         return lat, lon, city, state
     except Exception as e:
         print(f"Warning: Failed to get location: {e}")
-        # fallback to San Francisco
         return 37.7749, -122.4194, "San Francisco", "CA"
 
 def fetch_weather(lat, lon):
@@ -124,19 +123,21 @@ def render():
     img = Image.new("1", (SCREEN_W, SCREEN_H), 255)
     draw = ImageDraw.Draw(img)
 
-    # ---------- HEADER ----------
-    draw.text((20, 10), f"{city}, {state}", font=FONT_MEDIUM, fill=0)
+    # ---------- HEADER: CENTERED CITY/STATE ----------
+    header_text = f"{city}, {state}"
+    w, h = draw.textsize(header_text, font=FONT_MEDIUM)
+    draw.text(((SCREEN_W - w) // 2, 10), header_text, font=FONT_MEDIUM, fill=0)
 
     # ---------- LEFT: MAIN WEATHER ----------
-    icon_size = (150, 150)
+    icon_size = (180, 180)
     main_icon = load_icon(main_icon_name, size=icon_size)
     if main_icon:
-        img.paste(main_icon, (40, 80))
+        img.paste(main_icon, (50, 80))
 
-    draw.text((220, 110), f"{temp_f}°", font=FONT_LARGE, fill=0)
-    draw.text((225, 200), f"Feels like {feels_f}°", font=FONT_SMALL, fill=0)
+    draw.text((260, 110), f"{temp_f}°", font=FONT_LARGE, fill=0)
+    draw.text((265, 210), f"Feels like {feels_f}°", font=FONT_SMALL, fill=0)
 
-    # ---------- RIGHT: INFO GRID ----------
+    # ---------- RIGHT: INFO GRID (bigger icons) ----------
     info = [
         ("windL.png", f"{wind_speed} m/s"),
         ("pressure.png", f"{pressure} hPa"),
@@ -150,9 +151,9 @@ def render():
 
     start_x = 480
     start_y = 80
-    col_w = 150
-    row_h = 90
-    icon_size_small = (36, 36)
+    col_w = 160
+    row_h = 100
+    icon_size_small = (50, 50)  # bigger icons
 
     for i, (icon_name, text) in enumerate(info):
         col = i % 2
@@ -164,6 +165,6 @@ def render():
         if icon:
             img.paste(icon, (x, y))
 
-        draw.text((x + 50, y + 8), str(text), font=FONT_SMALL, fill=0)
+        draw.text((x + 60, y + 10), str(text), font=FONT_SMALL, fill=0)
 
     return img
