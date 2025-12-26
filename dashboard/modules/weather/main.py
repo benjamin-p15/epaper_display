@@ -25,20 +25,23 @@ except:
     FONT_SMALL = ImageFont.load_default()
 
 # ================= HELPERS =================
-def load_icon(name, size=None, invert=True):
-    """Load an icon and optionally invert for e-paper display"""
-    path = os.path.join(ICON_DIR, name)
+def load_icon_bw(path, size=None):
+    """Load icon: transparent/white stays white, all else black"""
     if not os.path.exists(path):
         return None
-    icon = Image.open(path).convert("1")
-    if invert:
-        icon = Image.eval(icon, lambda x: 255 - x)
+    img = Image.open(path).convert("RGBA")
+    bw = Image.new("1", img.size, 1)  # white background
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, a = img.getpixel((x, y))
+            if a > 0 and (r, g, b) != (255, 255, 255):
+                bw.putpixel((x, y), 0)  # black
     if size:
-        icon = icon.resize(size)
-    return icon
+        bw = bw.resize(size)
+    return bw
 
 def get_location():
-    """Get location automatically using IP geolocation"""
+    """Get location using IP geolocation"""
     try:
         r = requests.get("http://ip-api.com/json/", timeout=5)
         r.raise_for_status()
@@ -53,17 +56,12 @@ def get_location():
         return 37.7749, -122.4194, "San Francisco", "CA"
 
 def fetch_weather(lat, lon):
-    """Fetch weather data from OpenWeatherMap using coordinates"""
+    """Fetch weather from OpenWeatherMap"""
     API_KEY = os.environ.get("OPENWEATHER_API_KEY")
     if not API_KEY:
         print("Warning: OPENWEATHER_API_KEY not set, using dummy data")
         return None
-
-    url = (
-        f"https://api.openweathermap.org/data/2.5/weather?"
-        f"lat={lat}&lon={lon}&units=metric&appid={API_KEY}"
-    )
-
+    url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&units=metric&appid={API_KEY}"
     try:
         r = requests.get(url, timeout=10)
         r.raise_for_status()
@@ -76,7 +74,7 @@ def c_to_f(c):
     return round(c * 9 / 5 + 32)
 
 def choose_weather_icon(wx):
-    """Map OpenWeather icon codes to local icons"""
+    """Map weather description to local icon"""
     if not wx:
         return "01d.png"
     wx = wx.lower()
@@ -97,7 +95,7 @@ def render():
     lat, lon, city, state = get_location()
     data = fetch_weather(lat, lon)
 
-    # Fallback dummy data if API fails
+    # fallback dummy data
     if not data:
         weather_main = "Clear"
         temp_c = 20
@@ -120,7 +118,7 @@ def render():
 
     main_icon_name = choose_weather_icon(weather_main)
 
-    img = Image.new("1", (SCREEN_W, SCREEN_H), 255)
+    img = Image.new("1", (SCREEN_W, SCREEN_H), 1)  # white background
     draw = ImageDraw.Draw(img)
 
     # ---------- HEADER: CENTERED CITY/STATE ----------
@@ -130,14 +128,14 @@ def render():
 
     # ---------- LEFT: MAIN WEATHER ----------
     icon_size = (180, 180)
-    main_icon = load_icon(main_icon_name, size=icon_size)
+    main_icon = load_icon_bw(os.path.join(ICON_DIR, main_icon_name), size=icon_size)
     if main_icon:
         img.paste(main_icon, (50, 80))
 
     draw.text((260, 110), f"{temp_f}°", font=FONT_LARGE, fill=0)
     draw.text((265, 210), f"Feels like {feels_f}°", font=FONT_SMALL, fill=0)
 
-    # ---------- RIGHT: INFO GRID (bigger icons) ----------
+    # ---------- RIGHT: INFO GRID ----------
     info = [
         ("windL.png", f"{wind_speed} m/s"),
         ("pressure.png", f"{pressure} hPa"),
@@ -153,7 +151,7 @@ def render():
     start_y = 80
     col_w = 160
     row_h = 100
-    icon_size_small = (50, 50)  # bigger icons
+    icon_size_small = (50, 50)
 
     for i, (icon_name, text) in enumerate(info):
         col = i % 2
@@ -161,7 +159,7 @@ def render():
         x = start_x + col * col_w
         y = start_y + row * row_h
 
-        icon = load_icon(icon_name, size=icon_size_small)
+        icon = load_icon_bw(os.path.join(ICON_DIR, icon_name), size=icon_size_small)
         if icon:
             img.paste(icon, (x, y))
 
