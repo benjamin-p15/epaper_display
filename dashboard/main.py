@@ -17,7 +17,7 @@ UPLOAD_FOLDER = "images"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-update_clock = True
+update_clock = False
 
 # ================= WEATHER CACHE =================
 last_weather_update = 0
@@ -35,6 +35,16 @@ def clock_updater():
                 last_minute = now.tm_min
 
         time.sleep(CLOCK_CHECK_INTERVAL)
+
+# ================= WEATHER UPDATER =================
+def weather_updater():
+    global last_weather_update, cached_weather_image
+    while True:
+        now = time.time()
+        if cached_weather_image is None or now - last_weather_update >= WEATHER_UPDATE_INTERVAL:
+            cached_weather_image = weather.render()
+            last_weather_update = now
+        time.sleep(WEATHER_UPDATE_INTERVAL)
 
 # ================= FLASK APP =================
 app = Flask(__name__)
@@ -58,10 +68,7 @@ def display_layout():
         update_clock = False
 
         now = time.time()
-        if (
-            cached_weather_image is None
-            or now - last_weather_update >= WEATHER_UPDATE_INTERVAL
-        ):
+        if cached_weather_image is None or now - last_weather_update >= WEATHER_UPDATE_INTERVAL:
             cached_weather_image = weather.render()
             last_weather_update = now
 
@@ -90,5 +97,9 @@ def display_uploaded_image():
 # ================= MAIN =================
 if __name__ == "__main__":
     init_display()
+    # Start clock updater thread
     threading.Thread(target=clock_updater, daemon=True).start()
+    # Start weather updater thread
+    threading.Thread(target=weather_updater, daemon=True).start()
+    # Start Flask
     app.run(host="0.0.0.0", port=5000)
