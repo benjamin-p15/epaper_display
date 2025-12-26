@@ -5,7 +5,8 @@ import time
 import os
 
 from driver import init_display, display_image
-from modules import clock, weather
+from dashboard.modules.clock.main import clock
+from modules.weather import weather
 
 # ================= CONFIG =================
 CLOCK_CHECK_INTERVAL = 5        # seconds
