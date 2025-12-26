@@ -1,6 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 import requests
+import xml.etree.ElementTree as ET
 import csv
 from math import radians, cos, sin, asin
 
@@ -25,7 +26,7 @@ def load_icon_bw(name, size=None):
     if not os.path.exists(path):
         return None
     img = Image.open(path).convert("RGBA")
-    bw = Image.new("1", img.size, 1)
+    bw = Image.new("1", img.size, 1)  # white background
     for y in range(img.height):
         for x in range(img.width):
             r, g, b, a = img.getpixel((x, y))
@@ -40,15 +41,15 @@ def haversine(lat1, lon1, lat2, lon2):
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
     dlon = lon2 - lon1
     dlat = lat2 - lat1
-    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-    return 6371 * 2 * asin(a)
+    a = sin(dlat/2)**2 + cos(lat1)*cos(lat2)*sin(dlon/2)**2
+    return 6371 * 2 * asin(a)  # km
 
 def get_location():
     try:
         r = requests.get("https://ipinfo.io/json", timeout=5)
         loc = r.json().get("loc", "").split(",")
         return float(loc[0]), float(loc[1])
-    except Exception:
+    except:
         return None, None
 
 def find_nearest_airport(lat, lon):
@@ -69,27 +70,46 @@ def find_nearest_airport(lat, lon):
 # ================= METAR FETCH =================
 def fetch_metar(station):
     """
-    Fetch METAR from the AviationWeather /api/data/metar endpoint (JSON).
-    Returns None if no data is available.
+    Fetch METAR data from stable CGI-BIN XML endpoint.
+    Returns dict of values or None if unavailable.
     """
-    url = "https://aviationweather.gov/api/data/metar"
-    params = {
-        "ids": station,
-        "format": "json",
-    }
+    url = (
+        "https://aviationweather.gov/adds/dataserver_current/httpparam"
+        "?dataSource=metars&requestType=retrieve&format=xml"
+        f"&stationString={station}&hoursBeforeNow=1&mostRecent=true"
+    )
     try:
-        r = requests.get(url, params=params, timeout=10)
+        r = requests.get(url, timeout=10)
         r.raise_for_status()
-        j = r.json()
-        metars = j.get("data", [])
-        if not metars:
-            return None
-        # Take most recent
-        return metars[0]
     except Exception as e:
-        print(f"METAR fetch real failed: {e}")
+        print(f"METAR fetch failed: {e}")
         return None
 
+    try:
+        root = ET.fromstring(r.text)
+        metar = root.find(".//METAR")
+        if metar is None:
+            return None
+    except Exception as e:
+        print(f"XML parse failed: {e}")
+        return None
+
+    def get_text(tag):
+        el = metar.find(tag)
+        return el.text if el is not None else None
+
+    return {
+        "raw_text": get_text("raw_text"),
+        "temp_c": get_text("temp_c"),
+        "dewpoint_c": get_text("dewpoint_c"),
+        "wind_speed_kt": get_text("wind_speed_kt"),
+        "wind_dir_degrees": get_text("wind_dir_degrees"),
+        "visibility_statute_mi": get_text("visibility_statute_mi"),
+        "sea_level_pressure_mb": get_text("sea_level_pressure_mb"),
+        "wx_string": get_text("wx_string")
+    }
+
+# ================= ICON CHOOSER =================
 def choose_weather_icon(metar):
     if not metar or not metar.get("wx_string"):
         return "01d.png"
@@ -104,7 +124,7 @@ def choose_weather_icon(metar):
 def c_to_f(c):
     try:
         return round(float(c) * 9/5 + 32)
-    except Exception:
+    except:
         return None
 
 # ================= RENDER =================
@@ -126,14 +146,14 @@ def render():
         draw.text(((SCREEN_W - w) // 2, SCREEN_H // 2 - h // 2), no_txt, font=FONT_LARGE, fill=0)
         return img
 
-    # Show actual returned fields
-    raw = metar.get("raw_text", "--")
+    # Parse real fields
     temp = metar.get("temp_c")
     dew = metar.get("dewpoint_c")
     wind = metar.get("wind_speed_kt") or "--"
     wind_dir = metar.get("wind_dir_degrees") or "--"
     vis = metar.get("visibility_statute_mi") or "--"
     press = metar.get("sea_level_pressure_mb") or "--"
+    raw = metar.get("raw_text") or "--"
 
     icon_name = choose_weather_icon(metar)
     icon = load_icon_bw(icon_name, (150, 150))
