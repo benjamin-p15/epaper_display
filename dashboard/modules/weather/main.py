@@ -59,25 +59,28 @@ def find_nearest_airport(lat, lon):
     min_dist = float("inf")
     with open(AIRPORTS_FILE, "r") as f:
         reader = csv.reader(f)
-        for icao, a_lat, a_lon, city, state in reader:
-            a_lat, a_lon = float(a_lat), float(a_lon)
-            d = haversine(lat, lon, a_lat, a_lon)
-            if d < min_dist:
-                min_dist = d
-                nearest = (icao, city, state)
+        for row in reader:
+            if len(row) < 5:
+                continue
+            icao, a_lat, a_lon, city, state = row
+            try:
+                a_lat, a_lon = float(a_lat), float(a_lon)
+                d = haversine(lat, lon, a_lat, a_lon)
+                if d < min_dist:
+                    min_dist = d
+                    nearest = (icao, city, state)
+            except ValueError:
+                continue
     return nearest if nearest else ("KSFO", "San Francisco", "CA")
 
 # ================= METAR FETCH =================
 def fetch_metar(station):
     """
-    Fetch METAR data from stable CGI-BIN XML endpoint.
+    Fetch METAR data from the official Data API.
     Returns dict of values or None if unavailable.
     """
-    url = (
-        "https://aviationweather.gov/adds/dataserver_current/httpparam"
-        "?dataSource=metars&requestType=retrieve&format=xml"
-        f"&stationString={station}&hoursBeforeNow=1&mostRecent=true"
-    )
+    # Use the correct Data API endpoint (no longer using the blocked one)
+    url = f"https://aviationweather.gov/api/data/metar?ids={station}&format=xml"
     try:
         r = requests.get(url, timeout=10)
         r.raise_for_status()
@@ -87,7 +90,13 @@ def fetch_metar(station):
 
     try:
         root = ET.fromstring(r.text)
-        metar = root.find(".//METAR")
+        # Check if we got any data
+        if len(root) == 0 or root.tag != 'data':
+            print("No METAR data found in response")
+            return None
+            
+        # Find the first METAR element
+        metar = root.find("METAR")
         if metar is None:
             return None
     except Exception as e:
@@ -131,6 +140,7 @@ def c_to_f(c):
 def render():
     lat, lon = get_location()
     station, city, state = find_nearest_airport(lat, lon)
+    print(f"Fetching METAR for {station} ({city}, {state})...")
     metar = fetch_metar(station)
 
     img = Image.new("1", (SCREEN_W, SCREEN_H), 1)
@@ -170,3 +180,11 @@ def render():
     draw.text((50, info_y + 90), raw, font=FONT_SMALL, fill=0)
 
     return img
+
+# ================= MAIN =================
+if __name__ == "__main__":
+    # Test the render function
+    print("Testing METAR fetch...")
+    test_img = render()
+    test_img.save("test_output.png")
+    print("Output saved as test_output.png")
