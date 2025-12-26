@@ -1,7 +1,8 @@
-# modules/weather/main.py - WORKING VERSION
+# modules/weather/main.py - WITH DEBUG PRINTING
 from PIL import Image, ImageDraw, ImageFont
 import requests
 import xml.etree.ElementTree as ET
+import sys
 
 SCREEN_W, SCREEN_H = 800, 480
 
@@ -18,30 +19,48 @@ except Exception:
 def fetch_metar(station="KSFO"):
     """Get METAR XML data"""
     url = f"https://aviationweather.gov/api/data/metar?ids={station}&format=xml"
+    print(f"[DEBUG] Fetching from: {url}")
     try:
         r = requests.get(url, timeout=10)
+        print(f"[DEBUG] Response status: {r.status_code}")
+        print(f"[DEBUG] Response length: {len(r.text)} chars")
+        
+        if r.status_code == 200:
+            print(f"[DEBUG] First 200 chars: {r.text[:200]}")
+        
         r.raise_for_status()
         return r.text
     except Exception as e:
-        print(f"METAR fetch error: {e}")
+        print(f"[ERROR] METAR fetch failed: {e}")
         return None
 
 def parse_metar(xml_text):
     """Parse METAR XML to dict"""
+    print(f"[DEBUG] parse_metar called, xml_text type: {type(xml_text)}, length: {len(xml_text) if xml_text else 0}")
+    
     if not xml_text:
+        print("[DEBUG] No XML text to parse")
         return None
     
     try:
+        print("[DEBUG] Parsing XML...")
         root = ET.fromstring(xml_text)
+        print(f"[DEBUG] Root tag: {root.tag}")
+        
         metar = root.find(".//METAR")
+        print(f"[DEBUG] Found METAR element: {metar is not None}")
+        
         if metar is None:
+            print("[DEBUG] No METAR element found in XML")
             return None
             
         def get_text(tag):
             el = metar.find(tag)
-            return el.text if el is not None else None
+            value = el.text if el is not None else None
+            print(f"[DEBUG] Tag '{tag}': {value}")
+            return value
             
-        return {
+        result = {
             "raw_text": get_text("raw_text"),
             "temp_c": get_text("temp_c"),
             "wind_speed_kt": get_text("wind_speed_kt"),
@@ -52,22 +71,36 @@ def parse_metar(xml_text):
             "altim_in_hg": get_text("altim_in_hg"),
             "wx_string": get_text("wx_string")
         }
+        
+        print(f"[DEBUG] Parsed result: {result}")
+        return result
+        
     except Exception as e:
-        print(f"XML parse error: {e}")
+        print(f"[ERROR] XML parse failed: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
-# RENDER FUNCTION - THIS IS WHAT YOUR FLASK APP CALLS
+# RENDER FUNCTION
 def render():
-    """Create weather display image - called by Flask app"""
+    """Create weather display image"""
+    print("\n" + "="*50)
+    print("[DEBUG] render() function called")
+    print("="*50)
+    
     # Fetch and parse data
     xml_data = fetch_metar("KSFO")
     metar = parse_metar(xml_data)
     
+    print(f"[DEBUG] metar data after parse: {metar}")
+    
     # Create blank image
-    img = Image.new("1", (SCREEN_W, SCREEN_H), 1)  # White background
+    img = Image.new("1", (SCREEN_W, SCREEN_H), 1)
     draw = ImageDraw.Draw(img)
     
     if metar and metar.get("raw_text"):
+        print(f"[DEBUG] Drawing METAR data: {metar.get('raw_text')}")
+        
         # Draw weather info
         header = "KSFO San Francisco"
         w, _ = draw.textsize(header, font=FONT_MEDIUM)
@@ -79,55 +112,56 @@ def render():
             temp_text = f"{temp_f}°F"
             w, h = draw.textsize(temp_text, font=FONT_LARGE)
             draw.text(((SCREEN_W - w) // 2, 100), temp_text, font=FONT_LARGE, fill=0)
+            print(f"[DEBUG] Temperature: {temp_f}°F ({metar['temp_c']}°C)")
         
         # Wind
         wind_text = f"Wind: {metar.get('wind_dir_degrees', '--')}° @ {metar.get('wind_speed_kt', '--')}kt"
         if metar.get("wind_gust_kt"):
             wind_text += f" G{metar['wind_gust_kt']}kt"
         draw.text((50, 220), wind_text, font=FONT_SMALL, fill=0)
+        print(f"[DEBUG] Wind: {wind_text}")
         
-        # Visibility and pressure
-        vis_text = f"Vis: {metar.get('visibility_statute_mi', '--')}mi"
-        press_text = f"Press: {metar.get('altim_in_hg', '--')}inHg"
-        draw.text((50, 260), vis_text, font=FONT_SMALL, fill=0)
-        draw.text((50, 290), press_text, font=FONT_SMALL, fill=0)
+        # RAW METAR - PRINT TO CONSOLE
+        raw_metar = metar.get("raw_text", "")
+        print(f"\n{'='*50}")
+        print("RAW METAR DATA:")
+        print(f"{raw_metar}")
+        print(f"{'='*50}\n")
         
-        # Raw METAR at bottom
-        raw = metar.get("raw_text", "")[:60] + "..." if len(metar.get("raw_text", "")) > 60 else metar.get("raw_text", "")
-        draw.text((50, 350), f"RAW: {raw}", font=FONT_SMALL, fill=0)
-        
-        # Weather condition
-        if metar.get("wx_string"):
-            draw.text((50, 180), f"Weather: {metar['wx_string']}", font=FONT_SMALL, fill=0)
     else:
-        # No data
+        print("[DEBUG] No METAR data available")
         error_text = "NO METAR DATA"
         w, h = draw.textsize(error_text, font=FONT_LARGE)
         draw.text(((SCREEN_W - w) // 2, SCREEN_H // 2 - h // 2), error_text, font=FONT_LARGE, fill=0)
     
+    print("[DEBUG] render() returning image")
     return img
 
 # Test the module
 if __name__ == "__main__":
-    print("Testing weather module...")
-    
-    # Test fetch
-    xml = fetch_metar()
-    if xml:
-        print("✓ METAR fetch successful")
-        
-        # Test parse
-        data = parse_metar(xml)
-        if data:
-            print(f"✓ Parsed METAR: {data.get('raw_text', 'No raw text')}")
-            print(f"✓ Temperature: {data.get('temp_c', 'N/A')}°C")
-            print(f"✓ Wind: {data.get('wind_dir_degrees', 'N/A')}° @ {data.get('wind_speed_kt', 'N/A')}kt")
-        else:
-            print("✗ Failed to parse METAR")
-    else:
-        print("✗ Failed to fetch METAR")
+    print("="*50)
+    print("TESTING WEATHER MODULE")
+    print("="*50)
     
     # Test render
+    print("\nCalling render()...")
     image = render()
+    
+    # Save test image
     image.save("weather_test.png")
-    print("✓ Render test saved as weather_test.png")
+    print(f"\n[DEBUG] Test image saved as weather_test.png")
+    
+    # Also test direct fetch
+    print("\n" + "="*50)
+    print("DIRECT FETCH TEST:")
+    print("="*50)
+    
+    xml = fetch_metar("KSFO")
+    if xml:
+        data = parse_metar(xml)
+        if data and data.get("raw_text"):
+            print(f"\nDIRECT RAW METAR: {data.get('raw_text')}")
+        else:
+            print("\nNo data parsed from XML")
+    else:
+        print("\nFailed to fetch XML")
