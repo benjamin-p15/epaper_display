@@ -1,12 +1,16 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 import requests
+import xml.etree.ElementTree as ET
 from datetime import datetime
 import random
 
 # ================= CONFIG =================
 SCREEN_W, SCREEN_H = 800, 480
 ICON_DIR = os.path.join(os.path.dirname(__file__), "icons")
+STATION = "KSFO"  # default airport
+CITY = "San Francisco"
+STATE = "CA"
 
 # ================= FONTS =================
 try:
@@ -24,7 +28,7 @@ except:
     FONT_MEDIUM = ImageFont.load_default()
     FONT_SMALL = ImageFont.load_default()
 
-# ================= HELPERS =================
+# ================= ICON LOADING =================
 def load_icon_bw(path, size=None):
     """Load icon: transparent/white stays white, all else black"""
     if not os.path.exists(path):
@@ -40,89 +44,101 @@ def load_icon_bw(path, size=None):
         bw = bw.resize(size)
     return bw
 
-def get_location():
-    """Get location using IP geolocation"""
-    try:
-        r = requests.get("http://ip-api.com/json/", timeout=5)
-        r.raise_for_status()
-        data = r.json()
-        lat = data.get("lat", 37.7749)
-        lon = data.get("lon", -122.4194)
-        city = data.get("city", "Unknown")
-        state = data.get("regionName", "Unknown")
-        return lat, lon, city, state
-    except Exception as e:
-        print(f"Warning: Failed to get location: {e}")
-        return 37.7749, -122.4194, "San Francisco", "CA"
+# ================= METAR FETCH =================
+def fetch_metar(station=STATION):
+    """Fetch latest METAR XML and parse all relevant fields"""
+    url = (
+        "https://aviationweather.gov/adds/dataserver_current/httpparam"
+        "?dataSource=metars"
+        "&requestType=retrieve"
+        "&format=xml"
+        f"&stationString={station}"
+        "&hoursBeforeNow=1"
+    )
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; EPaperDashboard/1.0)"
+    }
 
-def fetch_weather(lat, lon):
-    """Fetch weather from OpenWeatherMap"""
-    API_KEY = os.environ.get("OPENWEATHER_API_KEY")
-    if not API_KEY:
-        print("Warning: OPENWEATHER_API_KEY not set, using dummy data")
-        return None
-    url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&units=metric&appid={API_KEY}"
     try:
-        r = requests.get(url, timeout=10)
+        r = requests.get(url, headers=headers, timeout=10)
         r.raise_for_status()
-        return r.json()
+        root = ET.fromstring(r.text)
+        metar = root.find(".//METAR")
+        if metar is None:
+            raise RuntimeError("No METAR data found")
+
+        def get(tag):
+            el = metar.find(tag)
+            return el.text if el is not None else None
+
+        temp_c = get("temp_c")
+        dewpoint_c = get("dewpoint_c")
+        wind_kt = get("wind_speed_kt")
+        wind_dir = get("wind_dir_degrees")
+        visibility_mi = get("visibility_statute_mi")
+        pressure_hpa = get("sea_level_pressure_mb")
+        weather = get("wx_string")
+        raw = get("raw_text")
+        obs_time = get("observation_time")
+
+        return {
+            "temp_c": float(temp_c) if temp_c else 20,
+            "dewpoint_c": float(dewpoint_c) if dewpoint_c else 15,
+            "wind_kt": wind_kt or "--",
+            "wind_dir": wind_dir or "--",
+            "visibility_mi": visibility_mi or "--",
+            "pressure_hpa": pressure_hpa or "--",
+            "weather": weather,
+            "raw": raw or "--",
+            "observation_time": obs_time,
+        }
+
     except Exception as e:
-        print(f"Warning: Failed to fetch weather: {e}")
-        return None
+        print(f"Warning: Failed to fetch METAR: {e}")
+        return {
+            "temp_c": 20,
+            "dewpoint_c": 15,
+            "wind_kt": "--",
+            "wind_dir": "--",
+            "visibility_mi": "--",
+            "pressure_hpa": "--",
+            "weather": None,
+            "raw": "--",
+            "observation_time": "--",
+        }
 
 def c_to_f(c):
     return round(c * 9 / 5 + 32)
 
 def choose_weather_icon(wx):
-    """Map weather description to local icon"""
     if not wx:
         return "01d.png"
     wx = wx.lower()
-    if "thunderstorm" in wx or "11" in wx:
+    if "ts" in wx:
         return "11d.png"
-    if "snow" in wx or "13" in wx:
+    if "snow" in wx:
         return "13d.png"
-    if "rain" in wx or "09" in wx or "10" in wx:
+    if "rain" in wx:
         return "09d.png"
-    if "mist" in wx or "fog" in wx or "50" in wx:
+    if "mist" in wx or "fog" in wx:
         return "50d.png"
-    if "cloud" in wx or "04" in wx or "03" in wx:
+    if "cloud" in wx or "ovc" in wx:
         return "04d.png"
     return "01d.png"
 
 # ================= RENDER =================
 def render():
-    lat, lon, city, state = get_location()
-    data = fetch_weather(lat, lon)
+    data = fetch_metar()
 
-    # fallback dummy data
-    if not data:
-        weather_main = "Clear"
-        temp_c = 20
-        feels_c = 20
-        wind_speed = "--"
-        pressure = "--"
-        visibility = "--"
-        humidity = "--"
-    else:
-        weather_main = data["weather"][0]["main"]
-        temp_c = data["main"]["temp"]
-        feels_c = data["main"]["feels_like"]
-        wind_speed = data["wind"].get("speed", "--")
-        pressure = data["main"].get("pressure", "--")
-        visibility = round(data.get("visibility", 0) / 1609.34, 1)  # meters → miles
-        humidity = data["main"].get("humidity", "--")
-
-    temp_f = c_to_f(temp_c)
-    feels_f = c_to_f(feels_c)
-
-    main_icon_name = choose_weather_icon(weather_main)
+    temp_f = c_to_f(data["temp_c"])
+    feels_f = c_to_f(data["dewpoint_c"])
+    main_icon_name = choose_weather_icon(data["weather"])
 
     img = Image.new("1", (SCREEN_W, SCREEN_H), 1)  # white background
     draw = ImageDraw.Draw(img)
 
-    # ---------- HEADER: CENTERED CITY/STATE ----------
-    header_text = f"{city}, {state}"
+    # ---------- HEADER ----------
+    header_text = f"{CITY}, {STATE}"
     w, h = draw.textsize(header_text, font=FONT_MEDIUM)
     draw.text(((SCREEN_W - w) // 2, 10), header_text, font=FONT_MEDIUM, fill=0)
 
@@ -137,10 +153,10 @@ def render():
 
     # ---------- RIGHT: INFO GRID ----------
     info = [
-        ("windL.png", f"{wind_speed} m/s"),
-        ("pressure.png", f"{pressure} hPa"),
-        ("visibility.png", f"{visibility} mi"),
-        ("humidity.png", f"{humidity}%"),
+        ("windL.png", f"{data['wind_dir']}° {data['wind_kt']} kt"),
+        ("pressure.png", f"{data['pressure_hpa']} hPa"),
+        ("visibility.png", f"{data['visibility_mi']} mi"),
+        ("humidity.png", f"{data['dewpoint_c']}°C"),
         ("sunrise.png", "--"),
         ("sunset.png", "--"),
         ("uvi.png", "--"),
