@@ -49,27 +49,43 @@ def fetch_metar():
         "&hoursBeforeNow=1"
     )
 
-    r = requests.get(url, timeout=10)
-    r.raise_for_status()
-
-    root = ET.fromstring(r.text)
-    metar = root.find(".//METAR")
-    if metar is None:
-        raise RuntimeError("No METAR data found")
-
-    def get(tag):
-        el = metar.find(tag)
-        return el.text if el is not None else None
-
-    return {
-        "temp_c": float(get("temp_c")),
-        "dewpoint_c": float(get("dewpoint_c")),
-        "wind_kt": get("wind_speed_kt"),
-        "visibility_mi": get("visibility_statute_mi"),
-        "pressure_hpa": get("sea_level_pressure_mb"),
-        "weather": get("wx_string"),
-        "raw": get("raw_text"),
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; EPaperDashboard/1.0; +https://example.com)"
     }
+
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        r.raise_for_status()
+        root = ET.fromstring(r.text)
+        metar = root.find(".//METAR")
+        if metar is None:
+            raise RuntimeError("No METAR data found")
+
+        def get(tag):
+            el = metar.find(tag)
+            return el.text if el is not None else None
+
+        return {
+            "temp_c": float(get("temp_c")),
+            "dewpoint_c": float(get("dewpoint_c")),
+            "wind_kt": get("wind_speed_kt"),
+            "visibility_mi": get("visibility_statute_mi"),
+            "pressure_hpa": get("sea_level_pressure_mb"),
+            "weather": get("wx_string"),
+            "raw": get("raw_text"),
+        }
+    except Exception as e:
+        print(f"Warning: Failed to fetch METAR data: {e}")
+        # Return dummy data to prevent crashing
+        return {
+            "temp_c": 20.0,
+            "dewpoint_c": 15.0,
+            "wind_kt": "--",
+            "visibility_mi": "--",
+            "pressure_hpa": "--",
+            "weather": None,
+            "raw": "--",
+        }
 
 def c_to_f(c):
     return round(c * 9 / 5 + 32)
