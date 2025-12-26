@@ -1,11 +1,11 @@
-# modules/weather/main.py
+# modules/weather/main.py - WORKING VERSION
 from PIL import Image, ImageDraw, ImageFont
 import requests
 import xml.etree.ElementTree as ET
 
 SCREEN_W, SCREEN_H = 800, 480
 
-# Font setup (keep your existing font code)
+# Font setup
 try:
     FONT_LARGE = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 80)
     FONT_MEDIUM = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 32)
@@ -15,20 +15,19 @@ except Exception:
     FONT_MEDIUM = ImageFont.load_default()
     FONT_SMALL = ImageFont.load_default()
 
-# METAR DATA FETCH
 def fetch_metar(station="KSFO"):
-    """GET THE FUCKING METAR DATA"""
+    """Get METAR XML data"""
     url = f"https://aviationweather.gov/api/data/metar?ids={station}&format=xml"
     try:
         r = requests.get(url, timeout=10)
         r.raise_for_status()
         return r.text
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f"METAR fetch error: {e}")
         return None
 
 def parse_metar(xml_text):
-    """PARSE THE METAR XML"""
+    """Parse METAR XML to dict"""
     if not xml_text:
         return None
     
@@ -45,64 +44,90 @@ def parse_metar(xml_text):
         return {
             "raw_text": get_text("raw_text"),
             "temp_c": get_text("temp_c"),
-            "dewpoint_c": get_text("dewpoint_c"),
             "wind_speed_kt": get_text("wind_speed_kt"),
             "wind_gust_kt": get_text("wind_gust_kt"),
             "wind_dir_degrees": get_text("wind_dir_degrees"),
             "visibility_statute_mi": get_text("visibility_statute_mi"),
             "sea_level_pressure_mb": get_text("sea_level_pressure_mb"),
             "altim_in_hg": get_text("altim_in_hg"),
-            "wx_string": get_text("wx_string"),
-            "flight_category": get_text("flight_category")
+            "wx_string": get_text("wx_string")
         }
     except Exception as e:
-        print(f"PARSE ERROR: {e}")
+        print(f"XML parse error: {e}")
         return None
 
-# RENDER FUNCTION (YOU NEED THIS)
+# RENDER FUNCTION - THIS IS WHAT YOUR FLASK APP CALLS
 def render():
-    """RENDER FUNCTION - FIXED"""
-    # Get the fucking data
+    """Create weather display image - called by Flask app"""
+    # Fetch and parse data
     xml_data = fetch_metar("KSFO")
-    metar = parse_metar(xml_data) if xml_data else None
+    metar = parse_metar(xml_data)
     
-    # Create image
+    # Create blank image
     img = Image.new("1", (SCREEN_W, SCREEN_H), 1)  # White background
     draw = ImageDraw.Draw(img)
     
-    # Show what we got
-    if metar:
-        # Print the raw METAR to console
-        print(f"RAW METAR: {metar.get('raw_text')}")
-        
-        # Draw on image
-        header = "KSFO San Francisco, CA"
+    if metar and metar.get("raw_text"):
+        # Draw weather info
+        header = "KSFO San Francisco"
         w, _ = draw.textsize(header, font=FONT_MEDIUM)
-        draw.text(((SCREEN_W - w) // 2, 5), header, font=FONT_MEDIUM, fill=0)
+        draw.text(((SCREEN_W - w) // 2, 20), header, font=FONT_MEDIUM, fill=0)
         
-        temp_c = metar.get("temp_c")
-        if temp_c:
-            temp_f = round(float(temp_c) * 9/5 + 32)
-            draw.text((50, 100), f"Temp: {temp_f}°F", font=FONT_LARGE, fill=0)
+        # Temperature
+        if metar.get("temp_c"):
+            temp_f = round(float(metar["temp_c"]) * 9/5 + 32)
+            temp_text = f"{temp_f}°F"
+            w, h = draw.textsize(temp_text, font=FONT_LARGE)
+            draw.text(((SCREEN_W - w) // 2, 100), temp_text, font=FONT_LARGE, fill=0)
         
-        wind = f"{metar.get('wind_dir_degrees', '--')}° @ {metar.get('wind_speed_kt', '--')} kt"
-        draw.text((50, 200), f"Wind: {wind}", font=FONT_SMALL, fill=0)
+        # Wind
+        wind_text = f"Wind: {metar.get('wind_dir_degrees', '--')}° @ {metar.get('wind_speed_kt', '--')}kt"
+        if metar.get("wind_gust_kt"):
+            wind_text += f" G{metar['wind_gust_kt']}kt"
+        draw.text((50, 220), wind_text, font=FONT_SMALL, fill=0)
         
-        draw.text((50, 250), f"RAW: {metar.get('raw_text', '--')}", font=FONT_SMALL, fill=0)
+        # Visibility and pressure
+        vis_text = f"Vis: {metar.get('visibility_statute_mi', '--')}mi"
+        press_text = f"Press: {metar.get('altim_in_hg', '--')}inHg"
+        draw.text((50, 260), vis_text, font=FONT_SMALL, fill=0)
+        draw.text((50, 290), press_text, font=FONT_SMALL, fill=0)
+        
+        # Raw METAR at bottom
+        raw = metar.get("raw_text", "")[:60] + "..." if len(metar.get("raw_text", "")) > 60 else metar.get("raw_text", "")
+        draw.text((50, 350), f"RAW: {raw}", font=FONT_SMALL, fill=0)
+        
+        # Weather condition
+        if metar.get("wx_string"):
+            draw.text((50, 180), f"Weather: {metar['wx_string']}", font=FONT_SMALL, fill=0)
     else:
-        draw.text((100, 200), "NO METAR DATA", font=FONT_LARGE, fill=0)
+        # No data
+        error_text = "NO METAR DATA"
+        w, h = draw.textsize(error_text, font=FONT_LARGE)
+        draw.text(((SCREEN_W - w) // 2, SCREEN_H // 2 - h // 2), error_text, font=FONT_LARGE, fill=0)
     
     return img
 
-# TEST
+# Test the module
 if __name__ == "__main__":
-    # Fetch and print data
-    data = fetch_metar("KSFO")
-    if data:
-        print("METAR XML:")
-        print(data[:500] + "..." if len(data) > 500 else data)
+    print("Testing weather module...")
+    
+    # Test fetch
+    xml = fetch_metar()
+    if xml:
+        print("✓ METAR fetch successful")
+        
+        # Test parse
+        data = parse_metar(xml)
+        if data:
+            print(f"✓ Parsed METAR: {data.get('raw_text', 'No raw text')}")
+            print(f"✓ Temperature: {data.get('temp_c', 'N/A')}°C")
+            print(f"✓ Wind: {data.get('wind_dir_degrees', 'N/A')}° @ {data.get('wind_speed_kt', 'N/A')}kt")
+        else:
+            print("✗ Failed to parse METAR")
+    else:
+        print("✗ Failed to fetch METAR")
     
     # Test render
     image = render()
-    image.save("test.png")
-    print("Image saved as test.png")
+    image.save("weather_test.png")
+    print("✓ Render test saved as weather_test.png")
