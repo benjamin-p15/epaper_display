@@ -5,7 +5,9 @@ import time
 import os
 
 from driver import init_display, display_image
-from modules.clock.main import clock
+
+# FIX: import the module as `clock`
+from modules.clock import main as clock
 from modules.weather import weather
 
 # ================= CONFIG =================

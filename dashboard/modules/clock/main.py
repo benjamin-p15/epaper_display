@@ -110,8 +110,10 @@ def render():
     draw.text((x, 320), day_str, font=FONT_MEDIUM, fill=0)
 
     lines = holiday_text.split("\n")
-    total_h = sum(draw.textsize(l, FONT_HOLIDAY if i == 0 else FONT_DAYS)[1]
-                  for i, l in enumerate(lines))
+    total_h = sum(
+        draw.textsize(l, FONT_HOLIDAY if i == 0 else FONT_DAYS)[1]
+        for i, l in enumerate(lines)
+    )
 
     y = 480 - total_h - 20
     for i, line in enumerate(lines):
