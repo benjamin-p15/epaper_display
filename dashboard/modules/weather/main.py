@@ -1,16 +1,15 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 import requests
-import xml.etree.ElementTree as ET
-from math import radians, cos, sin, asin, sqrt
 import csv
+from math import radians, cos, sin, asin, sqrt
 
 # ================= CONFIG =================
 SCREEN_W, SCREEN_H = 800, 480
 ICON_DIR = os.path.join(os.path.dirname(__file__), "icons")
 AIRPORTS_FILE = os.path.join(os.path.dirname(__file__), "airports.csv")  # CSV: ICAO,lat,lon,city,state
 
-# Optional proxy configuration
+# Optional proxy configuration (if needed)
 PROXY = {
     # "http": "http://IP:PORT",
     # "https": "http://IP:PORT"
@@ -27,11 +26,12 @@ except:
     FONT_SMALL = ImageFont.load_default()
 
 # ================= ICON LOADING =================
-def load_icon_bw(path, size=None):
+def load_icon_bw(name, size=None):
+    path = os.path.join(ICON_DIR, name)
     if not os.path.exists(path):
         return None
     img = Image.open(path).convert("RGBA")
-    bw = Image.new("1", img.size, 1)  # white background
+    bw = Image.new("1", img.size, 1)  # white
     for y in range(img.height):
         for x in range(img.width):
             r, g, b, a = img.getpixel((x, y))
@@ -41,18 +41,18 @@ def load_icon_bw(path, size=None):
         bw = bw.resize(size)
     return bw
 
-# ================= HELPER FUNCTIONS =================
+# ================= HELPERS =================
 def haversine(lat1, lon1, lat2, lon2):
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
     dlon = lon2 - lon1
     dlat = lat2 - lat1
     a = sin(dlat/2)**2 + cos(lat1)*cos(lat2)*sin(dlon/2)**2
-    return 6371 * 2 * asin(sqrt(a))  # distance in km
+    return 6371 * 2 * asin(sqrt(a))  # km
 
 def get_location():
     try:
-        ip_info = requests.get("https://ipinfo.io/json", timeout=5).json()
-        loc = ip_info["loc"].split(",")
+        r = requests.get("https://ipinfo.io/json", timeout=5)
+        loc = r.json().get("loc", "").split(",")
         return float(loc[0]), float(loc[1])
     except:
         return None, None
@@ -74,53 +74,55 @@ def find_nearest_airport(lat, lon):
 
 # ================= METAR FETCH =================
 def fetch_metar(station):
+    """
+    Use the Aviation Weather API to fetch JSON METAR data.
+    Never crashes; falls back gracefully with defaults.
+    """
     url = (
-        "https://aviationweather.gov/adds/dataserver_current/httpparam"
-        "?dataSource=metars&requestType=retrieve&format=xml"
-        f"&stationString={station}&hoursBeforeNow=1"
+        "https://aviationweather.gov/api/data/metar"
+        f"?ids={station}&format=json&mostRecent=true"
     )
     headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-            " AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0 Safari/537.36"
-        )
+        "User-Agent": "weather-display/1.0"
     }
+
     try:
         r = requests.get(url, headers=headers, proxies=PROXY if PROXY else None, timeout=10)
         r.raise_for_status()
-        root = ET.fromstring(r.text)
-        metar = root.find(".//METAR")
-        if metar is None:
-            raise RuntimeError("No METAR data found")
-        def get(tag):
-            el = metar.find(tag)
-            return el.text if el is not None else None
-        return {
-            "temp_c": float(get("temp_c")),
-            "dewpoint_c": float(get("dewpoint_c")),
-            "wind_kt": get("wind_speed_kt") or "--",
-            "wind_dir": get("wind_dir_degrees") or "--",
-            "visibility_mi": get("visibility_statute_mi") or "--",
-            "pressure_hpa": get("sea_level_pressure_mb") or "--",
-            "weather": get("wx_string"),
-            "raw": get("raw_text") or "--",
-            "obs_time": get("observation_time") or "--"
-        }
+        j = r.json()
+        metars = j.get("data", [])
+        report = metars[0] if metars else {}
     except Exception as e:
-        print(f"Failed to fetch METAR data: {e}")
-        return None
+        print(f"METAR fetch error: {e}")
+        report = {}
+
+    def sf(k, default=None):
+        v = report.get(k)
+        return v if v not in (None, "") else default
+
+    return {
+        "temp_c": float(sf("temp_c", 20)),
+        "dewpoint_c": float(sf("dewpoint_c", 20)),
+        "wind_kt": sf("wind_speed_kt", "--"),
+        "wind_dir": sf("wind_dir_degrees", "--"),
+        "visibility_mi": sf("visibility_statute_mi", "--"),
+        "pressure_hpa": sf("sea_level_pressure_mb", "--"),
+        "weather": sf("wx_string", ""),
+        "raw": sf("raw_text", "--"),
+        "obs_time": sf("observation_time", "--")
+    }
 
 def c_to_f(c):
-    return round(c*9/5+32)
+    return round(c * 9/5 + 32)
 
 def choose_weather_icon(wx):
     if not wx: return "01d.png"
-    wx = wx.lower()
-    if "ts" in wx: return "11d.png"
-    if "snow" in wx: return "13d.png"
-    if "rain" in wx: return "09d.png"
-    if "mist" in wx or "fog" in wx: return "50d.png"
-    if "cloud" in wx or "ovc" in wx: return "04d.png"
+    w = wx.lower()
+    if "ts" in w: return "11d.png"
+    if "snow" in w: return "13d.png"
+    if "rain" in w: return "09d.png"
+    if "mist" in w or "fog" in w: return "50d.png"
+    if "cloud" in w or "ovc" in w: return "04d.png"
     return "01d.png"
 
 # ================= RENDER =================
@@ -128,16 +130,14 @@ def render():
     lat, lon = get_location()
     station, city, state = find_nearest_airport(lat, lon)
     data = fetch_metar(station)
-    if data is None:
-        print("Failed to fetch METAR data. Exiting render.")
-        return None
 
-    print(f"Station: {station}, City: {city}, State: {state}")
-    print("METAR data:", data)
+    print(f"Weather @ {station} ({city}, {state})")
+    print(data)
 
     temp_f = c_to_f(data["temp_c"])
-    feels_f = c_to_f(data["dewpoint_c"])
-    main_icon_name = choose_weather_icon(data["weather"])
+    dew_f = c_to_f(data["dewpoint_c"])
+    icon_name = choose_weather_icon(data["weather"])
+    icon = load_icon_bw(icon_name, (150, 150))
 
     img = Image.new("1", (SCREEN_W, SCREEN_H), 1)
     draw = ImageDraw.Draw(img)
@@ -147,4 +147,21 @@ def render():
     w, h = draw.textsize(header, font=FONT_MEDIUM)
     draw.text(((SCREEN_W - w)//2, 10), header, font=FONT_MEDIUM, fill=0)
 
-    # Main icon a
+    # Icon
+    if icon:
+        img.paste(icon, ((SCREEN_W - icon.width)//2, 60))
+
+    # Temperature
+    temp_text = f"{temp_f}°F"
+    w, h = draw.textsize(temp_text, font=FONT_LARGE)
+    draw.text(((SCREEN_W - w)//2, 230), temp_text, font=FONT_LARGE, fill=0)
+
+    # Extra data
+    info_y = 320
+    draw.text((50, info_y), f"Feels: {dew_f}°F", font=FONT_SMALL, fill=0)
+    draw.text((50, info_y + 30), f"Wind: {data['wind_dir']}° @ {data['wind_kt']} kt", font=FONT_SMALL, fill=0)
+    draw.text((50, info_y + 60), f"Vis: {data['visibility_mi']} mi", font=FONT_SMALL, fill=0)
+    draw.text((50, info_y + 90), f"Pressure: {data['pressure_hpa']} hPa", font=FONT_SMALL, fill=0)
+    draw.text((50, info_y + 120), f"Raw: {data['raw']}", font=FONT_SMALL, fill=0)
+
+    return img
