@@ -3,7 +3,6 @@ import os
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime
-import random
 
 # ================= CONFIG =================
 SCREEN_W, SCREEN_H = 800, 480
@@ -55,8 +54,15 @@ def fetch_metar(station=STATION):
         f"&stationString={station}"
         "&hoursBeforeNow=1"
     )
+
     headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; EPaperDashboard/1.0)"
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/121.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Referer": "https://aviationweather.gov/metar",
     }
 
     try:
@@ -90,7 +96,7 @@ def fetch_metar(station=STATION):
             "pressure_hpa": pressure_hpa or "--",
             "weather": weather,
             "raw": raw or "--",
-            "observation_time": obs_time,
+            "observation_time": obs_time or "--",
         }
 
     except Exception as e:
@@ -111,6 +117,7 @@ def c_to_f(c):
     return round(c * 9 / 5 + 32)
 
 def choose_weather_icon(wx):
+    """Select icon name based on weather string"""
     if not wx:
         return "01d.png"
     wx = wx.lower()
