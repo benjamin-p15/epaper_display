@@ -39,56 +39,60 @@
     <canvas id="image-preview" style="max-width: 400px; display:none; margin-top: 10px;"></canvas>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const uploadButton = document.getElementById('upload-button');
-            const fileInput = document.getElementById('image-input');
-            const slider = document.getElementById('image-slider');
-            const canvas = document.getElementById('image-preview');
-            const ctx = canvas.getContext('2d');
-            let imgElement = new Image();
+        const fileInput = document.getElementById("image-input");
+        const canvas = document.getElementById("image-preview");
+        const ctx = canvas.getContext("2d");
+        const slider = document.getElementById("image-slider");
+        let imgElement = new Image();
+        let imgData = null;
         
-            // Open file picker
-            uploadButton.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener("change", () => {
+            const file = fileInput.files[0];
+            if (!file) return;
         
-            // Load selected image
-            fileInput.addEventListener('change', () => {
-                const file = fileInput.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        imgElement.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+            const reader = new FileReader();
+            reader.onload = e => {
+                imgElement.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
         
-            // Draw image with brightness adjustment
-            function drawPreview(brightnessPercent) {
-                canvas.width = imgElement.width;
-                canvas.height = imgElement.height;
-                ctx.drawImage(imgElement, 0, 0);
-                let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                let data = imageData.data;
-                const factor = brightnessPercent / 100; // 100 = original, <100 darker, >100 brighter
+        imgElement.onload = () => {
+            // Match canvas resolution to e-paper display
+            canvas.width = 800;
+            canvas.height = 480;
         
-                for (let i = 0; i < data.length; i += 4) {
-                    // Convert to grayscale
-                    let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-                    gray = gray * factor;
-                    gray = Math.min(255, Math.max(0, gray));
-                    data[i] = data[i + 1] = data[i + 2] = gray;
-                }
+            // Draw original image resized to e-paper
+            ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
         
-                ctx.putImageData(imageData, 0, 0);
-                canvas.style.display = "block";
+            // Save image data for processing
+            imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            renderPreview();
+        };
+        
+        slider.addEventListener("input", renderPreview);
+        
+        function renderPreview() {
+            if (!imgData) return;
+        
+            const data = new Uint8ClampedArray(imgData.data); // copy original
+            const threshold = parseInt(slider.value);
+        
+            // Simple dithering-like mapping for gray pixels
+            for (let i = 0; i < data.length; i += 4) {
+                // Convert to grayscale
+                let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        
+                // Map to threshold (similar to your epaper threshold)
+                if (gray < threshold) gray = 0;
+                else if (gray > 255) gray = 255;
+        
+                data[i] = data[i + 1] = data[i + 2] = gray;
             }
         
-            // Redraw when slider changes
-            slider.addEventListener('input', () => drawPreview(slider.value));
-        
-            // Draw once image is loaded
-            imgElement.onload = () => drawPreview(slider.value);
-        });
+            const preview = new ImageData(data, canvas.width, canvas.height);
+            ctx.putImageData(preview, 0, 0);
+        }
         </script>
 </body>
 </html>
