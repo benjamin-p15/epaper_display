@@ -61,6 +61,7 @@ def render():
 
         if(_cache_img is None): return None, False
         else: return _cache_img, True 
+    return None, False
 
 # Get metter from a specific airport
 def fetch_metar(icao_code):
