@@ -27,14 +27,16 @@ def render():
 
     return _cache, False  # no update needed
 
-def _generate_weather_image():
-    """
-    Generates an 800x480 white image with centered black text.
-    """
-    # Small image with text
-    text_img = Image.new("1", (TEXT_IMG_WIDTH, TEXT_IMG_HEIGHT), color=1)  # 1 = white
-    draw = ImageDraw.Draw(text_img)
+from PIL import Image, ImageDraw, ImageFont
 
+DISPLAY_WIDTH = 800
+DISPLAY_HEIGHT = 480
+TEXT_IMG_WIDTH = 200
+TEXT_IMG_HEIGHT = 100
+
+def _generate_weather_image():
+    text_img = Image.new("1", (TEXT_IMG_WIDTH, TEXT_IMG_HEIGHT), color=1)  # white
+    draw = ImageDraw.Draw(text_img)
     text = "Hello World"
     try:
         font = ImageFont.truetype(
@@ -49,11 +51,10 @@ def _generate_weather_image():
     y = (TEXT_IMG_HEIGHT - text_height) // 2
     draw.text((x, y), text, fill=0, font=font)  # black text
 
-    # Full display canvas
+    # Full canvas
     img_full = Image.new("1", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=1)  # white
-    # Paste small image centered
     paste_x = (DISPLAY_WIDTH - TEXT_IMG_WIDTH) // 2
     paste_y = (DISPLAY_HEIGHT - TEXT_IMG_HEIGHT) // 2
     img_full.paste(text_img, (paste_x, paste_y))
-
     return img_full
+
