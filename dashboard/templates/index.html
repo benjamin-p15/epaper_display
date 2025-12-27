@@ -28,24 +28,31 @@
     </script>
 
     <form id="image-form" action="/display_image" method="post" enctype="multipart/form-data">
-        <input type="file" name="image" id="image-input" style="display:none">
-        <button type="button" id="upload-button">Upload image</button>
-    </form>
+        <input type="file" name="image" id="image-input" style="display:none" required>
+        <button type="button" id="upload-button">Choose Image</button>
+        <button type="submit">Submit Image</button>
+    </form>   
+
+    <img id="image-preview" src="" alt="Preview" style="max-width: 400px; display:none; margin-top: 10px;">
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const uploadButton = document.getElementById('upload-button');
             const fileInput = document.getElementById('image-input');
-            uploadButton.addEventListener('click', () => {fileInput.click();});
+            const preview = document.getElementById('image-preview');
+            uploadButton.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', () => {
-                const formData = new FormData(document.getElementById('image-form'));
-                fetch('/display_image', {
-                    method: 'POST',
-                    body: formData
-                }).then(res => console.log("Image uploaded"))
-                .catch(err => console.error(err));
+                const file = fileInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                }
             });
         });
-    </script>
+        </script>
 </body>
 </html>
