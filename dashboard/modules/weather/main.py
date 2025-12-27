@@ -13,10 +13,12 @@ def render():
         _cache_img = Image.new("1", (800, 480), color=1)
         _last_update = now
         return _cache_img, True  
-    return _cache_img, False 
-
+    
     metar_data = fetch_metar("KSFO")
     print(metar_data)
+
+
+    return _cache_img, False 
 
 def fetch_metar(icao_codes):
     # Join the list into a comma-separated string
