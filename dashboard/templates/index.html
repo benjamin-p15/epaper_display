@@ -32,9 +32,12 @@
     <button type="button" id="upload-button">Choose Image</button>
     <button type="submit">Submit Image</button>
     </form>
+    
     <label for="image-slider">Gray Level:</label>
     <input type="range" id="image-slider" min="0" max="255" value="128">
+    
     <canvas id="image-preview" style="max-width:400px;display:none;margin-top:10px;"></canvas>
+    
     <script>
     const fileInput=document.getElementById("image-input");
     const canvas=document.getElementById("image-preview");
@@ -42,37 +45,53 @@
     const slider=document.getElementById("image-slider");
     let imgElement=new Image();
     let imgData=null;
+    
     document.getElementById("upload-button").addEventListener("click",()=>fileInput.click());
+    
     fileInput.addEventListener("change",()=>{
-    const file=fileInput.files[0];
-    if(!file)return;
-    const reader=new FileReader();
-    reader.onload=e=>{imgElement.src=e.target.result};
-    reader.readAsDataURL(file);
+        const file=fileInput.files[0];
+        if(!file)return;
+        const reader=new FileReader();
+        reader.onload=e=>{imgElement.src=e.target.result};
+        reader.readAsDataURL(file);
     });
+    
     imgElement.onload=()=>{
-    canvas.style.display="block";
-    canvas.width=800;
-    canvas.height=480;
-    ctx.drawImage(imgElement,0,0,canvas.width,canvas.height);
-    imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
-    renderPreview();
+        canvas.style.display="block";
+        canvas.width=800;
+        canvas.height=480;
+        ctx.drawImage(imgElement,0,0,canvas.width,canvas.height);
+        imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+        renderPreview();
     };
+    
     slider.addEventListener("input",renderPreview);
+    
+    const bayerMatrix=[
+    [0, 128],
+    [192, 64]
+    ];
+    
+    function getThreshold(x,y,level){
+        const m=bayerMatrix[y % 2][x % 2];
+        return (m/255) * level;
+    }
+    
     function renderPreview(){
-    if(!imgData)return;
-    const data=new Uint8ClampedArray(imgData.data);
-    const level=parseInt(slider.value)/255;
-    for(let y=0;y<canvas.height;y++){
-    for(let x=0;x<canvas.width;x++){
-    const i=(y*canvas.width+x)*4;
-    let gray=(0.299*data[i]+0.587*data[i+1]+0.114*data[i+2])/255;
-    const rand=Math.random();
-    const bw=gray<rand*level?0:255;
-    data[i]=data[i+1]=data[i+2]=bw;
-    data[i+3]=255;
-    }}
-    ctx.putImageData(new ImageData(data,canvas.width,canvas.height),0,0);
+        if(!imgData)return;
+        const data=new Uint8ClampedArray(imgData.data);
+        const level=parseInt(slider.value);
+        for(let y=0;y<canvas.height;y++){
+            for(let x=0;x<canvas.width;x++){
+                const i=(y*canvas.width+x)*4;
+                const gray=(0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]);
+                const threshold=getThreshold(x,y,level);
+                const bw=gray<threshold?0:255;
+                data[i]=data[i+1]=data[i+2]=bw;
+                data[i+3]=255;
+            }
+        }
+        ctx.putImageData(new ImageData(data,canvas.width,canvas.height),0,0);
     }
     </script>
     
