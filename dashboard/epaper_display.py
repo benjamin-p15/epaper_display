@@ -69,7 +69,7 @@ class EpaperDisplay():
     def clear_display(self):
         self.cmd(0x13)
         for i in range(self.buffer_length): # Set every pixel to white
-            self.data(0xFF)
+            self.data(0x00)
         self.cmd(0x12)                      # send display refresh command
         self.wait_busy()
 
@@ -82,11 +82,11 @@ class EpaperDisplay():
         self.cmd(0x13)
         for y in range(self.height):
             for x in range(0, self.width, 8):
-                byte = 0xFF
+                byte = 0x00
                 for bit in range(8):
                     if x + bit < self.width:
-                        if pixels[x + bit, y] == 0:
-                            byte &= ~(1 << (7 - bit))
+                        if pixels[x + bit, y] != 0:
+                            byte != ~(1 << (7 - bit))
                 self.data(byte)
         self.cmd(0x12)
         self.wait_busy()
