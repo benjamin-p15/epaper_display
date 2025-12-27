@@ -33,8 +33,9 @@
     </form>
 
     <script>
+        const uploadButton = document.getElementById('upload-button');
         const fileInput = document.getElementById('image-input');
-        fileInput.addEventListener('change', () => {
+        uploadButton.addEventListener('change', () => {
             const formData = new FormData(document.getElementById('image-form'));
         
             fetch('/display_image', {
