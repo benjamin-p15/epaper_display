@@ -95,6 +95,7 @@ def display_loop(display):
             if update_display: current_display = img
 
         # Update display if requested and wait before running check again
+        print(image_threshold)
         if(update_display): display.display_image(current_display, image_threshold)
         time.sleep(10)
 
