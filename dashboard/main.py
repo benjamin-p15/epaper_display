@@ -10,10 +10,11 @@ from epaper_display import EpaperDisplay
 from modules.clock import main as clock
 from modules.weather import main2 as weather
 
+current_layout = None
+
 def start_dashboard():
     # Setup a blank flask website
     app = Flask(__name__)
-    current_layout = "none"
 
     # Register incomming web requests 
     @app.route("/")
@@ -25,7 +26,7 @@ def start_dashboard():
     @app.route("/set_layout", methods=["POST"])
     def set_layout():
         # When buttons are clicked saved thier changed state
-        nonlocal current_layout
+        global current_layout
         layout = request.form.get("layout")
         if layout in ("time", "weather", "image"):
             current_layout = layout
