@@ -102,7 +102,6 @@ def main():
     
     # Create background thread that starts and runs website
     threading.Thread(target=display_loop, args=(display,), daemon=True).start()
-    start_dashboard()
 
     display_loop(display)
 
