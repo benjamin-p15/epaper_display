@@ -37,13 +37,6 @@ def start_dashboard():
             return f"Layout set to {layout}"
         return "Invalid layout", 400
     
-    @app.route("/threshold", methods=["POST"])
-    def set_threshold():
-        # When image is changed also record image threshold
-        global image_threshold
-        image_threshold = request.form.get("threshold")
-        return f"Threshold set to {image_threshold}", 200
-    
     # Images require a speical server state /display_image which it's interactions is handled here
     @app.route("/display_image", methods=["POST"])
     def download_image():
@@ -54,6 +47,10 @@ def start_dashboard():
         file = request.files["image"]
         if file.filename == "":
             return "Empty filename", 400
+        
+        # Read threshold from the hidden input
+        image_threshold = int(request.form.get("threshold", 128))
+        print("Threshold received:", image_threshold)
 
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
