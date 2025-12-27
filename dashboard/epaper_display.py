@@ -89,7 +89,7 @@ class EpaperDisplay():
                 for bit in range(8):
                     if x + bit >= self.width:
                         continue
-                    if pixels[x + bit, y] > 0:
+                    if pixels[x + bit, y] < 180:
                         byte &= ~(1 << (7 - bit))
                 self.data(byte)
         self.cmd(0x12)
