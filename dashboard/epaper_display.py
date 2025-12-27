@@ -15,6 +15,7 @@ class EpaperDisplay():
         self.spi.open(0, 0)                  # Set spi modes
         self.spi.max_speed_hz = 2_000_000    # Set max spi pin speed
         self.spi.mode = 0b00                 # Set clock mode
+        self.clear_color = 0x00              # Set screen clear color
 
         # Setup used pi pins and initalize them
         self.DC_pin=25
@@ -63,13 +64,13 @@ class EpaperDisplay():
         self.data(0x01)
         self.data(0xE0)
         self.cmd(0x15) 
-        self.data(0x00)
+        self.data(self.clear_color)
     
     # Clear display by changing it to white
     def clear_display(self):
         self.cmd(0x13)
         for i in range(self.buffer_length): # Set every pixel to white
-            self.data(0x00)
+            self.data(self.clear_color)
         self.cmd(0x12)                      # send display refresh command
         self.wait_busy()
 
@@ -82,7 +83,7 @@ class EpaperDisplay():
         self.cmd(0x13)
         for y in range(self.height):
             for x in range(0, self.width, 8):
-                byte = 0x00
+                byte = self.clear_color
                 for bit in range(8):
                     if x + bit < self.width:
                         if pixels[x + bit, y] != 0:
