@@ -62,20 +62,21 @@
                 }
             });
         
-            // Draw image with threshold effect
-            function drawPreview(threshold) {
+            // Draw image with brightness adjustment
+            function drawPreview(brightnessPercent) {
                 canvas.width = imgElement.width;
                 canvas.height = imgElement.height;
                 ctx.drawImage(imgElement, 0, 0);
                 let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 let data = imageData.data;
+                const factor = brightnessPercent / 100; // 100 = original, <100 darker, >100 brighter
         
                 for (let i = 0; i < data.length; i += 4) {
                     // Convert to grayscale
                     let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-                    // Apply threshold mapping similar to e-paper display
-                    let value = gray < threshold ? 0 : 255;
-                    data[i] = data[i + 1] = data[i + 2] = value;
+                    gray = gray * factor;
+                    gray = Math.min(255, Math.max(0, gray));
+                    data[i] = data[i + 1] = data[i + 2] = gray;
                 }
         
                 ctx.putImageData(imageData, 0, 0);
