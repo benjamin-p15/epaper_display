@@ -34,7 +34,7 @@ def render():
             location_data.update({'latitude': latitude,'longitude': longitude, 'city': city,'region': region})
         
         if any(location_data[key] is None for key in ['airport', 'airport_distance']):
-            airports_csv = os.path.join(script_directory, "..", "..", "data", "airports.csv")
+            airports_csv = os.path.join(script_directory, "data", "airports.csv")
             airport, airport_distance = find_nearest_airport(location_data['latitude'], location_data['longitude'], airports_csv)
             location_data.update({'airport': airport,'airport_distance': airport_distance})
         
