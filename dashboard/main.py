@@ -50,12 +50,10 @@ def start_dashboard():
         
         # Read threshold from the hidden input
         threshold_str = request.form.get("threshold")
-        print(threshold_str)
         try:
             image_threshold = int(threshold_str)
         except ValueError:
             image_threshold = 128
-        print(image_threshold)
 
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
@@ -98,7 +96,7 @@ def display_loop(display):
 
         # Update display if requested and wait before running check again
         if(update_display): display.display_image(current_display, image_threshold)
-        time.sleep(10)
+        time.sleep(1)
 
 # Startup script when file is ran
 def main():
