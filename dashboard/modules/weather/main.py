@@ -57,7 +57,7 @@ def render():
                 print(f"{key}: {value}")
         
         screen.add_rectangle((200, 50), (100, 50), fill=0)
-        _cache_img=screen.render
+        _cache_img=screen.render()
 
     if(_cache_img is None): return None, False
     else: return _cache_img, True 
