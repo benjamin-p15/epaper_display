@@ -11,7 +11,6 @@ def render():
     # Full screen white canvas
     img = Image.new("1", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=1)  # 1 = white
     draw = ImageDraw.Draw(img)
-
     # Font
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
@@ -24,7 +23,7 @@ def render():
     x = (DISPLAY_WIDTH - text_width) // 2
     y = (DISPLAY_HEIGHT - text_height) // 2
 
-    draw.text((x, y), text, fill=0, font=font)  # 0 = black
+    draw.text((x, y), text, fill=1, font=font)  # 0 = black
 
     return img
 
