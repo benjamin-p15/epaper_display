@@ -3,6 +3,9 @@ import requests
 import math
 import time
 import csv
+import os
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
 
 _last_update = 0
 _cache_img = None
@@ -16,7 +19,7 @@ location_data = {
 }
 
 def render():
-    global _last_update, _cache_img
+    global _last_update, _cache_img, script_directory
     now = time.time()
     if _cache_img is None or now - _last_update >= 5 * 60:
         _cache_img = Image.new("1", (800, 480), color=1)
@@ -31,7 +34,8 @@ def render():
             location_data.update({'latitude': latitude,'longitude': longitude, 'city': city,'region': region})
         
         if any(location_data[key] is None for key in ['airport', 'airport_distance']):
-            airport, airport_distance = find_nearest_airport(location_data['latitude'], location_data['longitude'])
+            airports_csv = os.path.join(script_directory, "..", "..", "data", "airports.csv")
+            airport, airport_distance = find_nearest_airport(location_data['latitude'], location_data['longitude'], airports_csv)
             location_data.update({'airport': airport,'airport_distance': airport_distance})
         
         print(f"latitude: {location_data['latitude']}")
@@ -99,7 +103,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 # Finds closest airport to a location
-def find_nearest_airport(latitude, longitude, airports_csv="data/airports.csv"):
+def find_nearest_airport(latitude, longitude, airports_csv):
     # Airport types and used variables
     valid_types = {"small_airport", "medium_airport", "large_airport"}
     nearest_airport = None
