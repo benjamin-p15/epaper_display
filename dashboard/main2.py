@@ -4,11 +4,11 @@ import threading
 import time
 import os
 
-from dashboard.driver2 import init_display, display_image
+from driver2 import init_display, display_image
 
 # FIX: import the module as `clock`
-from dashboard.modules.clock import main2 as clock
-from dashboard.modules.weather import main2 as weather
+from modules.clock import main2 as clock
+from modules.weather import main2 as weather
 
 # ================= CONFIG =================
 CLOCK_CHECK_INTERVAL = 5        # seconds
