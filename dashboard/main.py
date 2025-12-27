@@ -76,7 +76,7 @@ def display_loop(display):
         update_display = False
 
         # Depending on what layout is selected run indavidual classes which have thier own built in timing circuits
-        if(current_layout=="time"):
+        if(current_layout=="image"):
             if(update_state==True):
                 update_state=False
                 img, update_display = image.render()
