@@ -37,6 +37,25 @@ def start_dashboard():
             return f"Layout set to {layout}"
         return "Invalid layout", 400
     
+    @app.route("/display_image", methods=["POST"])
+    def display_image():
+        global current_layout, update_state
+
+        if "image" not in request.files:
+            return "No image uploaded", 400
+
+        file = request.files["image"]
+        if file.filename == "":
+            return "Empty filename", 400
+
+        img = Image.open(file.stream).convert("1")
+
+        image.set_image(img)      # save image in module
+        current_layout = "image"  # switch layout
+        update_state = True       # force refresh
+
+        return "Image uploaded", 200
+    
     # Start the web server
     app.run(host="0.0.0.0", port=5000)
 
@@ -57,12 +76,12 @@ def display_loop(display):
         update_display = False
 
         # Depending on what layout is selected run indavidual classes which have thier own built in timing circuits
-        if(update_state==True):
-            update_state=False
-            if(current_layout=="image"):
-                img, update_display = time.render()
+        if(current_layout=="time"):
+            if(update_state==True):
+                update_state=False
+                img, update_display = image.render()
                 if update_display: current_display = img
-        if(current_layout=="weather"):
+        elif(current_layout=="weather"):
             img, update_display = weather.render()
             if update_display: current_display = img
         elif(current_layout=="clock"):
