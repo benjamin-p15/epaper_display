@@ -22,6 +22,10 @@ def render():
         _cache_img = Image.new("1", (800, 480), color=1)
         _last_update = now
 
+        import os
+        print(f"Current directory: {os.getcwd()}")
+        print(f"File exists: {os.path.exists('data/airports.csv')}")
+
         if any(location_data[key] is None for key in ['latitude', 'longitude', 'city', 'region']):
             latitude, longitude, city, region = get_current_location()
             location_data.update({'latitude': latitude,'longitude': longitude, 'city': city,'region': region})
