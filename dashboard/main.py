@@ -6,8 +6,6 @@ import time
 import os
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
-
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
 from modules.clock import main as clock
@@ -52,8 +50,7 @@ def start_dashboard():
             return "Empty filename", 400
         
         # Read threshold from the hidden input
-        image_threshold = int(request.form.get("threshold", 128))
-        logging.info(f"Received image upload with threshold: {image_threshold}")
+        image_threshold = int(request.form.get("threshold"))
         
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
