@@ -51,6 +51,7 @@ def start_dashboard():
         
         # Read threshold from the hidden input
         image_threshold = int(request.form.get("threshold"))
+        print("test")
         
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
@@ -58,7 +59,6 @@ def start_dashboard():
         current_layout = "image" 
         update_state = True
         return "Image uploaded", 200
-    
     # Start the web server
     app.run(host="0.0.0.0", port=5000)
 
@@ -103,7 +103,8 @@ def main():
     display.initalize_display()
     
     # Create background thread that starts and runs website
-    threading.Thread(target=start_dashboard, daemon=True).start()
+    threading.Thread(target=display_loop, args=(display,), daemon=True).start()
+    start_dashboard()
 
     display_loop(display)
 
