@@ -104,9 +104,11 @@ def main():
     display.initalize_display()
     
     # Create background thread that starts and runs website
-    threading.Thread(target=start_dashboard, daemon=True).start()
+    #threading.Thread(target=start_dashboard, daemon=True).start()
+    threading.Thread(target=display_loop, args=(display,), daemon=True).start()
 
-    display_loop(display)
+    #display_loop(display)
+    start_dashboard()
 
 if __name__ == "__main__":
     main()
