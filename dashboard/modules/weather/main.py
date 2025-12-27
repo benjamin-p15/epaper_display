@@ -25,7 +25,7 @@ def render():
 
     draw.text((x, y), text, fill=1, font=font)  # 0 = black
 
-    return img
+    return img, True
 
 # Test the module
 if __name__ == "__main__":
