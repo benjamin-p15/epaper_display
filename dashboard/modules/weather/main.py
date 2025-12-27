@@ -6,30 +6,37 @@ import csv
 
 _last_update = 0
 _cache_img = None
-latitude, longitude, city, region, airport, airport_distance = None 
+location_data = {
+    'latitude': None,
+    'longitude': None,
+    'city': None,
+    'region': None,
+    'airport': None,
+    'airport_distance': None
+}
 
 def render():
-    global _last_update, _cache_img, latitude, longitude, city, region, airport, airport_distance
+    global _last_update, _cache_img
     now = time.time()
     if _cache_img is None or now - _last_update >= 5 * 60:
         _cache_img = Image.new("1", (800, 480), color=1)
         _last_update = now
 
-        if(latitude is None or longitude is None or city is None or region is None):
+        if any(location_data[key] is None for key in ['latitude', 'longitude', 'city', 'region']):
             latitude, longitude, city, region = get_current_location()
-        if(airport is None or airport_distance is None):
-            airport, airport_distance = find_nearest_airport(latitude, longitude)
+            location_data.update({'latitude': latitude,'longitude': longitude, 'city': city,'region': region})
         
-        print(latitude)
-        print(longitude)
-        print(city)
-        print(region)
-        print(airport)
-        print(airport_distance)
+        if any(location_data[key] is None for key in ['airport', 'airport_distance']):
+            airport, airport_distance = find_nearest_airport(location_data['latitude'], location_data['longitude'])
+            location_data.update({'airport': airport,'airport_distance': airport_distance})
+        
+        print(f"latitude: {location_data['latitude']}")
+        print(f"longitude: {location_data['longitude']}")
+        print(f"city: {location_data['city']}")
+        print(f"region: {location_data['region']}")
+        print(f"airport: {location_data['airport']}")
+        print(f"airport_distance: {location_data['airport_distance']}")
 
-
-
-        return _cache_img, True  
     
     #metar_data = fetch_metar(["KSFO"])
     #print(metar_data)
