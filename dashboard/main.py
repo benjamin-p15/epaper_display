@@ -36,7 +36,13 @@ def start_dashboard():
     app.run(host="0.0.0.0", port=5000)
 
 def display_loop(display):
+    last_layout = None
+
     while True:
+        global current_layout
+        if current_layout != last_layout:
+            print(current_layout)
+            last_layout = current_layout
         # react to current_layout
         time.sleep(1)
 
