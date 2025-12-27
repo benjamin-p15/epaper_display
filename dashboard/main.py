@@ -4,7 +4,6 @@ from PIL import Image
 import threading
 import time
 import os
-import logging
 
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
@@ -50,14 +49,15 @@ def start_dashboard():
             return "Empty filename", 400
         
         # Read threshold from the hidden input
-        image_threshold = int(request.form.get("threshold"))
-        
+        image_threshold = int(request.form.get("threshold", 128))
+
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
         image.set_image(img)     
         current_layout = "image" 
         update_state = True
         return "Image uploaded", 200
+    
     # Start the web server
     app.run(host="0.0.0.0", port=5000)
 
@@ -91,6 +91,7 @@ def display_loop(display):
             if update_display: current_display = img
 
         # Update display if requested and wait before running check again
+        print(image_threshold)
         if(update_display): display.display_image(current_display, image_threshold)
         time.sleep(10)
 
@@ -101,7 +102,7 @@ def main():
     display.initalize_display()
     
     # Create background thread that starts and runs website
-    threading.Thread(target=display_loop, args=(display,), daemon=True).start()
+    threading.Thread(target=start_dashboard, daemon=True).start()
 
     display_loop(display)
 
