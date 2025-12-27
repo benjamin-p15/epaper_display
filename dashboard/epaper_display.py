@@ -85,7 +85,7 @@ class EpaperDisplay():
         self.cmd(0x13)
         for y in range(self.height):
             for x in range(0, self.width, 8):
-                byte = self.color_white
+                byte = self.color_black
                 for bit in range(8):
                     if x + bit >= self.width:
                         continue
