@@ -1,8 +1,9 @@
-# modules/weather/main.py
+# weather_display.py
 from PIL import Image, ImageDraw, ImageFont
 import os
 import requests
 import xml.etree.ElementTree as ET
+from datetime import datetime
 
 # ================= CONFIG =================
 SCREEN_W, SCREEN_H = 800, 480
@@ -23,7 +24,6 @@ except:
 
 # ================= ICON LOADING =================
 def load_icon_bw(path, size=None):
-    """Load icon: transparent/white stays white, all else black"""
     if not os.path.exists(path):
         return None
     img = Image.open(path).convert("RGBA")
@@ -39,7 +39,6 @@ def load_icon_bw(path, size=None):
 
 # ================= METAR FETCH =================
 def fetch_metar(station=STATION):
-    """Fetch latest METAR XML and parse fields"""
     url = (
         "https://aviationweather.gov/adds/dataserver_current/httpparam"
         "?dataSource=metars"
@@ -49,11 +48,14 @@ def fetch_metar(station=STATION):
         "&hoursBeforeNow=1"
     )
     headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Accept": "application/xml",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/121.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Referer": "https://aviationweather.gov/metar",
     }
-
     try:
         r = requests.get(url, headers=headers, timeout=10)
         r.raise_for_status()
@@ -66,20 +68,30 @@ def fetch_metar(station=STATION):
             el = metar.find(tag)
             return el.text if el is not None else None
 
+        temp_c = get("temp_c")
+        dewpoint_c = get("dewpoint_c")
+        wind_kt = get("wind_speed_kt")
+        wind_dir = get("wind_dir_degrees")
+        visibility_mi = get("visibility_statute_mi")
+        pressure_hpa = get("sea_level_pressure_mb")
+        weather = get("wx_string")
+        raw = get("raw_text")
+        obs_time = get("observation_time")
+
         return {
-            "temp_c": float(get("temp_c")) if get("temp_c") else "--",
-            "dewpoint_c": float(get("dewpoint_c")) if get("dewpoint_c") else "--",
-            "wind_kt": get("wind_speed_kt") or "--",
-            "wind_dir": get("wind_dir_degrees") or "--",
-            "visibility_mi": get("visibility_statute_mi") or "--",
-            "pressure_hpa": get("sea_level_pressure_mb") or "--",
-            "weather": get("wx_string"),
-            "raw": get("raw_text") or "--",
-            "observation_time": get("observation_time") or "--",
+            "temp_c": float(temp_c) or "--",
+            "dewpoint_c": float(dewpoint_c) or "--",
+            "wind_kt": wind_kt or "--",
+            "wind_dir": wind_dir or "--",
+            "visibility_mi": visibility_mi or "--",
+            "pressure_hpa": pressure_hpa or "--",
+            "weather": weather,
+            "raw": raw or "--",
+            "observation_time": obs_time or "--",
         }
 
     except Exception as e:
-        print(f"[WARN] Failed to fetch METAR: {e}")
+        print(f"Warning: Failed to fetch METAR: {e}")
         return {
             "temp_c": 20,
             "dewpoint_c": 15,
@@ -114,10 +126,11 @@ def choose_weather_icon(wx):
 # ================= RENDER =================
 def render():
     data = fetch_metar()
-    print("[DEBUG] METAR data:", data)
+    print("Full METAR data:")
+    print(data)
 
-    temp_f = c_to_f(data["temp_c"]) if data["temp_c"] != "--" else "--"
-    feels_f = c_to_f(data["dewpoint_c"]) if data["dewpoint_c"] != "--" else "--"
+    temp_f = c_to_f(data["temp_c"])
+    feels_f = c_to_f(data["dewpoint_c"])
     main_icon_name = choose_weather_icon(data["weather"])
 
     img = Image.new("1", (SCREEN_W, SCREEN_H), 1)
@@ -148,21 +161,22 @@ def render():
         ("uvi.png", "--"),
         ("aqi.png", "--"),
     ]
-    start_x, start_y, col_w, row_h = 480, 80, 160, 100
+
+    start_x = 480
+    start_y = 80
+    col_w = 160
+    row_h = 100
     icon_size_small = (50, 50)
 
     for i, (icon_name, text) in enumerate(info):
-        col, row = i % 2, i // 2
-        x, y = start_x + col * col_w, start_y + row * row_h
+        col = i % 2
+        row = i // 2
+        x = start_x + col * col_w
+        y = start_y + row * row_h
+
         icon = load_icon_bw(os.path.join(ICON_DIR, icon_name), size=icon_size_small)
         if icon:
             img.paste(icon, (x, y))
         draw.text((x + 60, y + 10), str(text), font=FONT_SMALL, fill=0)
 
     return img
-
-# ================= TEST =================
-if __name__ == "__main__":
-    img = render()
-    img.save("weather_test.png")
-    print("[DEBUG] Saved test image as weather_test.png")
