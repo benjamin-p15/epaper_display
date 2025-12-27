@@ -40,7 +40,7 @@ def start_dashboard():
     # Images require a speical server state /display_image which it's interactions is handled here
     @app.route("/display_image", methods=["POST"])
     def download_image():
-        global current_layout, update_state
+        global current_layout, update_state, image_threshold
         # If no image is sent, ir no file name is recived return error
         if "image" not in request.files:
             return "No image uploaded", 400
@@ -50,6 +50,7 @@ def start_dashboard():
         
         # Read threshold from the hidden input
         image_threshold = int(request.form.get("threshold", 128))
+        print("test")
         print("Threshold received:", image_threshold)
 
         # Store image in memery for moduel to use, and update other required paremeters
