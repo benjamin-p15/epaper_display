@@ -1,60 +1,35 @@
 # modules/weather/main.py
-import time
 from PIL import Image, ImageDraw, ImageFont
-
-# Internal cache to manage update timing
-_last_update = 0
-_cache = None
-UPDATE_INTERVAL = 5 * 60  # 5 minutes in seconds
 
 DISPLAY_WIDTH = 800
 DISPLAY_HEIGHT = 480
-TEXT_IMG_WIDTH = 200
-TEXT_IMG_HEIGHT = 100
 
 def render():
     """
-    Returns the current image and whether the display should update.
-    The image is refreshed every 5 minutes.
+    Returns a single 800x480 1-bit image with "Hello World" centered.
     """
-    global _last_update, _cache
-    now = time.time()
+    # Full screen white canvas
+    img = Image.new("1", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=1)  # 1 = white
+    draw = ImageDraw.Draw(img)
 
-    if _cache is None or now - _last_update >= UPDATE_INTERVAL:
-        _cache = _generate_weather_image()
-        _last_update = now
-        return _cache, True  # signal display should update
-
-    return _cache, False  # no update needed
-
-from PIL import Image, ImageDraw, ImageFont
-
-DISPLAY_WIDTH = 800
-DISPLAY_HEIGHT = 480
-TEXT_IMG_WIDTH = 200
-TEXT_IMG_HEIGHT = 100
-
-def _generate_weather_image():
-    text_img = Image.new("1", (TEXT_IMG_WIDTH, TEXT_IMG_HEIGHT), color=1)  # white
-    draw = ImageDraw.Draw(text_img)
-    text = "Hello World"
+    # Font
     try:
-        font = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24
-        )
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
     except:
         font = ImageFont.load_default()
 
-    # Center text on small image
+    # Text
+    text = "Hello World"
     text_width, text_height = draw.textsize(text, font=font)
-    x = (TEXT_IMG_WIDTH - text_width) // 2
-    y = (TEXT_IMG_HEIGHT - text_height) // 2
-    draw.text((x, y), text, fill=0, font=font)  # black text
+    x = (DISPLAY_WIDTH - text_width) // 2
+    y = (DISPLAY_HEIGHT - text_height) // 2
 
-    # Full canvas
-    img_full = Image.new("1", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=1)  # white
-    paste_x = (DISPLAY_WIDTH - TEXT_IMG_WIDTH) // 2
-    paste_y = (DISPLAY_HEIGHT - TEXT_IMG_HEIGHT) // 2
-    img_full.paste(text_img, (paste_x, paste_y))
-    return img_full
+    draw.text((x, y), text, fill=0, font=font)  # 0 = black
 
+    return img
+
+# Test the module
+if __name__ == "__main__":
+    img = render()
+    img.save("weather_test.png")
+    print("Saved weather_test.png")
