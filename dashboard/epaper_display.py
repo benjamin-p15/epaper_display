@@ -84,8 +84,9 @@ class EpaperDisplay():
             for x in range(0, self.width, 8):
                 byte = 0xFF
                 for bit in range(8):
-                    if pixels[x + bit, y] == 0:
-                        byte &= ~(1 << (7 - bit))
+                    if x + bit < self.width:
+                        if pixels[x + bit, y] == 0:
+                            byte &= ~(1 << (7 - bit))
                 self.data(byte)
         self.cmd(0x12)
         self.wait_busy()
