@@ -77,7 +77,7 @@ class EpaperDisplay():
         self.wait_busy()
 
     # Send image to display and then render whole image to display
-    def display_image(self, img):
+    def display_image(self, img, threshold):
         img = img.convert("L").resize((self.width, self.height))
         img=ImageOps.invert(img)
         #self.clear_display()                                                   # Clear old images off display first
@@ -91,7 +91,7 @@ class EpaperDisplay():
                 for bit in range(8):
                     if x + bit >= self.width:
                         continue
-                    if pixels[x + bit, y] < 128:
+                    if pixels[x + bit, y] < threshold:
                         byte &= ~(1 << (7 - bit))
                 self.data(byte)
         self.cmd(0x12)

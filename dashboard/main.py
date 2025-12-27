@@ -87,7 +87,7 @@ def display_loop(display):
             if update_display: current_display = img
 
         # Update display if requested and wait before running check again
-        if(update_display): display.display_image(current_display)
+        if(update_display): display.display_image(current_display, 255)
         time.sleep(10)
 
 # Startup script when file is ran
