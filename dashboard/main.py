@@ -24,8 +24,7 @@ def start_dashboard():
     def index():
         return render_template("index.html")
     
-    # Listions to website server state changes then triggers the state function 
-    # which handles interactions
+    # Listions to website server state changes then triggers the state function Which handles interactions
     @app.route("/set_layout", methods=["POST"])
     def set_layout():
         # When buttons are clicked saved thier changed state
@@ -37,23 +36,22 @@ def start_dashboard():
             return f"Layout set to {layout}"
         return "Invalid layout", 400
     
+    # Images require a speical server state /display_image which it's interactions is handled here
     @app.route("/display_image", methods=["POST"])
-    def display_image():
+    def download_image():
         global current_layout, update_state
-
+        # If no image is sent, ir no file name is recived return error
         if "image" not in request.files:
             return "No image uploaded", 400
-
         file = request.files["image"]
         if file.filename == "":
             return "Empty filename", 400
 
+        # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
-
-        image.set_image(img)      # save image in module
-        current_layout = "image"  # switch layout
-        update_state = True       # force refresh
-
+        image.set_image(img)     
+        current_layout = "image" 
+        update_state = True
         return "Image uploaded", 200
     
     # Start the web server
@@ -70,34 +68,27 @@ def display_loop(display):
         if current_layout != last_layout:    
             last_layout = current_layout
             current_display = None
-
-
-        
         update_display = False
 
         # Depending on what layout is selected run indavidual classes which have thier own built in timing circuits
+        # For images every time a new image is uplouded change image
         if(current_layout=="image"):
             if(update_state==True):
                 update_state=False
                 img, update_display = image.render()
                 if update_display: current_display = img
+        # Run weather time curcit
         elif(current_layout=="weather"):
             img, update_display = weather.render()
             if update_display: current_display = img
+        # Run clock time curcit
         elif(current_layout=="clock"):
             img, update_display = clock.render()
             if update_display: current_display = img
 
-
-
-
         # Update display if requested and wait before running check again
         if(update_display): display.display_image(current_display)
         time.sleep(10)
-
-
-
-
 
 # Startup script when file is ran
 def main():
