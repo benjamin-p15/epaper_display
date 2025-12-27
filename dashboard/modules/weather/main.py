@@ -4,6 +4,8 @@ import math
 import time
 import csv
 import os
+from ...epaper_display import ImageDrawer
+screen = ImageDrawer()
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -28,8 +30,7 @@ location_data = {
 def render():
     global _last_update, _cache_img, script_directory
     now = time.time()
-    if _cache_img is None or now - _last_update >= 5 * 60:
-        _cache_img = Image.new("1", (800, 480), color=1)
+    if now - _last_update >= 5 * 60:
         _last_update = now
 
         # Log location data using ip
@@ -54,6 +55,9 @@ def render():
         for metar_dict in metar_data:
             for key, value in metar_dict.items():
                 print(f"{key}: {value}")
+        
+        screen.add_rectangle((50, 50), (100, 50), fill=0)
+        _cache_img=screen.render
 
 
     return _cache_img, False 

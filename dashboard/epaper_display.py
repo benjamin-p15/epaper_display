@@ -1,7 +1,7 @@
 import spidev
 import RPi.GPIO as GPIO
 import time
-from PIL import ImageOps
+from PIL import ImageOps,Image, ImageDraw, ImageFont
 
 # Epaper display class for displaying data to the display
 class EpaperDisplay(): 
@@ -105,3 +105,48 @@ class EpaperDisplay():
         self.data(0xA5)
         self.spi.close()
         GPIO.cleanup()
+
+# Image drawer to render things to screen
+class ImageDrawer:
+    def __init__(self, width=800, height=480, background=1):
+        self.image = Image.new("1", (width, height), color=background) # Base image color
+        self.commands = []
+
+    # Add text to render que
+    def add_text(self, text, position, font=None, size=12, fill=0):
+        if font is None:
+            font = ImageFont.load_default() 
+        self.commands.append({"type": "text","text": text,"position": position,"font": font,"fill": fill})
+
+    # Add image to render que
+    def add_image(self, img, position, size=None):
+        self.commands.append({ "type": "image", "img": img, "position": position, "size": size })
+
+    # Add shape to render que
+    def add_rectangle(self, position, size, fill=0, radius=0):
+        self.commands.append({"type": "rectangle","position": position,"size": size,"fill": fill,"radius": radius})
+
+    # Render diffrent data to display image
+    def render(self):
+        draw = ImageDraw.Draw(self.image)
+        for cmd in self.commands:
+            # Add text to screen
+            if cmd["type"] == "text":
+                draw.text(cmd["position"], cmd["text"], font=cmd["font"], fill=cmd["fill"])
+            # Add image to screen
+            elif cmd["type"] == "image":
+                img = cmd["img"]
+                if cmd["size"]:
+                    img = img.resize(cmd["size"])
+                self.image.paste(img, cmd["position"])
+            # Draw rectangle to screen with rounded edges
+            elif cmd["type"] == "rectangle":
+                x, y = cmd["position"]
+                w, h = cmd["size"]
+                radius = cmd.get("radius", 0)
+                if radius > 0: draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=cmd["fill"])
+                else: draw.rectangle([x, y, x + w, y + h], fill=cmd["fill"])
+
+        # Clear commands after render
+        self.commands = []
+        return self.image
