@@ -72,21 +72,20 @@ const bayer8x8 = [[0,32,8,40,2,34,10,42],[48,16,56,24,50,18,58,26],[12,44,4,36,1
 function renderPreview() {
     if (!imgData) return;
     const data = new Uint8ClampedArray(imgData.data);
-    const level = 255 - parseInt(slider.value); // reversed slider
+    let level = 255 - parseInt(slider.value); // reversed slider
     for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
             const i = (y * canvas.width + x) * 4;
             const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
             const threshold = (bayer8x8[y % 8][x % 8] / 63) * 255;
-            // Center threshold around 0 instead of 0-255
-            const adjustedThreshold = (threshold - 127.5);
-            const bw = gray < level + adjustedThreshold ? 0 : 255;
+            const bw = gray < Math.max(0, Math.min(255, level + threshold)) ? 0 : 255;
             data[i] = data[i + 1] = data[i + 2] = bw;
             data[i + 3] = 255;
         }
     }
     ctx.putImageData(new ImageData(data, canvas.width, canvas.height), 0, 0);
 }
+
 
 slider.addEventListener("input", renderPreview);
 </script>
