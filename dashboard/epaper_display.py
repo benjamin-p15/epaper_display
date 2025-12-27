@@ -7,7 +7,7 @@ class EpaperDisplay():
     def __init__(self):
         # Screen size
         self.width=800
-        self.height=80   
+        self.height=480   
         self.buffer_length = self.width * self.height // 8   # screen buffer size 
 
         # Startup display
