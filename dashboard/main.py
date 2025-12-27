@@ -50,13 +50,13 @@ def start_dashboard():
         
         # Read threshold from the hidden input
         image_threshold = int(request.form.get("threshold", 128))
-        
+
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
         image.set_image(img)     
         current_layout = "image" 
         update_state = True
-        return "Image uploaded", 200
+        return f"Image uploaded {image_threshold}", 200
     
     # Start the web server
     app.run(host="0.0.0.0", port=5000)
