@@ -15,7 +15,7 @@ def start_dashboard():
     app = Flask(__name__)
     current_layout = "none"
 
-    # Register incomming web requests
+    # Register incomming web requests 
     @app.route("/")
     def index():
         return render_template("index.html")
@@ -35,7 +35,10 @@ def start_dashboard():
     # Start the web server
     app.run(host="0.0.0.0", port=5000)
 
-
+def display_loop(display):
+    while True:
+        # react to current_layout
+        time.sleep(1)
 
 
 
@@ -50,8 +53,7 @@ def main():
     # Create background thread that starts and runs website
     threading.Thread(target=start_dashboard, daemon=True).start()
 
-    #
-    #display_loop(display)
+    display_loop(display)
 
 if __name__ == "__main__":
     main()
