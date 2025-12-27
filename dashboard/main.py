@@ -1,105 +1,57 @@
+# Imports needed to run website dashboard and other used stuff
 from flask import Flask, render_template, request
 from PIL import Image
 import threading
 import time
 import os
 
-from driver import init_display, display_image
-
-# FIX: import the module as `clock`
+# Import classes to talk to epaper display and all of the modules
+from epaper_display import EpaperDisplay
 from modules.clock import main as clock
-from modules.weather import main as weather
+from modules.weather import main2 as weather
 
-# ================= CONFIG =================
-CLOCK_CHECK_INTERVAL = 5        # seconds
-WEATHER_UPDATE_INTERVAL = 300   # 5 minutes
-UPLOAD_FOLDER = "images"
+def start_dashboard():
+    # Setup a blank flask website
+    app = Flask(__name__)
+    current_layout = "none"
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-update_clock = False
-
-# ================= WEATHER CACHE =================
-last_weather_update = 0
-cached_weather_image = None
-
-# ================= CLOCK UPDATER =================
-def clock_updater():
-    last_minute = -1
-
-    while True:
-        if update_clock:
-            now = time.localtime()
-            if now.tm_min != last_minute:
-                display_image(clock.render())
-                last_minute = now.tm_min
-
-        time.sleep(CLOCK_CHECK_INTERVAL)
-
-# ================= WEATHER UPDATER =================
-def weather_updater():
-    global last_weather_update, cached_weather_image
-    while True:
-        now = time.time()
-        if cached_weather_image is None or now - last_weather_update >= WEATHER_UPDATE_INTERVAL:
-            cached_weather_image = weather.render()
-            last_weather_update = now
-        time.sleep(WEATHER_UPDATE_INTERVAL)
-
-# ================= FLASK APP =================
-app = Flask(__name__)
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-@app.route("/display", methods=["POST"])
-def display_layout():
-    global update_clock, last_weather_update, cached_weather_image
-
-    layout = request.form.get("layout")
-
-    if layout == "time":
-        update_clock = True
-        display_image(clock.render())
-        return "OK"
-
-    elif layout == "weather":
-        update_clock = False
-
-        now = time.time()
-        if cached_weather_image is None or now - last_weather_update >= WEATHER_UPDATE_INTERVAL:
-            cached_weather_image = weather.render()
-            last_weather_update = now
-
-        display_image(cached_weather_image)
-        return "OK"
-
-    return "Unknown layout", 400
-
-@app.route("/display_image", methods=["POST"])
-def display_uploaded_image():
-    global update_clock
-    update_clock = False
-
-    file = request.files.get("image")
-    if not file:
-        return "No file", 400
-
-    path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(path)
-
-    img = Image.open(path)
-    display_image(img)
-
-    return "OK"
-
-# ================= MAIN =================
-if __name__ == "__main__":
-    init_display()
-    # Start clock updater thread
-    threading.Thread(target=clock_updater, daemon=True).start()
-    # Start weather updater thread
-    threading.Thread(target=weather_updater, daemon=True).start()
-    # Start Flask
+    # Register incomming web requests
+    @app.route("/")
+    def index():
+        return render_template("index.html")
+    
+    # Listions to website server state changes then triggers the state function 
+    # which handles interactions
+    @app.route("/set_layout", methods=["POST"])
+    def set_layout():
+        # When buttons are clicked saved thier changed state
+        nonlocal current_layout
+        layout = request.form.get("layout")
+        if layout in ("time", "weather", "image"):
+            current_layout = layout
+            return f"Layout set to {layout}"
+        return "Invalid layout", 400
+    
+    # Start the web server
     app.run(host="0.0.0.0", port=5000)
+
+
+
+
+
+
+
+# Startup script when file is ran
+def main():
+    # Initilize the Epaper display
+    display = EpaperDisplay()
+    display.initalize_display()
+    
+    # Create background thread that starts and runs website
+    threading.Thread(target=start_dashboard, daemon=True).start()
+
+    #
+    #display_loop(display)
+
+if __name__ == "__main__":
+    main()
