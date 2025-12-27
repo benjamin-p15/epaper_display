@@ -10,8 +10,10 @@ from epaper_display import EpaperDisplay
 from modules.clock import main as clock
 from modules.weather import main2 as weather
 
-current_layout = None
+current_layout = "weather"
+update_display = False
 
+# Start website
 def start_dashboard():
     # Setup a blank flask website
     app = Flask(__name__)
@@ -36,15 +38,31 @@ def start_dashboard():
     # Start the web server
     app.run(host="0.0.0.0", port=5000)
 
+
+
+
 def display_loop(display):
     last_layout = None
+    current_display = None
 
     while True:
-        global current_layout
-        if current_layout != last_layout:
-            print(current_layout)
-            last_layout = current_layout
         # react to current_layout
+        global current_layout
+        if current_layout != last_layout:    
+            last_layout = current_layout
+            current_display = None
+        
+        update_display = False
+
+        # Update modual data
+        if(current_layout=="weather"):
+            img, update_display = weather.render()
+            if update_display:
+                current_display = img
+
+        if(update_display): 
+            display.display_image(current_display)
+            
         time.sleep(1)
 
 
