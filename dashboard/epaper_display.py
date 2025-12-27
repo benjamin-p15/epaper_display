@@ -37,7 +37,7 @@ class EpaperDisplay():
 
     # Wait until display is able to reacive data
     def wait_busy(self):
-        while GPIO.input(self.BUSY) == 1: time.sleep(0.05)
+        while GPIO.input(self.BUSY_pin) == 1: time.sleep(0.05)
 
     # Initalize display for new usage
     def initalize_display(self):
