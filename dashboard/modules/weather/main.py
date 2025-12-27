@@ -1,5 +1,5 @@
 from PIL import Image
 
 def render():
-    img = Image.new("1", (800, 480), color=1)
+    img = Image.new("1", (800, 480), color=0)
     return img, True
