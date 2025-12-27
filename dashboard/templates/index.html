@@ -3,18 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>E-Paper Dashboard</title>
+    <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <form action="/display" method="post">
-        <button name="layout" value="weather">Weather Layout</button>
+    <h1>E-Paper Dashboard</h1>
+    <form id="layout-form" action="/display" method="post">
+        <button type="submit" name="layout" value="weather">Weather Layout</button>
     </form>
-    <form action="/display" method="post"></form>
-        <button name="layout" value="time">Time Layout</button>
+    <form id="layout-form" action="/display" method="post">
+        <button type="submit" name="layout" value="time">Time Layout</button>
     </form>
 
-    <form action="/display_image" method="post" enctype="multipart/form-data">
-        <input type="file" name="image">
-        <button type="submit">Upload & Display</button>
+    <form id="image-form" action="/display_image" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" id="image-input" style="display:none">
+        <button type="button" id="upload-button">Upload image</button>
     </form>
+
+    <script>
+        // When button is clicked open file dialog
+        const uploadButton = document.getElementById('upload-button');
+        const fileInput = document.getElementById('image-input');
+        uploadButton.addEventListener('click', () => fileInput.click());
+
+        // Automatically submit form once a file is selected
+        fileInput.addEventListener('change', () => {
+            document.getElementById('image-form').submit();
+        });
+    </script>
 </body>
 </html>
