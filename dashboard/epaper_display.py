@@ -85,12 +85,12 @@ class EpaperDisplay():
         self.cmd(0x13)
         for y in range(self.height):
             for x in range(0, self.width, 8):
-                byte = self.color_black
+                byte = self.color_white
                 for bit in range(8):
                     if x + bit >= self.width:
                         continue
                     if pixels[x + bit, y] < 128:
-                        byte |= (1 << (7 - bit))
+                        byte &= ~(1 << (7 - bit))
                 self.data(byte)
         self.cmd(0x12)
         self.wait_busy()
