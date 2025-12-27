@@ -46,8 +46,8 @@ def render():
         print(f"airport_distance: {location_data['airport_distance']}")
 
     
-    #metar_data = fetch_metar(["KSFO"])
-    #print(metar_data)
+    metar_data = fetch_metar(location_data['airport']['icao_code'])
+    print(metar_data)
 
 
     return _cache_img, False 
