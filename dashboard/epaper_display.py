@@ -109,6 +109,8 @@ class EpaperDisplay():
 # Image drawer to render things to screen
 class ImageDrawer:
     def __init__(self, width=800, height=480, background=1):
+        self.width = width
+        self.height = height
         self.image = Image.new("1", (width, height), color=background) # Base image color
         self.commands = []
 
@@ -116,15 +118,35 @@ class ImageDrawer:
     def add_text(self, text, position, font=None, size=12, fill=0):
         if font is None:
             font = ImageFont.load_default() 
-        self.commands.append({"type": "text","text": text,"position": position,"font": font,"fill": fill})
+        # Convert position from percentage to pixels if <=1
+        x, y = position
+        if x <= 1: x = int(x * self.width)
+        if y <= 1: y = int(y * self.height)
+        self.commands.append({"type": "text","text": text,"position": (x, y),"font": font,"fill": fill})
 
     # Add image to render que
     def add_image(self, img, position, size=None):
-        self.commands.append({ "type": "image", "img": img, "position": position, "size": size })
+        # Convert position and size from percentages if <=1
+        x, y = position
+        if x <= 1: x = int(x * self.width)
+        if y <= 1: y = int(y * self.height)
+        if size:
+            w, h = size
+            if w <= 1: w = int(w * self.width)
+            if h <= 1: h = int(h * self.height)
+            size = (w, h)
+        self.commands.append({ "type": "image", "img": img, "position": (x, y), "size": size })
 
     # Add shape to render que
     def add_rectangle(self, position, size, fill=0, radius=0):
-        self.commands.append({"type": "rectangle","position": position,"size": size,"fill": fill,"radius": radius})
+        # Convert position and size from percentages if <=1
+        x, y = position
+        w, h = size
+        if x <= 1: x = int(x * self.width)
+        if y <= 1: y = int(y * self.height)
+        if w <= 1: w = int(w * self.width)
+        if h <= 1: h = int(h * self.height)
+        self.commands.append({"type": "rectangle","position": (x, y),"size": (w, h),"fill": fill,"radius": radius})
 
     # Render diffrent data to display image
     def render(self):

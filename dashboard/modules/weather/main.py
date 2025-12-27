@@ -56,7 +56,7 @@ def render():
             for key, value in metar_dict.items():
                 print(f"{key}: {value}")
         
-        screen.add_rectangle((200, 50), (100, 50), fill=0)
+        screen.add_rectangle((0.25,0.25), (0.5,0.5), fill=1, radius=0.1)
         _cache_img=screen.render()
 
         if(_cache_img is None): return None, False
