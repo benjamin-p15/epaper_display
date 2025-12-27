@@ -58,15 +58,17 @@
         });
         
         imgElement.onload = () => {
-            // Match canvas resolution to e-paper display
+            // Set canvas to e-paper resolution
             canvas.width = 800;
             canvas.height = 480;
         
-            // Draw original image resized to e-paper
+            // Draw image resized to e-paper
             ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
         
-            // Save image data for processing
+            // Save raw image data for processing
             imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+            // Render preview with current slider value
             renderPreview();
         };
         
@@ -75,23 +77,23 @@
         function renderPreview() {
             if (!imgData) return;
         
-            const data = new Uint8ClampedArray(imgData.data); // copy original
+            // Create a copy to manipulate
+            const data = new Uint8ClampedArray(imgData.data);
+        
             const threshold = parseInt(slider.value);
         
-            // Simple dithering-like mapping for gray pixels
             for (let i = 0; i < data.length; i += 4) {
-                // Convert to grayscale
-                let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                // Compute grayscale luminance
+                let gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
         
-                // Map to threshold (similar to your epaper threshold)
-                if (gray < threshold) gray = 0;
-                else if (gray > 255) gray = 255;
+                // Apply threshold
+                gray = gray < threshold ? 0 : gray;
         
-                data[i] = data[i + 1] = data[i + 2] = gray;
+                data[i] = data[i+1] = data[i+2] = gray; // R, G, B
+                // Alpha stays the same
             }
         
-            const preview = new ImageData(data, canvas.width, canvas.height);
-            ctx.putImageData(preview, 0, 0);
+            ctx.putImageData(new ImageData(data, canvas.width, canvas.height), 0, 0);
         }
         </script>
 </body>
