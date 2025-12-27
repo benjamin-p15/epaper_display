@@ -15,7 +15,6 @@ class EpaperDisplay():
         self.spi.open(0, 0)                  # Set spi modes
         self.spi.max_speed_hz = 2_000_000    # Set max spi pin speed
         self.spi.mode = 0b00                 # Set clock mode
-        self.clear_color = 0x00              # Set screen clear color
 
         # Setup used pi pins and initalize them
         self.DC_pin=25
@@ -64,30 +63,30 @@ class EpaperDisplay():
         self.data(0x01)
         self.data(0xE0)
         self.cmd(0x15) 
-        self.data(self.clear_color)
+        self.data(0x00)
     
     # Clear display by changing it to white
     def clear_display(self):
         self.cmd(0x13)
         for i in range(self.buffer_length): # Set every pixel to white
-            self.data(self.clear_color)
+            self.data(0xFF)
         self.cmd(0x12)                      # send display refresh command
         self.wait_busy()
 
     # Send image to display and then render whole image to display
     def display_image(self, img):
-        #self.clear_display()                                                   # Clear old images off display first
-        img = img.convert("L").resize((self.width, self.height)).convert("1")   # Convert image to grayscale 
-        #img = img.point(lambda x: 0 if x > 128 else 255, mode="1")             # Fit image to screen
+        self.clear_display()                                                    # Clear old images off display first
+        img = img.convert("L").resize((self.width, self.height))                # Convert image to grayscale 
+        img = img.point(lambda x: 0 if x > 128 else 1, mode="1")                # Fit image to screen
         pixels = img.load()                                                     # Load image data and write image data into bytes then send to screen to display image
         self.cmd(0x13)
         for y in range(self.height):
             for x in range(0, self.width, 8):
-                byte = self.clear_color
+                byte = 0xFF
                 for bit in range(8):
                     if x + bit < self.width:
-                        if pixels[x + bit, y] != 0:
-                            byte != ~(1 << (7 - bit))
+                        if pixels[x + bit, y] == 0:
+                            byte &= ~(1 << (7 - bit))
                 self.data(byte)
         self.cmd(0x12)
         self.wait_busy()
