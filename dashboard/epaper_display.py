@@ -136,7 +136,7 @@ class ImageDrawer:
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
         # Convert size percentage to pixels if 0-1
-        if size[0] <= 1 and size[1] <= 1:
+        if size and size[0] <= 1 and size[1] <= 1:
             size = (int(size[0] * self.width), int(size[1] * self.height))
         self.commands.append({"type": "rectangle","position": (px, py),"size": size,"fill": fill,"radius": radius})
 
