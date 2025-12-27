@@ -27,74 +27,50 @@
         });
     </script>
 
-    <form id="image-form" action="/display_image" method="post" enctype="multipart/form-data">
-        <input type="file" name="image" id="image-input" style="display:none" required>
-        <button type="button" id="upload-button">Choose Image</button>
-        <button type="submit">Submit Image</button>
-    </form>   
-
+<form id="image-form" action="/display_image" method="post" enctype="multipart/form-data">
+    <input type="file" name="image" id="image-input" style="display:none" required>
+    <button type="button" id="upload-button">Choose Image</button>
+    <button type="submit">Submit Image</button>
+    </form>
     <label for="image-slider">Threshold:</label>
     <input type="range" id="image-slider" min="0" max="255" value="128">
-
-    <canvas id="image-preview" style="max-width: 400px; display:none; margin-top: 10px;"></canvas>
-
+    <canvas id="image-preview" style="max-width:400px;display:none;margin-top:10px;"></canvas>
     <script>
-        const fileInput = document.getElementById("image-input");
-        const canvas = document.getElementById("image-preview");
-        const ctx = canvas.getContext("2d");
-        const slider = document.getElementById("image-slider");
-        let imgElement = new Image();
-        let imgData = null;
-        
-        fileInput.addEventListener("change", () => {
-            const file = fileInput.files[0];
-            if (!file) return;
-        
-            const reader = new FileReader();
-            reader.onload = e => {
-                imgElement.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-        
-        imgElement.onload = () => {
-            // Set canvas to e-paper resolution
-            canvas.width = 800;
-            canvas.height = 480;
-        
-            // Draw image resized to e-paper
-            ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
-        
-            // Save raw image data for processing
-            imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        
-            // Render preview with current slider value
-            renderPreview();
-        };
-        
-        slider.addEventListener("input", renderPreview);
-        
-        function renderPreview() {
-            if (!imgData) return;
-        
-            // Create a copy to manipulate
-            const data = new Uint8ClampedArray(imgData.data);
-        
-            const threshold = parseInt(slider.value);
-        
-            for (let i = 0; i < data.length; i += 4) {
-                // Compute grayscale luminance
-                let gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-        
-                // Apply threshold
-                gray = gray < threshold ? 0 : gray;
-        
-                data[i] = data[i+1] = data[i+2] = gray; // R, G, B
-                // Alpha stays the same
-            }
-        
-            ctx.putImageData(new ImageData(data, canvas.width, canvas.height), 0, 0);
-        }
-        </script>
+    const fileInput=document.getElementById("image-input");
+    const canvas=document.getElementById("image-preview");
+    const ctx=canvas.getContext("2d");
+    const slider=document.getElementById("image-slider");
+    let imgElement=new Image();
+    let imgData=null;
+    document.getElementById("upload-button").addEventListener("click",()=>fileInput.click());
+    fileInput.addEventListener("change",()=>{
+    const file=fileInput.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=e=>{imgElement.src=e.target.result};
+    reader.readAsDataURL(file);
+    });
+    imgElement.onload=()=>{
+    canvas.style.display="block";
+    canvas.width=800;
+    canvas.height=480;
+    ctx.drawImage(imgElement,0,0,canvas.width,canvas.height);
+    imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+    renderPreview();
+    };
+    slider.addEventListener("input",renderPreview);
+    function renderPreview(){
+    if(!imgData)return;
+    const data=new Uint8ClampedArray(imgData.data);
+    const threshold=parseInt(slider.value);
+    for(let i=0;i<data.length;i+=4){
+    let gray=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
+    gray=gray<threshold?0:gray;
+    data[i]=data[i+1]=data[i+2]=gray;
+    }
+    ctx.putImageData(new ImageData(data,canvas.width,canvas.height),0,0);
+    }
+    </script>
+    
 </body>
 </html>
