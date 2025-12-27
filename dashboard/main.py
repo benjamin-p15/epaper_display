@@ -62,7 +62,7 @@ def display_loop(display):
 
         # Update display if requested and wait before running check again
         if(update_display): display.display_image(current_display)
-        time.sleep(1)
+        time.sleep(10)
 
 
 
