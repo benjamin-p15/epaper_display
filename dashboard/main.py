@@ -4,6 +4,9 @@ from PIL import Image
 import threading
 import time
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
@@ -50,13 +53,14 @@ def start_dashboard():
         
         # Read threshold from the hidden input
         image_threshold = int(request.form.get("threshold", 128))
-
+        logging.info(f"Received image upload with threshold: {image_threshold}")
+        
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
         image.set_image(img)     
         current_layout = "image" 
         update_state = True
-        return f"Image uploaded {image_threshold}", 200
+        return "Image uploaded", 200
     
     # Start the web server
     app.run(host="0.0.0.0", port=5000)
