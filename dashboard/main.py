@@ -7,7 +7,7 @@ import os
 
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
-from modules.clock import main as clock
+from dashboard.modules.clock import main as clock
 from modules.weather import main as weather
 
 current_layout = "weather"
@@ -30,7 +30,7 @@ def start_dashboard():
         # When buttons are clicked saved thier changed state
         global current_layout
         layout = request.form.get("layout")
-        if layout in ("time", "weather", "image"):
+        if layout in ("clock", "weather", "image"):
             current_layout = layout
             return f"Layout set to {layout}"
         return "Invalid layout", 400
@@ -38,15 +38,13 @@ def start_dashboard():
     # Start the web server
     app.run(host="0.0.0.0", port=5000)
 
-
-
-
+# Check for display layout changes and run timmer circuits 
 def display_loop(display):
     last_layout = None
     current_display = None
 
     while True:
-        # react to current_layout
+        # If layout changes refreash display
         global current_layout
         if current_layout != last_layout:    
             last_layout = current_layout
@@ -54,15 +52,16 @@ def display_loop(display):
         
         update_display = False
 
-        # Update modual data
+        # Depending on what layout is selected run indavidual classes which have thier own built in timing circuits
         if(current_layout=="weather"):
             img, update_display = weather.render()
-            if update_display:
-                current_display = img
+            if update_display: current_display = img
+        elif(current_layout=="clock"):
+            img, update_display = clock.render()
+            if update_display: current_display = img
 
-        if(update_display): 
-            display.display_image(current_display)
-
+        # Update display if requested and wait before running check again
+        if(update_display): display.display_image(current_display)
         time.sleep(1)
 
 

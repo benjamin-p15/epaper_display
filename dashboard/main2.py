@@ -7,7 +7,7 @@ import os
 from dashboard.driver2 import init_display, display_image
 
 # FIX: import the module as `clock`
-from modules.clock import main as clock
+from dashboard.modules.clock import main2 as clock
 from dashboard.modules.weather import main2 as weather
 
 # ================= CONFIG =================
