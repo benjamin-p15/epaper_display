@@ -51,7 +51,9 @@ def render():
 
         for key, value in location_data.items(): print(f"{key}: {value}")
         metar_data = fetch_metar(location_data['airport_icao_code'])
-        for key, value in metar_data.items(): print(f"{key}: {value}")
+        for metar_dict in metar_data:
+            for key, value in metar_dict.items():
+                print(f"{key}: {value}")
 
 
     return _cache_img, False 
