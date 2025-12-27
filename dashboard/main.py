@@ -72,7 +72,7 @@ def display_loop(display):
 
     while True:
         # If layout changes refreash display
-        global current_layout, update_state
+        global current_layout, update_state, image_threshold
         if current_layout != last_layout:    
             last_layout = current_layout
             current_display = None
