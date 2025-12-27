@@ -9,6 +9,8 @@ class EpaperDisplay():
         self.width=800
         self.height=480   
         self.buffer_length = self.width * self.height // 8   # screen buffer size 
+        self.color_white=0x00
+        self.color_black=0xFF
 
         # Startup display
         self.spi = spidev.SpiDev()           # Setup spi class
@@ -63,13 +65,13 @@ class EpaperDisplay():
         self.data(0x01)
         self.data(0xE0)
         self.cmd(0x15) 
-        self.data(0x00)
+        self.data(self.color_white)
     
     # Clear display by changing it to white
     def clear_display(self):
         self.cmd(0x13)
         for i in range(self.buffer_length): # Set every pixel to white
-            self.data(0xFF)
+            self.data(self.color_white)
         self.cmd(0x12)                      # send display refresh command
         self.wait_busy()
 
