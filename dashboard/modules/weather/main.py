@@ -59,8 +59,8 @@ def render():
         screen.add_rectangle((200, 50), (100, 50), fill=0)
         _cache_img=screen.render()
 
-    if(_cache_img is None): return None, False
-    else: return _cache_img, True 
+        if(_cache_img is None): return None, False
+        else: return _cache_img, True 
 
 # Get metter from a specific airport
 def fetch_metar(icao_code):
