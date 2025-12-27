@@ -49,7 +49,8 @@ def start_dashboard():
             return "Empty filename", 400
         
         # Read threshold from the hidden input
-        threshold_str = request.form.get("threshold",128)
+        threshold_str = request.form.get("threshold")
+        print(threshold_str)
         try:
             image_threshold = int(threshold_str)
         except ValueError:
