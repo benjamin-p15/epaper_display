@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import requests
 import math
 import time
@@ -48,6 +48,30 @@ def render():
     
         metar_data = fetch_metar(location_data['airport']['icao_code'])
         print(metar_data)
+
+        draw = ImageDraw.Draw(_cache_img)
+        font = ImageFont.load_default()
+
+        y = 5
+        line_height = 12
+        info_lines = [
+            f"City: {location_data['city']}",
+            f"Region: {location_data['region']}",
+            f"Latitude: {location_data['latitude']}",
+            f"Longitude: {location_data['longitude']}",
+            f"Nearest Airport: {location_data['airport']['name']} ({location_data['airport']['ident']})",
+            f"Distance: {location_data['airport_distance']:.1f} km",
+            "METAR Data:"
+        ]
+
+        # Add each key in METAR JSON
+        for key, value in metar_data.items():
+            info_lines.append(f"{key}: {value}")
+
+        # Draw lines on the image
+        for line in info_lines:
+            draw.text((5, y), line, font=font, fill=0)
+            y += line_height
 
 
     return _cache_img, False 
