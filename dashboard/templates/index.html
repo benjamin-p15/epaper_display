@@ -49,6 +49,7 @@ let imgElement = new Image();
 let imgData = null;
 
 document.getElementById("upload-button").addEventListener("click", () => fileInput.click());
+document.getElementById("image-form").addEventListener("submit", () => {thresholdInput.value = slider.value;});
 
 fileInput.addEventListener("change", () => {
     const file = fileInput.files[0];
