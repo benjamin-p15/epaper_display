@@ -27,7 +27,7 @@ def _generate_weather_image():
     Generates a white 1-bit image with black text "Hello World" centered.
     """
     width, height = 200, 100  # e-paper image size
-    img = Image.new("1", (width, height), color=1)  # 1 = white background
+    img = Image.new("1", (width, height), color=0)  # 1 = white background
     draw = ImageDraw.Draw(img)
 
     text = "Hello World"
