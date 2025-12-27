@@ -11,7 +11,7 @@ from modules.clock import main as clock
 from modules.weather import main as weather
 from modules.image_display import main as image
 
-current_layout = "weather"
+current_layout = None #"weather"
 update_state = False
 
 # Start website
