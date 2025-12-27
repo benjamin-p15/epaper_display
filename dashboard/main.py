@@ -49,12 +49,11 @@ def start_dashboard():
             return "Empty filename", 400
         
         # Read threshold from the hidden input
-        threshold_str = request.form.get("threshold", "128")
+        threshold_str = request.form.get("threshold",128)
         try:
             image_threshold = int(threshold_str)
         except ValueError:
             image_threshold = 128
-
 
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
@@ -112,4 +111,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
