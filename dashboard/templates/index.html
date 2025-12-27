@@ -80,12 +80,10 @@ function renderPreview() {
             const threshold = (bayer8x8[y % 8][x % 8] / 63) * 255;
             const adjustedThreshold = (threshold - 127.5);
 
-            const t = (bayer8x8[y & 7][x & 7] + 0.5) / 64 * 255; // 0..255
-
             // fade dithering near extremes
             const fade = Math.min(level, 255 - level) / 127.5; // 0..1
 
-            const rhs = level + (t - 127.5) * fade;
+            const rhs = level + (threshold - 127.5) * fade;
             const bw = gray < rhs ? 0 : 255;
 
             
