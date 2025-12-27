@@ -4,7 +4,7 @@ import math
 import time
 import csv
 import os
-from ...epaper_display import ImageDrawer
+from epaper_display import ImageDrawer
 screen = ImageDrawer()
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
