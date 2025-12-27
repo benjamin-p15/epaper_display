@@ -36,9 +36,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const uploadButton = document.getElementById('upload-button');
             const fileInput = document.getElementById('image-input');
-            uploadButton.addEventListener('change', () => {
+            uploadButton.addEventListener('click', () => {fileInput.click();});
+            fileInput.addEventListener('change', () => {
                 const formData = new FormData(document.getElementById('image-form'));
-            
                 fetch('/display_image', {
                     method: 'POST',
                     body: formData
@@ -46,6 +46,6 @@
                 .catch(err => console.error(err));
             });
         });
-        </script>
+    </script>
 </body>
 </html>
