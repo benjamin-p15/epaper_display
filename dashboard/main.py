@@ -7,8 +7,8 @@ import os
 
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
-from modules.clock import main as clock
-from modules.weather import main as weather
+from modules.clock.main import render as clock
+from modules.weather.main import render as weather
 
 current_layout = "weather"
 update_display = False
@@ -54,10 +54,10 @@ def display_loop(display):
 
         # Depending on what layout is selected run indavidual classes which have thier own built in timing circuits
         if(current_layout=="weather"):
-            img, update_display = weather.render()
+            img, update_display = weather()
             if update_display: current_display = img
         elif(current_layout=="clock"):
-            img, update_display = clock.render()
+            img, update_display = clock()
             if update_display: current_display = img
 
         # Update display if requested and wait before running check again
