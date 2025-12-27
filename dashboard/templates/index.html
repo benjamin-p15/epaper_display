@@ -8,11 +8,26 @@
 <body>
     <h1>E-Paper Dashboard</h1>
     <form id="layout-form" action="/display" method="post">
-        <button type="submit" name="layout" value="weather">Weather Layout</button>
+        <button type="button" data-layout="weather">Weather Layout</button>
     </form>
     <form id="layout-form" action="/display" method="post">
-        <button type="submit" name="layout" value="time">Time Layout</button>
+        <button type="button" data-layout="time">Time Layout</button>
     </form>
+
+    <script>
+        document.querySelectorAll('#layout-form button').forEach(button => {
+            button.addEventListener('click', () => {
+                const layout = button.dataset.layout;
+        
+                fetch('/display', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: `layout=${layout}`
+                }).then(res => console.log(`Layout set to ${layout}`))
+                  .catch(err => console.error(err));
+            });
+        });
+    </script>
 
     <form id="image-form" action="/display_image" method="post" enctype="multipart/form-data">
         <input type="file" name="image" id="image-input" style="display:none">
@@ -20,15 +35,15 @@
     </form>
 
     <script>
-        // When button is clicked open file dialog
-        const uploadButton = document.getElementById('upload-button');
-        const fileInput = document.getElementById('image-input');
-        uploadButton.addEventListener('click', () => fileInput.click());
-
-        // Automatically submit form once a file is selected
         fileInput.addEventListener('change', () => {
-            document.getElementById('image-form').submit();
+            const formData = new FormData(document.getElementById('image-form'));
+        
+            fetch('/display_image', {
+                method: 'POST',
+                body: formData
+            }).then(res => console.log("Image uploaded"))
+              .catch(err => console.error(err));
         });
-    </script>
+        </script>
 </body>
 </html>
