@@ -63,13 +63,13 @@ class EpaperDisplay():
         self.data(0x01)
         self.data(0xE0)
         self.cmd(0x15) 
-        self.data(0xFF)
+        self.data(0x00)
     
     # Clear display by changing it to white
     def clear_display(self):
         self.cmd(0x13)
         for i in range(self.buffer_length): # Set every pixel to white
-            self.data(0xFF)
+            self.data(0x00)
         self.cmd(0x12)                      # send display refresh command
         self.wait_busy()
 
