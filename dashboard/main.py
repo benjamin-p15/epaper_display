@@ -50,8 +50,8 @@ def start_dashboard():
         
         # Read threshold from the hidden input
         image_threshold = int(request.form.get("threshold", 128))
-        print("test")
-        print("Threshold received:", image_threshold)
+        print("test", flush=True)
+        print("Threshold received:", image_threshold, flush=True)
 
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
