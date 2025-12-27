@@ -25,10 +25,6 @@ def render():
         _cache_img = Image.new("1", (800, 480), color=1)
         _last_update = now
 
-        import os
-        print(f"Current directory: {os.getcwd()}")
-        print(f"File exists: {os.path.exists('data/airports.csv')}")
-
         if any(location_data[key] is None for key in ['latitude', 'longitude', 'city', 'region']):
             latitude, longitude, city, region = get_current_location()
             location_data.update({'latitude': latitude,'longitude': longitude, 'city': city,'region': region})
@@ -45,9 +41,9 @@ def render():
         print(f"airport: {location_data['airport']}")
         print(f"airport_distance: {location_data['airport_distance']}")
 
-    
-        metar_data = fetch_metar(location_data['airport']['icao_code'])
-        print(metar_data)
+        # FIXED: Pass as a list
+        metar_list = fetch_metar([location_data['airport']['icao_code']])
+        print(metar_list)
 
         draw = ImageDraw.Draw(_cache_img)
         font = ImageFont.load_default()
@@ -57,21 +53,41 @@ def render():
         info_lines = [
             f"City: {location_data['city']}",
             f"Region: {location_data['region']}",
-            f"Latitude: {location_data['latitude']}",
-            f"Longitude: {location_data['longitude']}",
+            f"Latitude: {location_data['latitude']:.4f}",
+            f"Longitude: {location_data['longitude']:.4f}",
             f"Nearest Airport: {location_data['airport']['name']} ({location_data['airport']['ident']})",
             f"Distance: {location_data['airport_distance']:.1f} km",
             "METAR Data:"
         ]
 
-        # Add each key in METAR JSON
-        for key, value in metar_data.items():
-            info_lines.append(f"{key}: {value}")
+        # Add METAR info if available
+        if metar_list and len(metar_list) > 0:
+            metar = metar_list[0]
+            info_lines.extend([
+                f"  Airport: {metar['name']}",
+                f"  Temperature: {metar['temp']}°C",
+                f"  Wind: {metar['wdir']} at {metar['wspd']} kt",
+                f"  Visibility: {metar['visib']}",
+                f"  Altimeter: {metar['altim']:.1f} hPa",
+                f"  Clouds: {', '.join([f'{c['cover']} at {c['base']} ft' for c in metar.get('clouds', [])])}",
+                f"  Raw: {metar['rawOb'][:60]}..."
+            ])
+        else:
+            info_lines.append("  No METAR available")
 
-        # Draw lines on the image
+        # Draw all lines
         for line in info_lines:
             draw.text((5, y), line, font=font, fill=0)
             y += line_height
+
+            # Add each key in METAR JSON
+            for key, value in metar_list.items():
+                info_lines.append(f"{key}: {value}")
+
+            # Draw lines on the image
+            for line in info_lines:
+                draw.text((5, y), line, font=font, fill=0)
+                y += line_height
 
 
     return _cache_img, False 
