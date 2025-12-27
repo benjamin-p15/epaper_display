@@ -76,8 +76,8 @@ class EpaperDisplay():
     # Send image to display and then render whole image to display
     def display_image(self, img):
         self.clear_display()                                        # Clear old images off display first
-        #img = img.convert("L").resize((self.width, self.height))    # Convert image to grayscale 
-        img = img.point(lambda x: 0 if x > 128 else 255, mode="1")  # Fit image to screen
+        img = img.convert("L").resize((self.width, self.height))    # Convert image to grayscale 
+        #img = img.point(lambda x: 0 if x > 128 else 255, mode="1")  # Fit image to screen
         pixels = img.load()                                         # Load image data and write image data into bytes then send to screen to display image
         self.cmd(0x13)
         for y in range(self.height):
