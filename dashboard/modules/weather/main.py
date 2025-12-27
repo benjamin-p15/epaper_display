@@ -7,6 +7,11 @@ _last_update = 0
 _cache = None
 UPDATE_INTERVAL = 5 * 60  # 5 minutes in seconds
 
+DISPLAY_WIDTH = 800
+DISPLAY_HEIGHT = 480
+TEXT_IMG_WIDTH = 200
+TEXT_IMG_HEIGHT = 100
+
 def render():
     """
     Returns the current image and whether the display should update.
@@ -24,24 +29,31 @@ def render():
 
 def _generate_weather_image():
     """
-    Generates a white 1-bit image with black text "Hello World" centered.
+    Generates an 800x480 white image with centered black text.
     """
-    width, height = 200, 100  # e-paper image size
-    img = Image.new("1", (width, height), color=1)  # 1 = white background
-    draw = ImageDraw.Draw(img)
+    # Small image with text
+    text_img = Image.new("1", (TEXT_IMG_WIDTH, TEXT_IMG_HEIGHT), color=1)  # 1 = white
+    draw = ImageDraw.Draw(text_img)
 
     text = "Hello World"
     try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
+        font = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24
+        )
     except:
         font = ImageFont.load_default()
 
-    # Measure text size
+    # Center text on small image
     text_width, text_height = draw.textsize(text, font=font)
-    x = (width - text_width) // 2
-    y = (height - text_height) // 2
+    x = (TEXT_IMG_WIDTH - text_width) // 2
+    y = (TEXT_IMG_HEIGHT - text_height) // 2
+    draw.text((x, y), text, fill=0, font=font)  # black text
 
-    # Draw black text
-    draw.text((x, y), text, fill=0, font=font)
+    # Full display canvas
+    img_full = Image.new("1", (DISPLAY_WIDTH, DISPLAY_HEIGHT), color=1)  # white
+    # Paste small image centered
+    paste_x = (DISPLAY_WIDTH - TEXT_IMG_WIDTH) // 2
+    paste_y = (DISPLAY_HEIGHT - TEXT_IMG_HEIGHT) // 2
+    img_full.paste(text_img, (paste_x, paste_y))
 
-    return img
+    return img_full
