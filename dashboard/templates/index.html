@@ -29,79 +29,86 @@
 
 <form id="image-form" action="/display_image" method="post" enctype="multipart/form-data">
     <input type="file" name="image" id="image-input" style="display:none" required>
+    <input type="hidden" name="threshold" id="threshold-input">
     <button type="button" id="upload-button">Choose Image</button>
     <button type="submit">Submit Image</button>
-    </form>
-    
-    <label for="image-slider">Gray Level:</label>
-    <input type="range" id="image-slider" min="0" max="255" value="128">
-    
-    <canvas id="image-preview" style="max-width:400px;display:none;margin-top:10px;"></canvas>
-    
-    <script>
-    const fileInput=document.getElementById("image-input");
-    const canvas=document.getElementById("image-preview");
-    const ctx=canvas.getContext("2d");
-    const slider=document.getElementById("image-slider");
-    let imgElement=new Image();
-    let imgData=null;
-    
-    document.getElementById("upload-button").addEventListener("click",()=>fileInput.click());
-    
-    fileInput.addEventListener("change",()=>{
-        const file=fileInput.files[0];
-        if(!file)return;
-        const reader=new FileReader();
-        reader.onload=e=>{imgElement.src=e.target.result};
-        reader.readAsDataURL(file);
-    });
-    
-    imgElement.onload=()=>{
-        canvas.style.display="block";
-        canvas.width=800;
-        canvas.height=480;
-        ctx.drawImage(imgElement,0,0,canvas.width,canvas.height);
-        imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
-        renderPreview();
-    };
-    
-    slider.addEventListener("input",renderPreview);
-    
-    // 8x8 Bayer matrix for smooth dithering
-    const bayer8x8=[
-    [0,32,8,40,2,34,10,42],
-    [48,16,56,24,50,18,58,26],
-    [12,44,4,36,14,46,6,38],
-    [60,28,52,20,62,30,54,22],
-    [3,35,11,43,1,33,9,41],
-    [51,19,59,27,49,17,57,25],
-    [15,47,7,39,13,45,5,37],
-    [63,31,55,23,61,29,53,21]
-    ];
-    
-    function getThreshold(x,y,level){
-        const m=bayer8x8[y%8][x%8];
-        return (m/63)*level; // scale 0-63 to 0-level
-    }
-    
-    function renderPreview(){
-        if(!imgData)return;
-        const data=new Uint8ClampedArray(imgData.data);
-        const level=parseInt(slider.value);
-        for(let y=0;y<canvas.height;y++){
-            for(let x=0;x<canvas.width;x++){
-                const i=(y*canvas.width+x)*4;
-                const gray=(0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]);
-                const threshold=getThreshold(x,y,level);
-                const bw=gray<threshold?0:255;
-                data[i]=data[i+1]=data[i+2]=bw;
-                data[i+3]=255;
-            }
+</form>
+
+<label for="image-slider">Image threshold:</label>
+<input type="range" id="image-slider" min="0" max="255" value="128">
+
+<canvas id="image-preview" style="max-width:400px;display:none;margin-top:10px;"></canvas>
+
+<script>
+const fileInput=document.getElementById("image-input");
+const canvas=document.getElementById("image-preview");
+const ctx=canvas.getContext("2d");
+const slider=document.getElementById("image-slider");
+const thresholdInput=document.getElementById("threshold-input");
+let imgElement=new Image();
+let imgData=null;
+
+document.getElementById("upload-button").addEventListener("click",()=>fileInput.click());
+
+fileInput.addEventListener("change",()=>{
+    const file=fileInput.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=e=>{imgElement.src=e.target.result};
+    reader.readAsDataURL(file);
+});
+
+imgElement.onload=()=>{
+    canvas.style.display="block";
+    canvas.width=800;
+    canvas.height=480;
+    ctx.drawImage(imgElement,0,0,canvas.width,canvas.height);
+    imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+    renderPreview();
+};
+
+// 8x8 Bayer matrix for smooth dithering
+const bayer8x8=[
+[0,32,8,40,2,34,10,42],
+[48,16,56,24,50,18,58,26],
+[12,44,4,36,14,46,6,38],
+[60,28,52,20,62,30,54,22],
+[3,35,11,43,1,33,9,41],
+[51,19,59,27,49,17,57,25],
+[15,47,7,39,13,45,5,37],
+[63,31,55,23,61,29,53,21]
+];
+
+function getThreshold(x,y,level){
+    const m=bayer8x8[y%8][x%8];
+    return (m/63)*level;
+}
+
+function renderPreview(){
+    if(!imgData) return;
+    const data=new Uint8ClampedArray(imgData.data);
+    const level=parseInt(slider.value);
+    for(let y=0;y<canvas.height;y++){
+        for(let x=0;x<canvas.width;x++){
+            const i=(y*canvas.width+x)*4;
+            const gray=(0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]);
+            const threshold=getThreshold(x,y,level);
+            const bw=gray<threshold?0:255;
+            data[i]=data[i+1]=data[i+2]=bw;
+            data[i+3]=255;
         }
-        ctx.putImageData(new ImageData(data,canvas.width,canvas.height),0,0);
     }
-    </script>
-    
-    
+    ctx.putImageData(new ImageData(data,canvas.width,canvas.height),0,0);
+}
+
+// Only update canvas live
+slider.addEventListener("input", renderPreview);
+
+// When form is submitted, save current slider value in hidden input
+document.getElementById("image-form").addEventListener("submit", e=>{
+    thresholdInput.value = slider.value;
+});
+</script>
+
 </body>
 </html>

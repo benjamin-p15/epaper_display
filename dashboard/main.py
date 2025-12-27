@@ -13,6 +13,7 @@ from modules.image_display import main as image
 
 current_layout = None #"weather"
 update_state = False
+image_threshold = 128
 
 # Start website
 def start_dashboard():
@@ -35,6 +36,13 @@ def start_dashboard():
             update_state = True
             return f"Layout set to {layout}"
         return "Invalid layout", 400
+    
+    @app.route("/threshold", methods=["POST"])
+    def set_threshold():
+        # When image is changed also record image threshold
+        global image_threshold
+        image_threshold = request.form.get("threshold")
+        return f"Threshold set to {image_threshold}", 200
     
     # Images require a speical server state /display_image which it's interactions is handled here
     @app.route("/display_image", methods=["POST"])
@@ -87,7 +95,7 @@ def display_loop(display):
             if update_display: current_display = img
 
         # Update display if requested and wait before running check again
-        if(update_display): display.display_image(current_display, 255)
+        if(update_display): display.display_image(current_display, image_threshold)
         time.sleep(10)
 
 # Startup script when file is ran
