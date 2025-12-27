@@ -77,7 +77,7 @@ class EpaperDisplay():
 
     # Send image to display and then render whole image to display
     def display_image(self, img):
-        img = img.convert("L").resize((self.width, self.height))
+        img = img.convert("L").resize((self.width, self.height)).invert(img)
         #self.clear_display()                                                   # Clear old images off display first
         #img = img.convert("L").resize((self.width, self.height))                # Convert image to grayscale 
         #img = img.point(lambda x: 0 if x < 128 else 255, "1")                   # Fit image to screen
@@ -85,12 +85,12 @@ class EpaperDisplay():
         self.cmd(0x13)
         for y in range(self.height):
             for x in range(0, self.width, 8):
-                byte = self.color_white
+                byte = self.color_black
                 for bit in range(8):
                     if x + bit >= self.width:
                         continue
                     if pixels[x + bit, y] < 180:
-                        byte |= ~(1 << (7 - bit))
+                        byte &= ~(1 << (7 - bit))
                 self.data(byte)
         self.cmd(0x12)
         self.wait_busy()
