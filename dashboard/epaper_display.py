@@ -63,7 +63,7 @@ class EpaperDisplay():
         self.data(0x01)
         self.data(0xE0)
         self.cmd(0x15) 
-        self.data(0x00)
+        self.data(0xFF)
     
     # Clear display by changing it to white
     def clear_display(self):
