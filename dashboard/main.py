@@ -9,9 +9,10 @@ import os
 from epaper_display import EpaperDisplay
 from modules.clock import main as clock
 from modules.weather import main as weather
+from modules.image_display import main as image
 
 current_layout = "weather"
-update_display = False
+update_state = False
 
 # Start website
 def start_dashboard():
@@ -28,10 +29,11 @@ def start_dashboard():
     @app.route("/set_layout", methods=["POST"])
     def set_layout():
         # When buttons are clicked saved thier changed state
-        global current_layout
+        global current_layout, update_state
         layout = request.form.get("layout")
         if layout in ("clock", "weather", "image"):
             current_layout = layout
+            update_state = True
             return f"Layout set to {layout}"
         return "Invalid layout", 400
     
@@ -45,20 +47,30 @@ def display_loop(display):
 
     while True:
         # If layout changes refreash display
-        global current_layout
+        global current_layout, update_state
         if current_layout != last_layout:    
             last_layout = current_layout
             current_display = None
+
+
         
         update_display = False
 
         # Depending on what layout is selected run indavidual classes which have thier own built in timing circuits
+        if(update_state==True):
+            update_state=False
+            if(current_layout=="image"):
+                img, update_display = time.render()
+                if update_display: current_display = img
         if(current_layout=="weather"):
             img, update_display = weather.render()
             if update_display: current_display = img
         elif(current_layout=="clock"):
             img, update_display = clock.render()
             if update_display: current_display = img
+
+
+
 
         # Update display if requested and wait before running check again
         if(update_display): display.display_image(current_display)
