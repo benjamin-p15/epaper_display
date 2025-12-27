@@ -7,10 +7,10 @@
 </head>
 <body>
     <h1>E-Paper Dashboard</h1>
-    <form id="layout-form" action="/display" method="post">
+    <form id="layout-form" action="/set_layout" method="post">
         <button type="button" data-layout="weather">Weather Layout</button>
     </form>
-    <form id="layout-form" action="/display" method="post">
+    <form id="layout-form" action="/set_layout" method="post">
         <button type="button" data-layout="time">Time Layout</button>
     </form>
 
@@ -19,7 +19,7 @@
             button.addEventListener('click', () => {
                 const layout = button.dataset.layout;
         
-                fetch('/display', {
+                fetch('/set_layout', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: `layout=${layout}`
