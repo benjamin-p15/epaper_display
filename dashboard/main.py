@@ -11,6 +11,7 @@ from modules.clock import main as clock
 from modules.weather import main2 as weather
 
 current_layout = None
+current_layout = "time"
 
 def start_dashboard():
     # Setup a blank flask website
