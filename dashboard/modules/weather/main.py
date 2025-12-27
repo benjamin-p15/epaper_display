@@ -40,42 +40,34 @@ def render():
         print(f"region: {location_data['region']}")
         print(f"airport: {location_data['airport']}")
         print(f"airport_distance: {location_data['airport_distance']}")
-        metar_list = fetch_metar([location_data['airport']['icao_code']])
-        print(metar_list)
+
+    
+        metar_data = fetch_metar(location_data['airport']['icao_code'])
+        print(metar_data)
+
         draw = ImageDraw.Draw(_cache_img)
         font = ImageFont.load_default()
+
         y = 5
         line_height = 12
         info_lines = [
             f"City: {location_data['city']}",
             f"Region: {location_data['region']}",
-            f"Latitude: {location_data['latitude']:.4f}",
-            f"Longitude: {location_data['longitude']:.4f}",
+            f"Latitude: {location_data['latitude']}",
+            f"Longitude: {location_data['longitude']}",
             f"Nearest Airport: {location_data['airport']['name']} ({location_data['airport']['ident']})",
             f"Distance: {location_data['airport_distance']:.1f} km",
             "METAR Data:"
         ]
-        if metar_list and len(metar_list) > 0:
-            metar = metar_list[0]
-            info_lines.extend([
-                f"  Airport: {metar['name']}",
-                f"  Temperature: {metar['temp']}°C",
-                f"  Wind: {metar['wdir']} at {metar['wspd']} kt",
-                f"  Visibility: {metar['visib']}",
-                f"  Altimeter: {metar['altim']:.1f} hPa",
-                f'''  Clouds: {', '.join([f"{c['cover']} at {c['base']} ft" for c in metar.get('clouds', [])])}'''
-                f"  Raw: {metar['rawOb'][:60]}..."
-            ])
-        else:
-            info_lines.append("  No METAR available")
+
+        # Add each key in METAR JSON
+        for key, value in metar_data.items():
+            info_lines.append(f"{key}: {value}")
+
+        # Draw lines on the image
         for line in info_lines:
             draw.text((5, y), line, font=font, fill=0)
             y += line_height
-            for key, value in metar_list.items():
-                info_lines.append(f"{key}: {value}")
-            for line in info_lines:
-                draw.text((5, y), line, font=font, fill=0)
-                y += line_height
 
 
     return _cache_img, False 
