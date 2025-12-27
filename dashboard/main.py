@@ -61,7 +61,7 @@ def start_dashboard():
         return "Image uploaded", 200
     
     # Start the web server
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, threaded=True, debug=False)
 
 # Check for display layout changes and run timmer circuits 
 def display_loop(display):
