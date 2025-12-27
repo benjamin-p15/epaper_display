@@ -14,7 +14,7 @@ def render():
         _last_update = now
         return _cache_img, True  
     
-    metar_data = fetch_metar("KSFO")
+    metar_data = fetch_metar(["KSFO"])
     print(metar_data)
 
 
