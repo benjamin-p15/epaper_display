@@ -69,7 +69,7 @@ class EpaperDisplay():
     def clear_display(self):
         self.cmd(0x13)
         for i in range(self.buffer_length): # Set every pixel to white
-            self.data(0x00)
+            self.data(0xFF)
         self.cmd(0x12)                      # send display refresh command
         self.wait_busy()
 
@@ -77,7 +77,7 @@ class EpaperDisplay():
     def display_image(self, img):
         self.clear_display()                                                    # Clear old images off display first
         img = img.convert("L").resize((self.width, self.height))                # Convert image to grayscale 
-        img = img.point(lambda x: 1 if x < 128 else 0, mode="1")                # Fit image to screen
+        img = img.point(lambda x: 1 if x > 128 else 0, mode="1")                # Fit image to screen
         pixels = img.load()                                                     # Load image data and write image data into bytes then send to screen to display image
         self.cmd(0x13)
         for y in range(self.height):
