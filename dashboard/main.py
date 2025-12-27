@@ -8,7 +8,7 @@ import os
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
 from modules.clock import main as clock
-from modules.weather import main2 as weather
+from modules.weather import main as weather
 
 current_layout = "weather"
 update_display = False
@@ -62,7 +62,7 @@ def display_loop(display):
 
         if(update_display): 
             display.display_image(current_display)
-            
+
         time.sleep(1)
 
 
