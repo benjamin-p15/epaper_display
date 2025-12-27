@@ -13,9 +13,16 @@ location_data = {
     'latitude': None,
     'longitude': None,
     'city': None,
-    'region': None,
-    'airport': None,
-    'airport_distance': None
+    'region': None, # State
+    'continent': None,
+    'country': None,
+    'timezone': None,
+    'airport_icao_code': None,
+    'airport_iata_code': None,
+    'airport_distance': None,
+    'airport_type': None,
+    'airport_name': None,
+    'elevation': None
 }
 
 def render():
@@ -25,21 +32,25 @@ def render():
         _cache_img = Image.new("1", (800, 480), color=1)
         _last_update = now
 
+        # Log location data using ip
         if any(location_data[key] is None for key in ['latitude', 'longitude', 'city', 'region']):
-            latitude, longitude, city, region = get_current_location()
-            location_data.update({'latitude': latitude,'longitude': longitude, 'city': city,'region': region})
+            latitude, longitude, city, region, country, timezone = get_current_location()
+            location_data.update({'latitude': latitude,'longitude': longitude, 'city': city,'region': region, 'country': country, 'timezone': timezone})
         
-        if any(location_data[key] is None for key in ['airport', 'airport_distance']):
+        # Log airport data using latitude longitude and stored airports
+        if any(location_data[key] is None for key in ['airport_icao_code']):
             airports_csv = os.path.join(script_directory, "data", "airports.csv")
             airport, airport_distance = find_nearest_airport(location_data['latitude'], location_data['longitude'], airports_csv)
-            location_data.update({'airport': airport,'airport_distance': airport_distance})
+            location_data.update({'airport_icao_code': airport["icao_code"], 'continent': airport["continent"], 'airport_iata_code': airport["iata_code"], 'airport_type': airport["type"], 'airport_name': airport["name"], 'elevation': airport["elevation_ft"], 'airport_distance': airport_distance})
         
-        print(f"latitude: {location_data['latitude']}")
-        print(f"longitude: {location_data['longitude']}")
-        print(f"city: {location_data['city']}")
-        print(f"region: {location_data['region']}")
-        print(f"airport: {location_data['airport']}")
-        print(f"airport_distance: {location_data['airport_distance']}")
+
+
+
+
+
+
+        for key, value in location_data.items():
+            print(f"{key}: {value}")
 
     
         metar_data = fetch_metar(location_data['airport']['icao_code'])
@@ -76,12 +87,14 @@ def get_current_location():
         else:
             latitude, longitude = None, None
 
-        # Get city and state info
+        # Get location info
         city = location_data.get("city")
         region = location_data.get("region")
+        timezone = location_data.get("timezone")
+        country = location_data.get("country")
 
         # Return all location infomation
-        return latitude, longitude, city, region
+        return latitude, longitude, city, region, country, timezone
 
     except Exception as error:
         print("Error getting location:", error)
