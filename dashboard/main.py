@@ -54,6 +54,7 @@ def start_dashboard():
             image_threshold = int(threshold_str)
         except ValueError:
             image_threshold = 128
+        print(image_threshold)
 
         # Store image in memery for moduel to use, and update other required paremeters
         img = Image.open(file.stream).convert("1")
