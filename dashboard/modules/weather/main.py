@@ -60,7 +60,7 @@ def render():
         _cache_img=screen.render
 
 
-    return _cache_img, False 
+    return _cache_img, True 
 
 # Get metter from a specific airport
 def fetch_metar(icao_code):
