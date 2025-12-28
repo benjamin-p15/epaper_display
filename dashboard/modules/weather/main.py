@@ -101,12 +101,12 @@ def render():
         screen.add_image(os.path.join(script_directory, "icons", "sunrise.png"),(0.6, 0.25),(0.05,0.05),invert=True)
         screen.add_text([
             {"text": f"{sunrise_time}", "size": 36},
-            {"text": f"{sunrise_period}", "size": 18, "align": "bottom"}
+            {"text": f"{sunrise_period}", "size": 18, "align": "center"}
         ], position=(0.65, 0.25),align="left")
         screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.6, 0.35),(0.05,0.05),invert=True)
         screen.add_text([
             {"text": f"{sunset_time}", "size": 36},
-            {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
+            {"text": f"{sunset_period}", "size": 18, "align": "center"}
         ], position=(0.65, 0.35),align="left")
 
 
