@@ -147,7 +147,7 @@ class ImageDrawer:
             if cmd["type"] == "text":
                 x, y = cmd["position"]
 
-                # Preload fonts and calculate total width/height
+                # Preload fonts and calculate widths/heights
                 fonts = []
                 widths = []
                 heights = []
@@ -164,7 +164,7 @@ class ImageDrawer:
                 total_width = sum(widths)
                 max_height = max(heights)
 
-                # Compute starting x based on overall alignment
+                # Compute starting x based on overall horizontal alignment
                 if cmd["align"] == "center":
                     x_start = x - total_width // 2
                 elif cmd["align"] == "right":
@@ -178,18 +178,18 @@ class ImageDrawer:
                     t = block["text"]
                     block_height = heights[i]
 
-                    # Vertical alignment inside max_height
-                    draw_y = y
+                    # Vertical alignment relative to max_height
                     block_align = block.get("align", "middle")
                     if block_align == "top":
                         draw_y = y
                     elif block_align == "middle":
                         draw_y = y + (max_height - block_height) // 2
                     else:  # bottom
-                        draw_y = y + max_height - block_height
+                        draw_y = y + (max_height - block_height)
 
                     draw.text((x_start + x_offset, draw_y), t, font=font, fill=cmd["fill"])
                     x_offset += widths[i]
+
 
 
             # Add image to screen
