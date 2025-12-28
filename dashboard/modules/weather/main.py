@@ -139,7 +139,7 @@ def render():
         #wind data UPDATE
         # Wind speed
         data=[]
-        screen.add_image(os.path.join(script_directory, "icons", "wind.png"),(0.4, 0.65),(0.05,0.05),invert=True)
+        screen.add_image(os.path.join(script_directory, "icons", "wind.png"),(0.4, 0.6),(0.05,0.05),invert=True)
         try:
             wind_speed = knots_to_mph(weather_data['wspd'])
             data.append({"text": f"{round(wind_speed)}", "size": 36})
