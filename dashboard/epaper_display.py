@@ -115,12 +115,12 @@ class ImageDrawer:
         self.commands = []
 
     # Add text to render que
-    def add_text(self, text, position, font=None, size=12, fill=0):
+    def add_text(self, text, position, font=None, size=12, fill=0, align="center"):
         if font is None:
             font = ImageFont.load_default() 
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
-        self.commands.append({"type": "text","text": text,"position": (px, py),"font": font,"fill": fill})
+        self.commands.append({"type": "text","text": text,"position": (px, py),"font": font,"fill": fill, "algin": align})
 
     # Add image to render que
     def add_image(self, img, position, size=None):
@@ -144,9 +144,13 @@ class ImageDrawer:
     def render(self):
         draw = ImageDraw.Draw(self.image)
         for cmd in self.commands:
-            # Add text to screen
+            # Add text to screen, and align based and selected option
             if cmd["type"] == "text":
-                draw.text(cmd["position"], cmd["text"], font=cmd["font"], fill=cmd["fill"])
+                if cmd.get("align") == "center": anchor = "mm" 
+                elif cmd.get("align") == "right": anchor = "rm" 
+                else: anchor = "lm" 
+                draw.text(cmd["position"], cmd["text"], font=cmd["font"], fill=cmd["fill"], anchor=anchor)
+
             # Add image to screen
             elif cmd["type"] == "image":
                 img = cmd["img"]

@@ -47,9 +47,6 @@ def render():
 
 
 
-
-
-
         for key, value in location_data.items(): print(f"{key}: {value}")
         metar_data = fetch_metar(location_data['airport_icao_code'])
         for metar_dict in metar_data:
@@ -57,6 +54,7 @@ def render():
                 print(f"{key}: {value}")
 
         for i in range(7): screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
+        screen.add_text(f"{location_data['city']}, {location_data['region']}",0.5,None,20,0,"center")
         _cache_img=screen.render()
 
         if(_cache_img is None): return None, False
