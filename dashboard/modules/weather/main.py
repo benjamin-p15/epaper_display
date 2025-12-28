@@ -30,7 +30,7 @@ def render():
     global _last_update, _cache_img, script_directory, weather_data
     now = time.time()
     now_datetime = datetime.datetime.now()
-    local_timezone=datetime.datetime.get_localzone()
+    #local_timezone=datetime.datetime.
     today=datetime.datetime.today()
     print(today)
     if now - _last_update >= 5 * 60:
