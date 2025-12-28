@@ -149,10 +149,8 @@ class ImageDrawer:
 
                 fonts = []
                 widths = []
-                ascents = []
-                descents = []
+                heights = []
 
-                # Preload fonts and measure
                 for block in cmd["text"]:
                     font_path = cmd["font_path"]
                     if cmd.get("bold", False):
@@ -161,40 +159,37 @@ class ImageDrawer:
                     fonts.append(font)
                     w, h = font.getsize(block["text"])
                     widths.append(w)
-                    ascent, descent = font.getmetrics()
-                    ascents.append(ascent)
-                    descents.append(descent)
+                    heights.append(h)
 
+                max_height = max(heights)
                 total_width = sum(widths)
-                max_ascent = max(ascents)
-                max_descent = max(descents)
 
-                # Determine starting x based on horizontal alignment
+                # Determine starting x for horizontal alignment
                 if cmd["align"] == "center":
                     x_start = x - total_width // 2
                 elif cmd["align"] == "right":
                     x_start = x - total_width
-                else:
+                else:  # left
                     x_start = x
 
                 x_offset = 0
                 for i, block in enumerate(cmd["text"]):
                     font = fonts[i]
                     t = block["text"]
-                    ascent = ascents[i]
-                    descent = descents[i]
+                    h = heights[i]
 
-                    # Align vertically by top/middle/bottom
-                    block_vertical_align = block.get("align", "middle")
-                    if block_vertical_align == "top":
+                    # Vertical alignment
+                    block_align = block.get("align", "middle")
+                    if block_align == "top":
                         draw_y = y
-                    elif block_vertical_align == "middle":
-                        draw_y = y + (max_ascent - ascent) // 2
+                    elif block_align == "middle":
+                        draw_y = y + (max_height - h) // 2
                     else:  # bottom
-                        draw_y = y + max_ascent - ascent
+                        draw_y = y + (max_height - h)
 
                     draw.text((x_start + x_offset, draw_y), t, font=font, fill=cmd["fill"])
                     x_offset += widths[i]
+
 
 
 
