@@ -62,9 +62,9 @@ def render():
         
         
         screen.add_text([
-        {"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},
-        {"text": "°F", "size": 36, "align": "top"}
-        ], position=(0.3, 0.35), align="middle", bold=True)
+            {"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},
+            {"text": "°F", "size": 36, "align": "top"}
+        ], position=(0.3, 0.35), bold=True)
         
         screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.3, 0.46))
         
