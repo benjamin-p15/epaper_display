@@ -150,8 +150,6 @@ class ImageDrawer:
                 fonts = []
                 widths = []
                 heights = []
-                ascents = []
-                descents = []
 
                 for block in cmd["text"]:
                     font_path = cmd["font_path"]
@@ -160,16 +158,10 @@ class ImageDrawer:
                     font = ImageFont.truetype(font_path, block.get("size", 12))
                     fonts.append(font)
                     w, h = font.getsize(block["text"])
-                    ascent, descent = font.getmetrics()
                     widths.append(w)
                     heights.append(h)
-                    ascents.append(ascent)
-                    descents.append(descent)
 
-                # Get the maximum ascent and descent among all text blocks
-                max_ascent = max(ascents)
-                max_descent = max(descents)
-                max_total_height = max(heights)
+                max_height = max(heights)
                 total_width = sum(widths)
 
                 # Determine starting x for horizontal alignment
@@ -180,34 +172,27 @@ class ImageDrawer:
                 else:  # left
                     x_start = x
 
-                # Calculate reference positions
-                # y is the TOP reference point for "top" alignment
-                # y + max_total_height is the BOTTOM reference point for "bottom" alignment
-                
                 x_offset = 0
                 for i, block in enumerate(cmd["text"]):
                     font = fonts[i]
                     t = block["text"]
-                    ascent = ascents[i]
-                    descent = descents[i]
                     h = heights[i]
-                    
+
+                    # Vertical alignment - FIXED for text_y_max alignment
                     block_align = block.get("align", "middle")
-                    
                     if block_align == "top":
-                        # For "top" alignment: all text tops should be at y
-                        # Baseline = y + ascent
-                        baseline_y = y + ascent
+                        # Align tops: text_y_max should be same for all top-aligned blocks
+                        # So position the bottom of each text at y + max_height
+                        draw_y = max_height - y
                     elif block_align == "bottom":
-                        # For "bottom" alignment: all text bottoms should be at y + max_total_height
-                        # Baseline = (y + max_total_height) - descent
-                        baseline_y = (y + max_total_height) - descent
-                    else:  # middle/default
-                        # For "middle" alignment: center vertically within max_total_height
-                        # Baseline = y + max_total_height//2 - (descent - ascent)//2
-                        baseline_y = y + max_total_height//2 - (descent - ascent)//2
-                    
-                    draw.text((x_start + x_offset, baseline_y), t, font=font, fill=cmd["fill"])
+                        # Align bottoms: text_y_min should be same for all bottom-aligned blocks  
+                        # So position the text starting at y
+                        draw_y = y + max_height - h
+                    else:  # middle
+                        # Center the text vertically
+                        draw_y = y + (max_height - h) // 2
+
+                    draw.text((x_start + x_offset, draw_y), t, font=font, fill=cmd["fill"])
                     x_offset += widths[i]
 
 
