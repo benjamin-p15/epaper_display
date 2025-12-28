@@ -181,7 +181,7 @@ class ImageDrawer:
                     element_height=text_sizes[i]["height"]
                     element_alignment=text_element.get("align","middle")
                     # Figure out where to draw next text element
-                    if element_alignment=="top": draw_y = y-(max_height-element_height)/2
+                    if element_alignment=="top": draw_y = y-(max_height+element_height)/2
                     elif element_alignment=="bottom": draw_y = y + (max_ascent - text_sizes[i]["ascent"])
                     else:draw_y=y+(max_height-element_height)//2
                     # Draw text and record it's size for next alginment
