@@ -117,7 +117,7 @@ class ImageDrawer:
     # Add text to render que
     def add_text(self, text, position, font=None, size=12, fill=0, align="center", bold=False):
         if font is None:
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size)
+            font or "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
         self.commands.append({"type": "text","text": text,"position": (px, py),"font": font,"fill": fill, "align": align, "bold": bold})
