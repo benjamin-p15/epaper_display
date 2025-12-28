@@ -52,19 +52,20 @@ def render():
 
         for key, value in weather_data.items(): print(f"{key}: {value}")
 
+
+        # Generate the hour data for forcast
         hours = []
-
         for i in range(7):
+            # Generate hourly text
             if i < 6:
-                hour = (now_datetime + datetime.timedelta(hours=i+1)).hour  # next hours
+                hour = (now_datetime + datetime.timedelta(hours=i+1)).hour 
                 hour_str = f"{hour%12 or 12}{'am' if hour<12 else 'pm'}"
+            # Generate next day text
             else:
-                # Last box: next day abbreviation
                 next_day = now_datetime + datetime.timedelta(days=1)
-                hour_str = next_day.strftime('%a').lower()  # e.g., 'tue'
+                hour_str = next_day.strftime('%a').lower() 
             hours.append(hour_str)
-
-        # Draw rectangles and add text
+        # Draw rectangles forcast text
         for i in range(7):
             screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
             screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
@@ -138,6 +139,7 @@ def render():
         #wind data UPDATE
         # Wind speed
         data=[]
+        screen.add_image("icons/wind.png",(0.55, 0.55),(0.05,0.05))
         try:
             wind_speed = knots_to_mph(weather_data['wspd'])
             data.append({"text": f"{round(wind_speed)}", "size": 36})
