@@ -102,12 +102,12 @@ def render():
         screen.add_text([
             {"text": f"{sunrise_time}", "size": 36},
             {"text": f"{sunrise_period}", "size": 18, "align": "bottom"}
-        ], position=(0.6, 0.15),align="left")
+        ], position=(0.65, 0.15),align="left")
         screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.8, 0.15),(0.05,0.08),invert=True,color_black=True)
         screen.add_text([
             {"text": f"{sunset_time}", "size": 36},
             {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
-        ], position=(0.8, 0.15),align="left")
+        ], position=(0.85, 0.15),align="left")
 
 
         #(humidity)
@@ -116,7 +116,7 @@ def render():
         screen.add_text([
             {"text": f"{round(precent)}", "size": 36},
             {"text": "%", "size": 18, "align": "bottom"}
-        ], position=(0.65, 0.25),align="left")
+        ], position=(0.64, 0.25),align="left")
 
         #(dew point)
         dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
@@ -139,7 +139,7 @@ def render():
         screen.add_text([
             {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
             {"text": "inHg", "size": 18, "align": "bottom"}
-        ], position=(0.85, 0.25),align="left")
+        ], position=(0.84, 0.26),align="left")
 
         #wind data UPDATE
         # Wind speed
@@ -177,7 +177,7 @@ def render():
         except Exception as error:
             data.append({"text": "--", "size": 36})
             data.append({"text": "%", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.8, 0.35),align="left")
+        screen.add_text(data, position=(0.85, 0.35),align="left")
 
         _cache_img=screen.render()
 
