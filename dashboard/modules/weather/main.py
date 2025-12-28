@@ -2,7 +2,7 @@ from PIL import Image
 import requests, math, time, csv, os, datetime
 from zoneinfo import ZoneInfo
 from epaper_display import ImageDrawer
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 screen = ImageDrawer()
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -29,7 +29,8 @@ weather_data = {}
 
 def render():
     global _last_update, _cache_img, script_directory, weather_data
-    now = time.time()
+    now = datetime.now()
+    today = now.date()
     if now - _last_update >= 5 * 60:
         _last_update = now
 
@@ -51,7 +52,6 @@ def render():
 
         for key, value in weather_data.items(): print(f"{key}: {value}")
 
-        now = datetime.now()
         hours = []
 
         for i in range(7):
@@ -66,8 +66,8 @@ def render():
 
         # Draw rectangles and add text
         for i in range(7):
-            screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745))
             screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
+            screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745))
 
 
 
