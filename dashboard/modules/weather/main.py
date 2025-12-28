@@ -103,6 +103,12 @@ def render():
             {"text": "mi", "size": 18, "align": "bottom"}
         ], position=(0.85, 0.35))
 
+        #(pressure) 
+        screen.add_text([
+            {"text": f"{round(weather_data['altim'] / 33.8639, 2)}", "size": 36},
+            {"text": "inHg", "size": 18, "align": "bottom"}
+        ], position=(0.85, 0.45))
+
         #(wind speed and diretcion) UPDATE
         wind_speed = knots_to_mph(weather_data['wspd'])
         screen.add_text([
