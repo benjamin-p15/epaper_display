@@ -27,8 +27,12 @@ location_data = {
     'elevation': None
 }
 
+weather_data = {
+
+}
+
 def render():
-    global _last_update, _cache_img, script_directory
+    global _last_update, _cache_img, script_directory, weather_data
     now = time.time()
     if now - _last_update >= 5 * 60:
         _last_update = now
@@ -44,14 +48,13 @@ def render():
             airport, airport_distance = find_nearest_airport(location_data['latitude'], location_data['longitude'], airports_csv)
             location_data.update({'airport_icao_code': airport["icao_code"], 'continent': airport["continent"], 'airport_iata_code': airport["iata_code"], 'airport_type': airport["type"], 'airport_name': airport["name"], 'elevation': airport["elevation_ft"], 'airport_distance': airport_distance})
         
-
-
+        
+        metar_data = fetch_metar(location_data['airport_icao_code'])
+        if metar_data: weather_data = metar_data[0]
+        else: weather_data = {}
 
         for key, value in location_data.items(): print(f"{key}: {value}")
-        metar_data = fetch_metar(location_data['airport_icao_code'])
-        for metar_dict in metar_data:
-            for key, value in metar_dict.items():
-                print(f"{key}: {value}")
+        for key, value in weather_data.items(): print(f"{key}: {value}")
 
         for i in range(7): screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
         screen.add_text(f"{location_data['city']}, {location_data['region']}",(0.5,0.05),None,40,0,"center")
