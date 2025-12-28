@@ -110,20 +110,22 @@ def render():
         ], position=(0.85, 0.15),align="left")
 
 
-        #(humidity)
+        #(humidity and dew point)
         precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
+        dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
         screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, 0.25),(0.04,0.07),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{round(precent)}", "size": 36},
             {"text": "%", "size": 18, "align": "bottom"}
         ], position=(0.64, 0.24),align="left")
-
-        #(dew point)
-        dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
         screen.add_text([
-            {"text": f"{round(dew_point_F)}", "size": 36, "align": "top"},
-            {"text": "°F", "size": 18, "align": "top"}
-        ], position=(0.5, 0.15),align="left")
+            {"text": f"Dew Point {round(dew_point_F)}", "size": 18, "align": "top"},
+            {"text": "°F", "size": 9, "align": "top"}
+        ], position=(0.64, 0.28),align="left")
+
+
+
+
 
         #(visibility)
         visibility,marker=parse_us_metar_vis(weather_data["visib"])
