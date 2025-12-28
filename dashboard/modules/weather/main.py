@@ -55,11 +55,11 @@ def render():
 
         for i in range(7):
             if i < 6:
-                hour = (now + timedelta(hours=i+1)).hour  # next hours
+                hour = (now + datetime.timedelta(hours=i+1)).hour  # next hours
                 hour_str = f"{hour%12 or 12}{'am' if hour<12 else 'pm'}"
             else:
                 # Last box: next day abbreviation
-                next_day = now + timedelta(days=1)
+                next_day = now + datetime.timedelta(days=1)
                 hour_str = next_day.strftime('%a').lower()  # e.g., 'tue'
             hours.append(hour_str)
 
