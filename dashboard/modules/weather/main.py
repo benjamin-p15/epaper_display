@@ -67,9 +67,9 @@ def render():
             date=today,
             timezone_offset=get_timezone_offset_hours(location_data["timezone"])
         )
-        sunrise_time = sunrise.strftime("%I:%M")
+        sunrise_time = sunrise.strftime("%-I:%M")
         sunrise_period = sunrise.strftime("%p")
-        sunset_time = sunset.strftime("%I:%M")
+        sunset_time = sunset.strftime("%-I:%M")
         sunset_period = sunset.strftime("%p")
         screen.add_text([
             {"text": f"{sunrise_time}", "size": 36},
@@ -79,6 +79,7 @@ def render():
             {"text": f"{sunset_time}", "size": 36},
             {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
         ], position=(0.75, 0.35))
+
 
 
         _cache_img=screen.render()
