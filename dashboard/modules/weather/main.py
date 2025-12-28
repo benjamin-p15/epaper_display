@@ -266,4 +266,6 @@ def parse_us_metar_vis(visibility):
         num, denom = vis.split('/')
         value = float(num)/float(denom)
     else: value = float(vis)
-    return value, marker
+    if value.is_integer(): value_str = str(int(value))
+    else: value_str = str(round(value, 1))  
+    return f"{value_str}{marker}"
