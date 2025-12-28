@@ -102,7 +102,7 @@ def get_current_location():
 
     except Exception as error:
         print("Error getting location:", error)
-        return None, None, None, None
+        return None, None, None, None, None, None
     
 # Calulates distances using sphereical coordinates .i.e. haversine distance of earth
 def haversine_distance(lat1, lon1, lat2, lon2):
