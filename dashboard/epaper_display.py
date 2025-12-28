@@ -152,7 +152,7 @@ class ImageDrawer:
 
                 # Preload fonts and calculate total height
                 for block in cmd["text"]:
-                    font_path = cmd["font_path"] or "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+                    font_path = cmd["font_path"]
                     if cmd.get("bold", False):
                         font_path = font_path.replace(".ttf", "-Bold.ttf")
                     font = ImageFont.truetype(font_path, block.get("size", 12))
