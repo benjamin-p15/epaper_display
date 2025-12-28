@@ -53,13 +53,13 @@ def render():
         for i in range(7): screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
         screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, 0.02))
         
-        # Using helper functions display tempasure and what it feels like
+        # Using helper functions display tempasure and what it feels like (tempasure, feels like)
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
         feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
         screen.add_text([{"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},{"text": "°F", "size": 36, "align": "top"}], position=(0.3, 0.35), bold=True)
         screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.28, 0.42))
         
-
+        # (sunrise, sunset)
         today = datetime.date.today()
         sunrise, sunset = calculate_sunrise_sunset(
             latitude=location_data['latitude'],
@@ -81,9 +81,20 @@ def render():
         ], position=(0.75, 0.35))
 
 
-
+        #(humidity)
         precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
-        screen.add_text([{"text": f"{round(precent)}%", "size": 36}], position=(0.75, 0.45))
+        screen.add_text([
+            {"text": f"{round(precent)}%", "size": 36},
+            {"text": "%", "size": 18, "align": "bottom"}
+        ], position=(0.75, 0.45))
+
+        #(wind speed and diretcion)
+        wind_speed = knots_to_mph(weather_data['wdir'])
+        screen.add_text([
+            {"text": f"{round(wind_speed)}", "size": 36},
+            {"text": "mph", "size": 18, "align": "bottom"},
+            {"text": f"| {weather_data['wspd']}°", "size": 36},
+        ], position=(0.75, 0.55))
 
 
         _cache_img=screen.render()
