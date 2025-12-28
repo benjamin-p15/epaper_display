@@ -98,30 +98,30 @@ def render():
         sunrise_period = sunrise.strftime("%p")
         sunset_time = sunset.strftime("%-I:%M")
         sunset_period = sunset.strftime("%p")
-        screen.add_image(os.path.join(script_directory, "icons", "sunrise.png"),(0.6, 0.15),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "sunrise.png"),(0.6, 0.1),(0.05,0.08),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{sunrise_time}", "size": 36},
             {"text": f"{sunrise_period}", "size": 18, "align": "bottom"}
-        ], position=(0.65, 0.15),align="left")
-        screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.8, 0.15),(0.05,0.08),invert=True,color_black=True)
+        ], position=(0.65, 0.1),align="left")
+        screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.8, 0.1),(0.05,0.08),invert=True,color_black=True)
         screen.add_text([
             {"text": f"{sunset_time}", "size": 36},
             {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
-        ], position=(0.85, 0.15),align="left")
+        ], position=(0.85, 0.1),align="left")
 
 
         #(humidity and dew point)
         precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
         dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
-        screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, 0.25),(0.04,0.07),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, 0.2),(0.04,0.07),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{round(precent)}", "size": 36},
             {"text": "%", "size": 18, "align": "bottom"}
-        ], position=(0.64, 0.24),align="left")
+        ], position=(0.64, 0.19),align="left")
         screen.add_text([
             {"text": f"Dew {round(dew_point_F)}", "size": 18, "align": "top"},
             {"text": "°F", "size": 9, "align": "top"}
-        ], position=(0.64, 0.34),align="left")
+        ], position=(0.64, 0.19),align="left")
 
 
 
@@ -129,19 +129,19 @@ def render():
 
         #(visibility)
         visibility,marker=parse_us_metar_vis(weather_data["visib"])
-        screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.35),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.3),(0.05,0.08),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{visibility}", "size": 36},
             {"text": f"{marker}", "size": 28, "align": "center"},
             {"text": "mi", "size": 18, "align": "bottom"}
-        ], position=(0.65, 0.34),align="left")
+        ], position=(0.65, 0.29),align="left")
 
         #(pressure) 
-        screen.add_image(os.path.join(script_directory, "icons", "pressure2.png"),(0.8, 0.25),(0.04,0.07),invert=True, color_black=False)
+        screen.add_image(os.path.join(script_directory, "icons", "pressure2.png"),(0.8, 0.2),(0.04,0.07),invert=True, color_black=False)
         screen.add_text([
             {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
             {"text": "inHg", "size": 18, "align": "bottom"}
-        ], position=(0.84, 0.24),align="left")
+        ], position=(0.84, 0.19),align="left")
 
         #wind data UPDATE
         # Wind speed
@@ -171,7 +171,7 @@ def render():
 
         # Cloud coverage
         data=[]
-        screen.add_image(os.path.join(script_directory, "icons", "03d.png"),(0.8, 0.35),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "03d.png"),(0.8, 0.3),(0.05,0.08),invert=True, color_black=True)
         try:
             coverage = calculate_weighted_cloud_coverage(weather_data['clouds'])
             data.append({"text": f"{coverage}", "size": 36})
@@ -179,7 +179,7 @@ def render():
         except Exception as error:
             data.append({"text": "--", "size": 36})
             data.append({"text": "%", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.86, 0.35),align="left")
+        screen.add_text(data, position=(0.86, 0.3),align="left")
 
         _cache_img=screen.render()
 
