@@ -178,7 +178,7 @@ class ImageDrawer:
                 x_offset=0
                 for i,text_element in enumerate(cmd["text"]):
                     # get element alginment data
-                    element_height=heights[i]
+                    element_height=text_sizes[i]["height"]
                     element_alignment=text_element.get("align","middle")
                     # Figure out where to draw next text element
                     if element_alignment=="top": draw_y = y + (max_ascent - text_sizes[i]["ascent"])
