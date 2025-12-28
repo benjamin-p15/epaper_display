@@ -51,24 +51,15 @@ def render():
         for key, value in weather_data.items(): print(f"{key}: {value}")
 
         for i in range(7): screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
-        screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, 0.05))
+        screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, 0.02))
         
         # Using helper functions display tempasure and what it feels like
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
         feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
-
-        #screen.add_text(f"{round(tempasure_f)}",position=(0.3, 0.35),size=96,fill=0,align="center")
-        #screen.add_text("°F",position=(0.39, 0.3),size=24,fill=0,align="center")
-        
-        
-        screen.add_text([
-            {"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},
-            {"text": "°F", "size": 36, "align": "top"}
-        ], position=(0.3, 0.35), bold=True)
-        
+        screen.add_text([{"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},{"text": "°F", "size": 36, "align": "top"}], position=(0.3, 0.35), bold=True)
         screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.28, 0.42))
         
-
+        
         today = datetime.date.today()
         sunrise, sunset = calculate_sunrise_sunset(
             latitude=location_data['latitude'],
@@ -78,11 +69,8 @@ def render():
         )
         sunrise = sunrise.strftime("%-H:%M")
         sunset = sunset.strftime("%-H:%M")
-
-        #screen.add_text(f"{sunrise}",position=(0.75, 0.25),size=36,fill=0,align="center")
-        #screen.add_text(f"{sunset}",position=(0.75, 0.30),size=36,fill=0,align="center")
-
-
+        screen.add_text([{"text":f"{sunrise}","size":36}],position=(0.75, 0.25))
+        screen.add_text([{"text":f"{sunset}","size":36}],position=(0.75, 0.30))
 
         _cache_img=screen.render()
 
