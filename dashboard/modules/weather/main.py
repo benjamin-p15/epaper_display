@@ -29,7 +29,7 @@ weather_data = {}
 def render():
     global _last_update, _cache_img, script_directory, weather_data
     now = time.time()
-    now_datetime = datetime.datetime.time()
+    now_datetime = datetime.datetime.now()
     today=datetime.datetime.today()
     if now - _last_update >= 5 * 60:
         _last_update = now
