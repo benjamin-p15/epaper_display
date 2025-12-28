@@ -187,7 +187,7 @@ class ImageDrawer:
                     else:draw_y=y+(max_height-element_height)//2
                     # Draw text and record it's size for next alginment
                     draw.text((x_start+x_offset,draw_y),text_element["text"],font=fonts[i],fill=cmd["fill"])
-                    x_offset+=widths[i]
+                    x_offset+=text_sizes[i]["width"]
 
 
 
