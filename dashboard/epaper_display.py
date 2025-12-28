@@ -126,10 +126,11 @@ class ImageDrawer:
     def add_image(self, img, position, size=None, invert=False, color_black=False):
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
-        img = Image.open(img).convert("RGBA")
+        img = Image.open(img)
         if(invert==True): img=ImageOps.invert(img.convert("RGB"))
         # Shading option
         if color_black:
+            img=img.convert("RGBA")
             pixels = img.load()
             w,h = img.size
             for y in range(h):
