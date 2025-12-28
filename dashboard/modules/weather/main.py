@@ -83,7 +83,7 @@ def render():
 
 
         precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
-        screen.add_text([{"text": f"{precent}%", "size": 36}], position=(0.75, 0.45))
+        screen.add_text([{"text": f"{round(precent)}%", "size": 36}], position=(0.75, 0.45))
 
 
         _cache_img=screen.render()
