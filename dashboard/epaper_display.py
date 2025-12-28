@@ -127,7 +127,7 @@ class ImageDrawer:
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
         img=Image.open(img)
-        if(invert==True): img=ImageOps.invert(img)
+        if(invert==True): img=ImageOps.invert(img.convert("RGB"))
         # Convert size percentage to pixels if 0-1
         if size and size[0] <= 1 and size[1] <= 1:
             size = (int(size[0] * self.width), int(size[1] * self.height))
