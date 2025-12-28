@@ -109,6 +109,7 @@ class EpaperDisplay():
 # Image drawer to render things to screen
 class ImageDrawer:
     def __init__(self, width=800, height=480, background=1):
+        self.background=background
         self.image = Image.new("1", (width, height), color=background) # Base image color
         self.width = width
         self.height = height
@@ -222,5 +223,5 @@ class ImageDrawer:
         # Clear commands after render
         self.commands = []
         imgage = self.image
-        self.image = Image.new("1", (self.width, self.fheight), color=self.background) # Base image color
+        self.image = Image.new("1", (self.width, self.height), color=self.background) # Base image color
         return imgage
