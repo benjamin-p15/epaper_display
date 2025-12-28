@@ -120,7 +120,7 @@ class ImageDrawer:
             font or "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
-        self.commands.append({"type": "text","text": text,"position": (px, py),"font": font,"fill": fill, "align": align, "bold": bold})
+        self.commands.append({"type": "text","text": text,"position": (px, py),"font_path": font,"fill": fill, "align": align, "bold": bold})
 
     # Add image to render que
     def add_image(self, img, position, size=None):
