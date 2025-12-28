@@ -103,7 +103,7 @@ def render():
             {"text": f"{sunrise_time}", "size": 36},
             {"text": f"{sunrise_period}", "size": 18, "align": "bottom"}
         ], position=(0.65, 0.25),align="left")
-        screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.4, 0.15),(0.05,0.08),invert=True,color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.8, 0.15),(0.05,0.08),invert=True,color_black=True)
         screen.add_text([
             {"text": f"{sunset_time}", "size": 36},
             {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
@@ -135,7 +135,7 @@ def render():
         ], position=(0.85, 0.35),align="left")
 
         #(pressure) 
-        screen.add_image(os.path.join(script_directory, "icons", "pressure.png"),(0.4, 0.25),(0.04,0.07),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "pressure.png"),(0.8, 0.25),(0.04,0.07),invert=True, color_black=False)
         screen.add_text([
             {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
             {"text": "inHg", "size": 18, "align": "bottom"}
@@ -169,7 +169,7 @@ def render():
 
         # Cloud coverage
         data=[]
-        screen.add_image(os.path.join(script_directory, "icons", "03d.png"),(0.4, 0.35),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "03d.png"),(0.8, 0.35),(0.05,0.08),invert=True, color_black=True)
         try:
             coverage = calculate_weighted_cloud_coverage(weather_data['clouds'])
             data.append({"text": f"{coverage}", "size": 36})
