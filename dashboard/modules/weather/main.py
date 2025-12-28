@@ -56,9 +56,17 @@ def render():
         # Using helper functions display tempasure and what it feels like
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
         feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
-        screen.add_text(f"{round(tempasure_f)}",position=(0.3, 0.35),size=96,fill=0,align="center")
-        screen.add_text("°F",position=(0.39, 0.3),size=24,fill=0,align="center")
-        screen.add_text(f"Feels like {round(feel_tempasure_f)}°",position=(0.3, 0.46),size=18,fill=0,align="center")
+
+        #screen.add_text(f"{round(tempasure_f)}",position=(0.3, 0.35),size=96,fill=0,align="center")
+        #screen.add_text("°F",position=(0.39, 0.3),size=24,fill=0,align="center")
+        
+        
+        screen.add_text([
+        {"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},
+        {"text": "°F", "size": 18, "align": "top"}
+        ], position=(0.3, 0.35), align="middle", bold=True)
+        
+        #screen.add_text(f"Feels like {round(feel_tempasure_f)}°",position=(0.3, 0.46),size=18,fill=0,align="center")
         
 
         today = datetime.date.today()

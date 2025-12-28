@@ -115,12 +115,12 @@ class ImageDrawer:
         self.commands = []
 
     # Add text to render que
-    def add_text(self, text, position, font=None, size=12, fill=0, align="center"):
+    def add_text(self, text, position, font=None, size=12, fill=0, align="center", bold=False):
         if font is None:
             font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size)
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
-        self.commands.append({"type": "text","text": text,"position": (px, py),"font": font,"fill": fill, "align": align})
+        self.commands.append({"type": "text","text": text,"position": (px, py),"font": font,"fill": fill, "align": align, "bold": bold})
 
     # Add image to render que
     def add_image(self, img, position, size=None):
@@ -146,10 +146,45 @@ class ImageDrawer:
         for cmd in self.commands:
             # Add text to screen, and align based and selected option
             if cmd["type"] == "text":
-                if cmd.get("align") == "center": anchor = "mm" 
-                elif cmd.get("align") == "right": anchor = "rm" 
-                else: anchor = "lm" 
-                draw.text(cmd["position"], cmd["text"], font=cmd["font"], fill=cmd["fill"], anchor=anchor)
+                x, y = cmd["position"]
+                total_height = 0
+                fonts = []
+
+                # Preload fonts and calculate total height
+                for block in cmd["text"]:
+                    font_path = cmd["font_path"] or "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+                    if cmd.get("bold", False):
+                        font_path = font_path.replace(".ttf", "-Bold.ttf")
+                    font = ImageFont.truetype(font_path, block.get("size", 12))
+                    fonts.append(font)
+                    total_height += font.getsize(block["text"])[1]
+
+                y_offset = 0
+                for i, block in enumerate(cmd["text"]):
+                    font = fonts[i]
+                    t = block["text"]
+                    block_align = block.get("align", "middle")
+                    text_height = font.getsize(t)[1]
+
+                    # Vertical position per block
+                    if block_align == "top":
+                        draw_y = y + y_offset
+                    elif block_align == "middle":
+                        draw_y = y + y_offset + (total_height - text_height) // 2
+                    else:  # bottom
+                        draw_y = y + y_offset + total_height - text_height
+
+                    # Horizontal alignment
+                    text_width = font.getsize(t)[0]
+                    if cmd["align"] == "center":
+                        draw_x = x - text_width // 2
+                    elif cmd["align"] == "right":
+                        draw_x = x - text_width
+                    else:
+                        draw_x = x
+
+                    draw.text((draw_x, draw_y), t, font=font, fill=cmd["fill"])
+                    y_offset += text_height
 
             # Add image to screen
             elif cmd["type"] == "image":
