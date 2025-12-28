@@ -98,7 +98,7 @@ def render():
         #(visibility)
         visibility=parse_us_metar_vis(weather_data["visib"])
         screen.add_text([
-            {"text": f"{round(visibility)}", "size": 36},
+            {"text": f"{visibility}", "size": 36},
             {"text": "mi", "size": 18, "align": "bottom"}
         ], position=(0.85, 0.35))
 
