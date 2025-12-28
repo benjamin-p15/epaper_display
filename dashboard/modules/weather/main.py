@@ -92,10 +92,17 @@ def render():
         dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
         screen.add_text([
             {"text": f"{round(dew_point_F)}", "size": 36},
-            {"text": "°F", "size": 18, "align": "bottom"}
+            {"text": "°F", "size": 18, "align": "top"}
         ], position=(0.85, 0.25))
 
-        #(wind speed and diretcion)
+        #(visibility)
+        visibility=parse_us_metar_vis(weather_data["visib"])
+        screen.add_text([
+            {"text": f"{round(visibility)}", "size": 36},
+            {"text": "mi", "size": 18, "align": "bottom"}
+        ], position=(0.85, 0.35))
+
+        #(wind speed and diretcion) UPDATE
         wind_speed = knots_to_mph(weather_data['wspd'])
         screen.add_text([
             {"text": f"{round(wind_speed)}", "size": 36},
@@ -240,3 +247,23 @@ def calulate_relative_humidity(temperature, dew_pount):
     saturated_vapor_pressure_T = 6.11 * 10 ** (7.5 * temperature / (237.7 + temperature))
     saturated_vapor_pressure_d = 6.11 * 10 ** (7.5 * dew_pount / (237.7 + dew_pount))
     return (saturated_vapor_pressure_d / saturated_vapor_pressure_T) * 100
+
+# Rephrase from use standard visibility formate to decimal format 
+def parse_us_metar_vis(visibility):
+    vis = str(visibility).upper().strip()
+    marker = ''
+    if vis.startswith('M'):
+        marker = '-'
+        vis = vis[1:]
+    elif vis.endswith('+'):
+        marker = '+'
+        vis = vis.rstrip('+')
+    if ' ' in vis:
+        whole, frac = vis.split()
+        num, denom = frac.split('/')
+        value = float(whole) + float(num)/float(denom)
+    elif '/' in vis:
+        num, denom = vis.split('/')
+        value = float(num)/float(denom)
+    else: value = float(vis)
+    return value, marker
