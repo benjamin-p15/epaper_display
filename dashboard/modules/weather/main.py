@@ -143,7 +143,7 @@ def render():
         except Exception as error:
             data.append({"text": "--", "size": 36})
             data.append({"text": "%", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.85, 0.45))
+        screen.add_text(data, position=(0.85, 0.25))
 
         _cache_img=screen.render()
 
