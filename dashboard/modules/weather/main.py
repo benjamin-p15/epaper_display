@@ -89,11 +89,11 @@ def render():
         ], position=(0.75, 0.45))
 
         #(wind speed and diretcion)
-        wind_speed = knots_to_mph(weather_data['wdir'])
+        wind_speed = knots_to_mph(weather_data['wspd'])
         screen.add_text([
             {"text": f"{round(wind_speed)}", "size": 36},
             {"text": "mph", "size": 18, "align": "bottom"},
-            {"text": f" | {weather_data['wspd']}°", "size": 36},
+            {"text": f" | {weather_data['wdir']}°", "size": 36},
         ], position=(0.75, 0.55))
 
 
