@@ -134,6 +134,16 @@ def render():
             data.append({"text": "mph", "size": 18, "align": "bottom"})
         screen.add_text(data, position=(0.65, 0.55))
 
+        # Cloud coverage
+        data=[]
+        try:
+            coverage = calculate_weighted_cloud_coverage(weather_data['clouds'])
+            data.append({"text": f"{coverage}", "size": 36})
+            data.append({"text": "%", "size": 18, "align": "bottom"})
+        except Exception as error:
+            data.append({"text": "--", "size": 36})
+            data.append({"text": "%", "size": 18, "align": "bottom"})
+        screen.add_text(data, position=(0.65, 0.45))
 
         _cache_img=screen.render()
 
@@ -293,3 +303,24 @@ def parse_us_metar_vis(visibility):
     if value.is_integer(): value_str = str(int(value))
     else: value_str = str(round(value, 1))  
     return value_str, marker
+
+# Calulate the weighted precentage of cloud coverage
+def calculate_weighted_cloud_coverage(cloud_layers):
+    cover_values = {'SKC': 0, 'CLR': 0, 'FEW': 25, 'SCT': 50, 'BKN': 75, 'OVC': 100}
+    if not cloud_layers: return 0
+    
+    # Sort cloud layers by height
+    layers = sorted(cloud_layers, key=lambda x: x['base'])
+    weighted_sum = 0
+    total_weight = 0
+    # Calulate weight sum of cloud layers
+    for i, layer in enumerate(layers):
+        cover_pct = cover_values.get(layer['cover'], 0)
+        
+        # Calulate thickess between layers or assume 2000 as a general bases the sum them
+        if i < len(layers) - 1: thickness = layers[i+1]['base'] - layer['base']
+        else: thickness = 2000
+        weighted_sum += cover_pct * thickness
+        total_weight += thickness
+    # Return weight average
+    return round(weighted_sum / total_weight)
