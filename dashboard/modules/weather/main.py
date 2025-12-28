@@ -68,8 +68,10 @@ def render():
             date=today,
             timezone_offset=get_timezone_offset_hours(location_data["timezone"])
         )
+        sunrise_time = sunrise.strftime("%-H:%M")
+        sunset_time = sunset.strftime("%-H:%M")
 
-        screen.add_text(f"{sunrise}°",position=(0.75, 0.25),size=36,fill=0,align="center")
+        screen.add_text(f"{sunrise}",position=(0.75, 0.25),size=36,fill=0,align="center")
         screen.add_text(f"{sunset}",position=(0.75, 0.30),size=36,fill=0,align="center")
 
 
