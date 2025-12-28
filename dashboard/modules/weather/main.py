@@ -112,7 +112,7 @@ def render():
 
         #(humidity)
         precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
-        screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, 0.47),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, 0.47),(0.04,0.07),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{round(precent)}", "size": 36},
             {"text": "%", "size": 18, "align": "bottom"}
@@ -143,7 +143,7 @@ def render():
         #wind data UPDATE
         # Wind speed
         data=[]
-        screen.add_image(os.path.join(script_directory, "icons", "wind.png"),(0.39, 0.58),(0.05,0.08),invert=True,color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "wind.png"),(0.39, 0.58),(0.04,0.07),invert=True,color_black=True)
         try:
             wind_speed = knots_to_mph(weather_data['wspd'])
             data.append({"text": f"{round(wind_speed)}", "size": 36})
