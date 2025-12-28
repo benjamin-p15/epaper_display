@@ -96,9 +96,10 @@ def render():
         ], position=(0.85, 0.25))
 
         #(visibility)
-        visibility=parse_us_metar_vis(weather_data["visib"])
+        visibility,marker=parse_us_metar_vis(weather_data["visib"])
         screen.add_text([
             {"text": f"{visibility}", "size": 36},
+            {"text": f"{marker}", "size": 32, "align": "center"},
             {"text": "mi", "size": 18, "align": "bottom"}
         ], position=(0.85, 0.35))
 
@@ -268,4 +269,4 @@ def parse_us_metar_vis(visibility):
     else: value = float(vis)
     if value.is_integer(): value_str = str(int(value))
     else: value_str = str(round(value, 1))  
-    return f"{value_str}{marker}"
+    return value_str, marker
