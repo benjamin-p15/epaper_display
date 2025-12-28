@@ -2,6 +2,7 @@ from PIL import Image
 import requests, math, time, csv, os, datetime
 from zoneinfo import ZoneInfo
 from epaper_display import ImageDrawer
+from datetime import datetime, timedelta
 screen = ImageDrawer()
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -50,7 +51,32 @@ def render():
 
         for key, value in weather_data.items(): print(f"{key}: {value}")
 
-        for i in range(7): screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
+        now = datetime.now()
+        hours = []
+
+        for i in range(7):
+            if i < 6:
+                hour = (now + timedelta(hours=i+1)).hour  # next hours
+                hour_str = f"{hour%12 or 12}{'am' if hour<12 else 'pm'}"
+            else:
+                # Last box: next day abbreviation
+                next_day = now + timedelta(days=1)
+                hour_str = next_day.strftime('%a').lower()  # e.g., 'tue'
+            hours.append(hour_str)
+
+        # Draw rectangles and add text
+        for i in range(7):
+            screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
+            screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745))
+
+
+
+
+
+
+
+
+
         screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, 0.02))
         
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
