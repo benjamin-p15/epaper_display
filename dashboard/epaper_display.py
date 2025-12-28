@@ -144,35 +144,38 @@ class ImageDrawer:
         draw = ImageDraw.Draw(self.image)
         for cmd in self.commands:
             # Add text to screen, and align based and selected option
-            if cmd["type"] == "text":
-                x, y = cmd["position"]
-                fonts = []; widths = []; heights = []
+            if cmd["type"]=="text":
+                x,y=cmd["position"]
+                fonts=[];widths=[];heights=[];ascents=[]
                 for block in cmd["text"]:
-                    font_path = cmd["font_path"]
-                    if cmd.get("bold", False):
-                        font_path = font_path.replace(".ttf", "-Bold.ttf")
-                    font = ImageFont.truetype(font_path, block.get("size", 12))
+                    font_path=cmd["font_path"]
+                    if cmd.get("bold",False):font_path=font_path.replace(".ttf","-Bold.ttf")
+                    font=ImageFont.truetype(font_path,block.get("size",12))
                     fonts.append(font)
-                    w, h = font.getsize(block["text"])
+                    w,h=font.getsize(block["text"])
                     widths.append(w)
                     heights.append(h)
-                max_height = max(heights)
-                total_width = sum(widths)
-                if cmd["align"] == "center": x_start = x - total_width // 2
-                elif cmd["align"] == "right": x_start = x - total_width
-                else: x_start = x
-                x_offset = 0
-                for i, block in enumerate(cmd["text"]):
-                    font = fonts[i]
-                    t = block["text"]
-                    h = heights[i]
-                    ascent, descent = font.getmetrics()
-                    block_align = block.get("align", "middle")
-                    if block_align == "top": draw_y = y + (max_height + ascent)
-                    elif block_align == "bottom": draw_y = y - h
-                    else: draw_y = y + (max_height - h) // 2
-                    draw.text((x_start + x_offset, draw_y), t, font=font, fill=cmd["fill"])
-                    x_offset += widths[i]
+                    ascent,descent=font.getmetrics()
+                    ascents.append(ascent)
+                max_height=max(heights)
+                max_ascent=max(ascents)
+                total_width=sum(widths)
+                if cmd["align"]=="center":x_start=x-total_width//2
+                elif cmd["align"]=="right":x_start=x-total_width
+                else:x_start=x
+                x_offset=0
+                for i,block in enumerate(cmd["text"]):
+                    font=fonts[i]
+                    t=block["text"]
+                    h=heights[i]
+                    ascent=ascents[i]
+                    block_align=block.get("align","middle")
+                    if block_align=="top":draw_y=y+(max_ascent-ascent)
+                    elif block_align=="bottom":draw_y=y+max_height-h
+                    else:draw_y=y+(max_height-h)//2
+                    draw.text((x_start+x_offset,draw_y),t,font=font,fill=cmd["fill"])
+                    x_offset+=widths[i]
+
 
 
 
