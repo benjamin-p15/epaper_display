@@ -143,34 +143,42 @@ class ImageDrawer:
     def render(self):
         draw = ImageDraw.Draw(self.image)
         for cmd in self.commands:
-            # Add text to screen, and align based and selected option
+            # Add text to screen, and align based and selected options
             if cmd["type"]=="text":
+                # variables used to algin text
                 x,y=cmd["position"]
-                fonts=[];widths=[];heights=[]
+                fonts=[]; widths=[]; heights=[]
+
+                # Loop through array to display all text
                 for block in cmd["text"]:
                     font_path=cmd["font_path"]
-                    if cmd.get("bold",False):font_path=font_path.replace(".ttf","-Bold.ttf")
+                    # If text is set as bold switch to bold font
+                    if cmd.get("bold",False): font_path=font_path.replace(".ttf","-Bold.ttf")
+                    # Create font object of certain size, and look all text sizes
                     font=ImageFont.truetype(font_path,block.get("size",12))
                     fonts.append(font)
                     w,h=font.getsize(block["text"])
                     widths.append(w)
                     heights.append(h)
+                # Find the maximum font being displayed 
                 max_height=max(heights)
                 total_width=sum(widths)
+                # Shift text to align it to correct location
                 if cmd["align"]=="center":x_start=x-total_width//2
                 elif cmd["align"]=="right":x_start=x-total_width
                 else:x_start=x
+
                 x_offset=0
-                for i,block in enumerate(cmd["text"]):
-                    font=fonts[i]
-                    t=block["text"]
-                    h=heights[i]
-                    print(h)
-                    block_align=block.get("align","middle")
-                    if block_align=="top":draw_y=y-h
-                    elif block_align=="bottom":draw_y=y+max_height-h/2
-                    else:draw_y=y+(max_height-h)//2
-                    draw.text((x_start+x_offset,draw_y),t,font=font,fill=cmd["fill"])
+                for i,text_element in enumerate(cmd["text"]):
+                    # get element alginment data
+                    element_height=heights[i]
+                    element_alignment=text_element.get("align","middle")
+                    # Figure out where to draw next text element
+                    if element_alignment=="top": draw_y=y-(max_height-element_height/2)
+                    elif element_alignment=="bottom": draw_y=y+(max_height-element_height/2)
+                    else:draw_y=y+(max_height-element_height)//2
+                    # Draw text and record it's size for next alginment
+                    draw.text((x_start+x_offset,draw_y),text_element["text"],font=fonts[i],fill=cmd["fill"])
                     x_offset+=widths[i]
 
 
