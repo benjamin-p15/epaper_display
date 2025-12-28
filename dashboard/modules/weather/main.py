@@ -93,7 +93,7 @@ def render():
         screen.add_text([
             {"text": f"{round(wind_speed)}", "size": 36},
             {"text": "mph", "size": 18, "align": "bottom"},
-            {"text": f"| {weather_data['wspd']}°", "size": 36},
+            {"text": f" | {weather_data['wspd']}°", "size": 36},
         ], position=(0.75, 0.55))
 
 
