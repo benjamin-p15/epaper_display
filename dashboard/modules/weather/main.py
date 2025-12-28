@@ -135,7 +135,7 @@ def render():
         ], position=(0.65, 0.34),align="left")
 
         #(pressure) 
-        screen.add_image(os.path.join(script_directory, "icons", "pressure2.png"),(0.8, 0.25),(0.04,0.07),invert=False, color_black=False)
+        screen.add_image(os.path.join(script_directory, "icons", "pressure2.png"),(0.8, 0.25),(0.04,0.07),invert=True, color_black=False)
         screen.add_text([
             {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
             {"text": "inHg", "size": 18, "align": "bottom"}
