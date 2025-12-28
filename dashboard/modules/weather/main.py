@@ -99,7 +99,7 @@ def render():
         visibility,marker=parse_us_metar_vis(weather_data["visib"])
         screen.add_text([
             {"text": f"{visibility}", "size": 36},
-            {"text": f"{marker}", "size": 32, "align": "center"},
+            {"text": f"{marker}", "size": 28, "align": "center"},
             {"text": "mi", "size": 18, "align": "bottom"}
         ], position=(0.85, 0.35))
 
