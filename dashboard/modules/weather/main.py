@@ -123,7 +123,7 @@ def render():
         screen.add_text([
             {"text": f"{round(dew_point_F)}", "size": 36, "align": "top"},
             {"text": "°F", "size": 18, "align": "top"}
-        ], position=(0.5, 0.15))
+        ], position=(0.5, 0.15),align="left")
 
         #(visibility)
         visibility,marker=parse_us_metar_vis(weather_data["visib"])
@@ -139,7 +139,7 @@ def render():
         screen.add_text([
             {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
             {"text": "inHg", "size": 18, "align": "bottom"}
-        ], position=(0.8, 0.25))
+        ], position=(0.8, 0.25),align="left")
 
         #wind data UPDATE
         # Wind speed
@@ -177,7 +177,7 @@ def render():
         except Exception as error:
             data.append({"text": "--", "size": 36})
             data.append({"text": "%", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.8, 0.35))
+        screen.add_text(data, position=(0.8, 0.35),align="left")
 
         _cache_img=screen.render()
 
