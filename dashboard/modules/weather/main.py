@@ -25,12 +25,12 @@ location_data = {
 }
 
 weather_data = {}
+forcast_data = {}
 
 def render():
     global _last_update, _cache_img, script_directory, weather_data
     now = time.time()
     now_datetime = datetime.datetime.now()
-    #local_timezone=datetime.datetime.
     today=datetime.datetime.today()
     print(today)
     if now - _last_update >= 5 * 60:
@@ -52,6 +52,12 @@ def render():
         if metar_data: weather_data = metar_data[0]
         else: weather_data = {}
 
+        # Get taf data and save it to forcast data object
+        taf_data = fetch_taf(location_data['airport_icao_code'])
+        if taf_data: forcast_data = taf_data[0]
+        else: forcast_data = {}
+
+        for key, value in forcast_data.items(): print(f"{key}: {value}")
         for key, value in weather_data.items(): print(f"{key}: {value}")
 
 
@@ -79,7 +85,7 @@ def render():
 
 
 
-
+        # Add city and state to screen
         screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, -0.02))
         
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
@@ -88,7 +94,13 @@ def render():
         screen.add_text([{"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},{"text": "°F", "size": 36, "align": "top"}], position=(0.3, 0.35), bold=True)
         screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.28, 0.42))
         
-        # (sunrise, sunset)
+
+
+
+
+
+        # (Sunrise, sunset)
+        # Using longitude and latitude estimate sunrise and sunset time
         today = datetime.date.today()
         sunrise, sunset = calculate_sunrise_sunset(
             latitude=location_data['latitude'],
@@ -96,10 +108,12 @@ def render():
             date=today,
             timezone_offset=get_timezone_offset_hours(location_data["timezone"])
         )
+        # Convert data into correct format 
         sunrise_time = sunrise.strftime("%-I:%M")
         sunrise_period = sunrise.strftime("%p")
         sunset_time = sunset.strftime("%-I:%M")
         sunset_period = sunset.strftime("%p")
+        # Add sunrise and sunset images and text to screen
         screen.add_image(os.path.join(script_directory, "icons", "sunrise.png"),(0.6, 0.1),(0.05,0.08),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{sunrise_time}", "size": 36},
@@ -111,10 +125,11 @@ def render():
             {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
         ], position=(0.85, 0.1),align="left")
 
-
-        #(humidity and dew point)
+        #(Humidity, dew point)
+        # Usig dew point calulate relative humidity
         precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
         dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
+        # Add humidity text and icon to screen and dew point under it
         screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, 0.2),(0.04,0.07),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{round(precent)}", "size": 36},
@@ -125,11 +140,16 @@ def render():
             {"text": "°F", "size": 9, "align": "top"}
         ], position=(0.64, 0.29),align="left")
 
+        # (Pressure) 
+        # Convert pressure to inHg and add image and text to screen
+        screen.add_image(os.path.join(script_directory, "icons", "pressure2.png"),(0.8, 0.2),(0.04,0.07),invert=True, color_black=False)
+        screen.add_text([
+            {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
+            {"text": "inHg", "size": 18, "align": "bottom"}
+        ], position=(0.84, 0.19),align="left")
 
-
-
-
-        #(visibility)
+        # (Visibility)
+        # Reformat US meter visibility data into screen friendly formate then add text, marker, and icon to screen
         visibility,marker=parse_us_metar_vis(weather_data["visib"])
         screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.3),(0.05,0.08),invert=True, color_black=True)
         screen.add_text([
@@ -138,24 +158,31 @@ def render():
             {"text": "mi", "size": 18, "align": "bottom"}
         ], position=(0.65, 0.29),align="left")
 
-        #(moonphase)
+        # (Cloud coverage)
+        # Estimate cloud coverage by taking an weighted average of the clouds then display on screen with icon
+        data=[]
+        screen.add_image(os.path.join(script_directory, "icons", "03d.png"),(0.8, 0.3),(0.05,0.08),invert=True, color_black=True)
+        try:
+            coverage = calculate_weighted_cloud_coverage(weather_data['clouds'])
+            data.append({"text": f"{coverage}", "size": 36})
+            data.append({"text": "%", "size": 18, "align": "bottom"})
+        except Exception as error:
+            data.append({"text": "--", "size": 36})
+            data.append({"text": "%", "size": 18, "align": "bottom"})
+        screen.add_text(data, position=(0.86, 0.3),align="left")
+
+        #(Moonphase)
         #moon=moon_phase_index(date=)
-        screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.3),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.4),(0.05,0.08),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{visibility}", "size": 36},
             {"text": f"{marker}", "size": 28, "align": "center"},
             {"text": "mi", "size": 18, "align": "bottom"}
-        ], position=(0.65, 0.29),align="left")
+        ], position=(0.65, 0.39),align="left")
 
-        #(pressure) 
-        screen.add_image(os.path.join(script_directory, "icons", "pressure2.png"),(0.8, 0.2),(0.04,0.07),invert=True, color_black=False)
-        screen.add_text([
-            {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
-            {"text": "inHg", "size": 18, "align": "bottom"}
-        ], position=(0.84, 0.19),align="left")
 
-        #wind data UPDATE
-        # Wind speed
+        # (Wind speed, wind direction, gust speed)
+        # Convert speeds to mph then add icon and text to screen
         data=[]
         screen.add_image(os.path.join(script_directory, "icons", "wind.png"),(0.6, 0.55),(0.04,0.07),invert=True,color_black=True)
         try:
@@ -180,28 +207,29 @@ def render():
             data.append({"text": "mph", "size": 18, "align": "bottom"})
         screen.add_text(data, position=(0.65, 0.53),align="left")
 
-        # Cloud coverage
-        data=[]
-        screen.add_image(os.path.join(script_directory, "icons", "03d.png"),(0.8, 0.3),(0.05,0.08),invert=True, color_black=True)
-        try:
-            coverage = calculate_weighted_cloud_coverage(weather_data['clouds'])
-            data.append({"text": f"{coverage}", "size": 36})
-            data.append({"text": "%", "size": 18, "align": "bottom"})
-        except Exception as error:
-            data.append({"text": "--", "size": 36})
-            data.append({"text": "%", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.86, 0.3),align="left")
 
+        # After image as been made render out image and send off to main.py to have it displayed
         _cache_img=screen.render()
-
         if(_cache_img is None): return None, False
         else: return _cache_img, True 
     return None, False
 
 # Get metter from a specific airport
 def fetch_metar(icao_code):
-    # Build aviationweather.gov with desierd station
+    # Build aviationweather.gov meter api link with desierd station
     url = f"https://aviationweather.gov/api/data/metar?ids={icao_code}&format=json"
+
+    # Make request to website for data
+    resp = requests.get(url)
+    resp.raise_for_status()
+
+    # Parse and return JSON data
+    data = resp.json()
+    return data
+
+def fetch_taf(icao_code):
+    # Build aviationweather.gov taf api link with desierd station
+    url = f"https://aviationweather.gov/api/data/taf?ids={icao_code}&format=json&hours=24"
 
     # Make request to website for data
     resp = requests.get(url)
