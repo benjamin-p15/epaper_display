@@ -59,7 +59,7 @@ def render():
         screen.add_text([{"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},{"text": "°F", "size": 36, "align": "top"}], position=(0.3, 0.35), bold=True)
         screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.28, 0.42))
         
-        
+
         today = datetime.date.today()
         sunrise, sunset = calculate_sunrise_sunset(
             latitude=location_data['latitude'],
@@ -67,10 +67,19 @@ def render():
             date=today,
             timezone_offset=get_timezone_offset_hours(location_data["timezone"])
         )
-        sunrise = sunrise.strftime("%-H:%M")
-        sunset = sunset.strftime("%-H:%M")
-        screen.add_text([{"text":f"{sunrise}","size":36}],position=(0.75, 0.25))
-        screen.add_text([{"text":f"{sunset}","size":36}],position=(0.75, 0.30))
+        sunrise_time = sunrise.strftime("%I:%M")
+        sunrise_period = sunrise.strftime("%p")
+        sunset_time = sunset.strftime("%I:%M")
+        sunset_period = sunset.strftime("%p")
+        screen.add_text([
+            {"text": f"{sunrise_time}", "size": 36},
+            {"text": f"{sunrise_period}", "size": 18, "align": "bottom"}
+        ], position=(0.75, 0.25))
+        screen.add_text([
+            {"text": f"{sunset_time}", "size": 36},
+            {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
+        ], position=(0.75, 0.35))
+
 
         _cache_img=screen.render()
 
