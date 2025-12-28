@@ -165,7 +165,7 @@ def render():
         except Exception as error:
             data.append({"text": f"|--", "size": 36})
             data.append({"text": "mph", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.65, 0.55),align="left")
+        screen.add_text(data, position=(0.65, 0.53),align="left")
 
         # Cloud coverage
         data=[]
