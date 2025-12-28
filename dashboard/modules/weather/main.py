@@ -1,9 +1,6 @@
 from PIL import Image
-import requests
-import math
-import time
-import csv
-import os
+import requests, math, time, csv, os, datetime
+from zoneinfo import ZoneInfo
 from epaper_display import ImageDrawer
 screen = ImageDrawer()
 
@@ -56,14 +53,27 @@ def render():
         for i in range(7): screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
         screen.add_text(f"{location_data['city']}, {location_data['region']}",(0.5,0.05),None,40,0,"center")
         
-        
+        # Using helper functions display tempasure and what it feels like
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
         feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
         screen.add_text(f"{round(tempasure_f)}",position=(0.3, 0.35),size=96,fill=0,align="center")
         screen.add_text("°F",position=(0.39, 0.3),size=24,fill=0,align="center")
-
-        screen.add_text(f"Feels like {round(feel_tempasure_f)}°",position=(0.3, 0.45),size=18,fill=0,align="center")
+        screen.add_text(f"Feels like {round(feel_tempasure_f)}°",position=(0.3, 0.46),size=18,fill=0,align="center")
         
+
+        today = datetime.date.today()
+        sunrise, sunset = calculate_sunrise_sunset(
+            latitude=location_data['latitude'],
+            longitude=location_data['longitude'],
+            date=today,
+            timezone_offset=get_timezone_offset_hours(location_data["timezone"])
+        )
+
+        screen.add_text(f"{sunrise}°",position=(0.75, 0.25),size=36,fill=0,align="center")
+        screen.add_text(f"{sunset}",position=(0.75, 0.30),size=36,fill=0,align="center")
+
+
+
         _cache_img=screen.render()
 
         if(_cache_img is None): return None, False
@@ -157,3 +167,40 @@ def wind_chill_f(tempasure_f, wind_mph):
     if(tempasure_f <= 50 and wind_mph >= 3):
         return (35.74+ 0.6215 * tempasure_f- 35.75 * (wind_mph ** 0.16)+ 0.4275 * tempasure_f * (wind_mph ** 0.16))
     else: return tempasure_f
+
+# NOAA formula used to calulate sunset/sunrise
+def calculate_sunrise_sunset(latitude, longitude, date, timezone_offset):
+    def deg_to_rad(degrees): return degrees * math.pi / 180
+    def rad_to_deg(radians): return radians * 180 / math.pi
+
+    day_of_year = date.timetuple().tm_yday
+    longitude_hour = longitude / 15
+
+    def compute_sun_time(is_sunrise):
+        approximate_time = day_of_year + ((6 if is_sunrise else 18) - longitude_hour) / 24
+        solar_mean_anomaly = (0.9856 * approximate_time) - 3.289
+        sun_true_longitude = solar_mean_anomaly + (1.916 * math.sin(deg_to_rad(solar_mean_anomaly))) + (0.020 * math.sin(2 * deg_to_rad(solar_mean_anomaly))) + 282.634
+        sun_true_longitude %= 360
+        sun_right_ascension = rad_to_deg(math.atan(0.91764 * math.tan(deg_to_rad(sun_true_longitude)))) % 360
+        sun_longitude_quadrant = (math.floor(sun_true_longitude / 90)) * 90
+        ra_quadrant = (math.floor(sun_right_ascension / 90)) * 90
+        sun_right_ascension += (sun_longitude_quadrant - ra_quadrant)
+        sun_right_ascension_hours = sun_right_ascension / 15
+        sin_declination = 0.39782 * math.sin(deg_to_rad(sun_true_longitude))
+        cos_declination = math.cos(math.asin(sin_declination))
+        cos_local_hour_angle = (math.cos(deg_to_rad(90.833)) - (sin_declination * math.sin(deg_to_rad(latitude)))) / (cos_declination * math.cos(deg_to_rad(latitude)))
+        if cos_local_hour_angle > 1 or cos_local_hour_angle < -1: return None
+        local_hour_angle = (360 - rad_to_deg(math.acos(cos_local_hour_angle))) / 15 if is_sunrise else rad_to_deg(math.acos(cos_local_hour_angle)) / 15
+        local_mean_time = local_hour_angle + sun_right_ascension_hours - (0.06571 * approximate_time) - 6.622
+        utc_time = (local_mean_time - longitude_hour) % 24
+        local_time = utc_time + timezone_offset
+        hour = int(local_time) % 24
+        minute = int((local_time - hour) * 60)
+        return datetime.time(hour, minute)
+
+    return compute_sun_time(True), compute_sun_time(False)
+
+# Calulate timezone offset using zoneInfo data
+def get_timezone_offset_hours(timezone_name):
+    now = datetime.now(ZoneInfo(timezone_name))
+    return now.utcoffset().total_seconds() / 3600
