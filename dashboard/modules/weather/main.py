@@ -27,9 +27,7 @@ location_data = {
     'elevation': None
 }
 
-weather_data = {
-
-}
+weather_data = {}
 
 def render():
     global _last_update, _cache_img, script_directory, weather_data
@@ -48,16 +46,23 @@ def render():
             airport, airport_distance = find_nearest_airport(location_data['latitude'], location_data['longitude'], airports_csv)
             location_data.update({'airport_icao_code': airport["icao_code"], 'continent': airport["continent"], 'airport_iata_code': airport["iata_code"], 'airport_type': airport["type"], 'airport_name': airport["name"], 'elevation': airport["elevation_ft"], 'airport_distance': airport_distance})
         
-        
+        # Get meter data and save it to weather data object
         metar_data = fetch_metar(location_data['airport_icao_code'])
         if metar_data: weather_data = metar_data[0]
         else: weather_data = {}
 
-        for key, value in location_data.items(): print(f"{key}: {value}")
         for key, value in weather_data.items(): print(f"{key}: {value}")
 
         for i in range(7): screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
         screen.add_text(f"{location_data['city']}, {location_data['region']}",(0.5,0.05),None,40,0,"center")
+        
+        
+        tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
+        feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
+        screen.add_text(f"{round(tempasure_f)}°F",position=(0.05, 0.15),size=48,fill=0,align="left")
+
+        screen.add_text(f"Feels {round(feel_tempasure_f)}°F",position=(0.05, 0.25),size=24,fill=0,align="left")
+        
         _cache_img=screen.render()
 
         if(_cache_img is None): return None, False
@@ -137,3 +142,17 @@ def find_nearest_airport(latitude, longitude, airports_csv):
                 nearest_airport = row
     # return found airport data       
     return nearest_airport, min_distance
+
+# Convert from celsius to fahrenheit
+def celsius_to_fahrenheit(celsius):
+    return celsius * 9 / 5 + 32
+
+# Convert from knots to mph
+def knots_to_mph(knots):
+    return knots * 1.15078
+
+# Use NOAA formula to calulate wind chill 
+def wind_chill_f(tempasure_f, wind_mph):
+    if(tempasure_f <= 50 and wind_mph >= 3):
+        return (35.74+ 0.6215 * tempasure_f- 35.75 * (wind_mph ** 0.16)+ 0.4275 * tempasure_f * (wind_mph ** 0.16))
+    else: return tempasure_f
