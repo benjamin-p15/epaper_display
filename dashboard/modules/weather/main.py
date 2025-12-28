@@ -54,7 +54,7 @@ def render():
                 print(f"{key}: {value}")
 
         for i in range(7): screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
-        screen.add_text(f"{location_data['city']}, {location_data['region']}",(0.5,0.1),None,60,0,"center")
+        screen.add_text(f"{location_data['city']}, {location_data['region']}",(0.5,0.05),None,40,0,"center")
         _cache_img=screen.render()
 
         if(_cache_img is None): return None, False
