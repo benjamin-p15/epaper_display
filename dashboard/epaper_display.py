@@ -147,23 +147,29 @@ class ImageDrawer:
             if cmd["type"]=="text":
                 # variables used to algin text
                 x,y=cmd["position"]
-                fonts=[]; widths=[]; heights=[]
+                fonts=[]; text_sizes=[]
+                widths=[]; heights=[]; ascents=[]
+                max_height=0; max_ascent=0; total_width=0
 
                 # Loop through array to display all text
                 for element in cmd["text"]:
                     font_path=cmd["font_path"]
                     # If text is set as bold switch to bold font
                     if cmd.get("bold",False): font_path=font_path.replace(".ttf","-Bold.ttf")
+
                     # Create font object of certain size, and look all text sizes
                     font=ImageFont.truetype(font_path,element.get("size",12))
                     fonts.append(font)
                     w,h=font.getsize(element["text"])
                     ascent, descent = font.getmetrics()
-                    widths.append(w)
-                    heights.append(ascent)
-                # Find the maximum font being displayed 
-                max_height=max(heights)
-                total_width=sum(widths)
+                    text_sizes.append({"width": w, "height": h, "ascent": ascent, "descent": descent})
+
+                    # Find the maximum font being displayed 
+                    if(ascent>max_ascent): max_ascent=ascent
+                    if(descent>max_ascent): max_ascent=descent
+                    if(h>max_height): max_height=h
+                    total_width+=w
+
                 # Shift text to align it to correct location
                 if cmd["align"]=="center": x_start=x-total_width//2
                 elif cmd["align"]=="right": x_start=x-total_width
@@ -175,7 +181,8 @@ class ImageDrawer:
                     element_height=heights[i]
                     element_alignment=text_element.get("align","middle")
                     # Figure out where to draw next text element
-                    if element_alignment=="top": draw_y=y+(max_height-element_height)/2
+                    if element_alignment=="top": draw_y = y + (max_ascent - text_sizes[i]["ascent"])
+
                     elif element_alignment=="bottom": draw_y=y-(max_height-element_height)/2
                     else:draw_y=y+(max_height-element_height)//2
                     # Draw text and record it's size for next alginment
