@@ -214,7 +214,7 @@ def render():
         else: return _cache_img, True 
     return None, False
 
-# Get metter from a specific airport
+# Get meter from a specific airport
 def fetch_metar(icao_code):
     # Build aviationweather.gov meter api link with desierd station
     url = f"https://aviationweather.gov/api/data/metar?ids={icao_code}&format=json"
@@ -227,9 +227,30 @@ def fetch_metar(icao_code):
     data = resp.json()
     return data
 
+# Get taf for the next 24h of a specific airport 
 def fetch_taf(icao_code):
     # Build aviationweather.gov taf api link with desierd station
-    url = f"https://aviationweather.gov/api/data/taf?ids={icao_code}&format=json&hours=24"
+    url = f"https://aviationweather.gov/api/data/taf?ids={icao_code}&format=json"
+    headers = {"User-Agent": "Mozilla/5.0"}
+
+    response = requests.get(url, headers=headers)
+
+
+    if response.status_code != 200:
+        print(f"Error fetching TAF: {response.status_code}")
+        return None
+    
+    try:
+        data = response.json()
+    except ValueError:
+        print("No JSON returned, response text:", response.text)
+        return None
+    
+    if not data.get("data"):
+        print("No TAF data available for this station")
+        return None
+    
+    return data
 
     # Make request to website for data
     resp = requests.get(url)
