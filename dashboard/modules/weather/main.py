@@ -202,5 +202,5 @@ def calculate_sunrise_sunset(latitude, longitude, date, timezone_offset):
 
 # Calulate timezone offset using zoneInfo data
 def get_timezone_offset_hours(timezone_name):
-    now = datetime.now(ZoneInfo(timezone_name))
+    now = datetime.datetime.now(ZoneInfo(timezone_name))
     return now.utcoffset().total_seconds() / 3600
