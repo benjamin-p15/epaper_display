@@ -82,6 +82,10 @@ def render():
 
 
 
+        precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
+        screen.add_text([{"text": f"{precent}%", "size": 36}], position=(0.75, 0.45))
+
+
         _cache_img=screen.render()
 
         if(_cache_img is None): return None, False
@@ -212,3 +216,9 @@ def calculate_sunrise_sunset(latitude, longitude, date, timezone_offset):
 def get_timezone_offset_hours(timezone_name):
     now = datetime.datetime.now(ZoneInfo(timezone_name))
     return now.utcoffset().total_seconds() / 3600
+
+# Magnus-Tetens humidity approximation
+def calulate_relative_humidity(temperature, dew_pount):
+    saturated_vapor_pressure_T = 6.11 * 10 ** (7.5 * temperature / (237.7 + temperature))
+    saturated_vapor_pressure_d = 6.11 * 10 ** (7.5 * dew_pount / (237.7 + dew_pount))
+    return (saturated_vapor_pressure_d / saturated_vapor_pressure_T) * 100
