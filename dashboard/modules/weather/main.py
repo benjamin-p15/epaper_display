@@ -60,9 +60,9 @@ def render():
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
         feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
         screen.add_text(f"{round(tempasure_f)}",position=(0.3, 0.35),size=96,fill=0,align="center")
-        screen.add_text("°F",position=(0.4, 0.3),size=24,fill=0,align="center")
+        screen.add_text("°F",position=(0.39, 0.3),size=24,fill=0,align="center")
 
-        screen.add_text(f"Feels like {round(feel_tempasure_f)}°",position=(0.3, 0.6),size=18,fill=0,align="center")
+        screen.add_text(f"Feels like {round(feel_tempasure_f)}°",position=(0.3, 0.45),size=18,fill=0,align="center")
         
         _cache_img=screen.render()
 
