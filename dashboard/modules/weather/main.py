@@ -121,7 +121,7 @@ def render():
         screen.add_text([
             {"text": f"Dew {round(dew_point_F)}", "size": 18, "align": "top"},
             {"text": "°F", "size": 9, "align": "top"}
-        ], position=(0.64, 0.3),align="left")
+        ], position=(0.64, 0.29),align="left")
 
 
 
