@@ -119,16 +119,15 @@ def render():
             data.append([{"text": "--", "size": 36},{"text": "mph", "size": 18, "align": "bottom"}])
         # Wind direction
         try:
-            wind_speed = knots_to_mph(weather_data['wspd'])
             data.append([{"text": f" | {round(weather_data['wdir'])}°", "size": 36}])
         except Exception as error:
             data.append([{"text": " | --", "size": 36}])
         # Wind gust
         try:
             wind_gust = knots_to_mph(weather_data['wgst'])
-            data.append[{"text": f" | {round(wind_gust)}", "size": 36},{"text": "mph", "size": 18, "align": "bottom"}]
+            data.append([{"text": f" | {round(wind_gust)}", "size": 36},{"text": "mph", "size": 18, "align": "bottom"}])
         except Exception as error:
-            data.append[{"text": f" | --", "size": 36},{"text": "mph", "size": 18, "align": "bottom"}]
+            data.append([{"text": f" | --", "size": 36},{"text": "mph", "size": 18, "align": "bottom"}])
         screen.add_text(data, position=(0.65, 0.55))
 
 
