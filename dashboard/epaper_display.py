@@ -132,13 +132,13 @@ class ImageDrawer:
         self.commands.append({ "type": "image", "img": img, "position": (px, py), "size": size })
 
     # Add shape to render que
-    def add_rectangle(self, position, size, fill=0, radius=0):
+    def add_rectangle(self, position, size, fill=0, radius=0, thickness=None):
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
         # Convert size percentage to pixels if 0-1
         if size[0] <= 1 and size[1] <= 1:
             size = (int(size[0] * self.width), int(size[1] * self.height))
-        self.commands.append({"type": "rectangle","position": (px, py),"size": size,"fill": fill,"radius": radius})
+        self.commands.append({"type": "rectangle","position": (px, py),"size": size,"fill": fill,"radius": radius, "thickness": thickness})
 
     # Render diffrent data to display image
     def render(self):
@@ -158,8 +158,25 @@ class ImageDrawer:
                 x, y = cmd["position"]
                 w, h = cmd["size"]
                 radius = cmd.get("radius", 0)
-                if radius > 0: draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=cmd["fill"])
-                else: draw.rectangle([x, y, x + w, y + h], fill=cmd["fill"])
+                fill = cmd.get("fill", 0)
+                thickness = cmd.get("thickness")
+                
+                if thickness is None:
+                    if radius > 0: draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=fill)
+                    else: draw.rectangle([x, y, x + w, y + h], fill=fill)
+                else:
+                    if radius > 0:
+                        draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=fill)
+                        ix, iy = x + thickness, y + thickness
+                        iw, ih = w - (2 * thickness), h - (2 * thickness)
+                        if iw > 0 and ih > 0:
+                            draw.rounded_rectangle([ix, iy, ix + iw, iy + ih], radius=max(0, radius - thickness), fill=1 - fill)
+                    else:
+                        draw.rectangle([x, y, x + w, y + h], fill=fill)
+                        ix, iy = x + thickness, y + thickness
+                        iw, ih = w - (2 * thickness), h - (2 * thickness)
+                        if iw > 0 and ih > 0:
+                            draw.rectangle([ix, iy, ix + iw, iy + ih], fill=1 - fill)
 
         # Clear commands after render
         self.commands = []
