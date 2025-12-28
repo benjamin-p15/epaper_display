@@ -51,7 +51,7 @@ def render():
         for key, value in weather_data.items(): print(f"{key}: {value}")
 
         for i in range(7): screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
-        screen.add_text(f"{location_data['city']}, {location_data['region']}",(0.5,0.05),None,40,0,"center")
+        #screen.add_text(f"{location_data['city']}, {location_data['region']}",(0.5,0.05),None,40,0,"center")
         
         # Using helper functions display tempasure and what it feels like
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
@@ -79,8 +79,8 @@ def render():
         sunrise = sunrise.strftime("%-H:%M")
         sunset = sunset.strftime("%-H:%M")
 
-        screen.add_text(f"{sunrise}",position=(0.75, 0.25),size=36,fill=0,align="center")
-        screen.add_text(f"{sunset}",position=(0.75, 0.30),size=36,fill=0,align="center")
+        #screen.add_text(f"{sunrise}",position=(0.75, 0.25),size=36,fill=0,align="center")
+        #screen.add_text(f"{sunset}",position=(0.75, 0.30),size=36,fill=0,align="center")
 
 
 
