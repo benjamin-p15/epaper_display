@@ -183,7 +183,7 @@ class ImageDrawer:
                     if block_align == "top":
                         # Align tops: text_y_max should be same for all top-aligned blocks
                         # So position the bottom of each text at y + max_height
-                        draw_y = max_height - y
+                        draw_y = y + max_height + h
                     elif block_align == "bottom":
                         # Align bottoms: text_y_min should be same for all bottom-aligned blocks  
                         # So position the text starting at y
