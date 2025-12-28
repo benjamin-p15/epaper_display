@@ -146,44 +146,51 @@ class ImageDrawer:
             # Add text to screen, and align based and selected option
             if cmd["type"] == "text":
                 x, y = cmd["position"]
-                total_height = 0
-                fonts = []
 
-                # Preload fonts and calculate total height
+                # Preload fonts and calculate total width/height
+                fonts = []
+                widths = []
+                heights = []
                 for block in cmd["text"]:
                     font_path = cmd["font_path"]
                     if cmd.get("bold", False):
                         font_path = font_path.replace(".ttf", "-Bold.ttf")
                     font = ImageFont.truetype(font_path, block.get("size", 12))
                     fonts.append(font)
-                    total_height += font.getsize(block["text"])[1]
+                    w, h = font.getsize(block["text"])
+                    widths.append(w)
+                    heights.append(h)
 
-                y_offset = 0
+                total_width = sum(widths)
+                max_height = max(heights)
+
+                # Compute starting x based on overall alignment
+                if cmd["align"] == "center":
+                    x_start = x - total_width // 2
+                elif cmd["align"] == "right":
+                    x_start = x - total_width
+                else:  # left
+                    x_start = x
+
+                x_offset = 0
                 for i, block in enumerate(cmd["text"]):
                     font = fonts[i]
                     t = block["text"]
+                    block_height = heights[i]
+
+                    # Vertical alignment inside max_height
+                    draw_y = y
                     block_align = block.get("align", "middle")
-                    text_height = font.getsize(t)[1]
-
-                    # Vertical position per block
                     if block_align == "top":
-                        draw_y = y + y_offset
+                        draw_y = y
                     elif block_align == "middle":
-                        draw_y = y + y_offset + (total_height - text_height) // 2
+                        draw_y = y + (max_height - block_height) // 2
                     else:  # bottom
-                        draw_y = y + y_offset + total_height - text_height
+                        draw_y = y + max_height - block_height
 
-                    # Horizontal alignment
-                    text_width = font.getsize(t)[0]
-                    if cmd["align"] == "center":
-                        draw_x = x - text_width // 2
-                    elif cmd["align"] == "right":
-                        draw_x = x - text_width
-                    else:
-                        draw_x = x
+                    draw.text((x_start + x_offset, draw_y), t, font=font, fill=cmd["fill"])
+                    x_offset += widths[i]
 
-                    draw.text((draw_x, draw_y), t, font=font, fill=cmd["fill"])
-                    y_offset += text_height
 
             # Add image to screen
             elif cmd["type"] == "image":
