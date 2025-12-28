@@ -91,7 +91,7 @@ def render():
         #(dew point)
         dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
         screen.add_text([
-            {"text": f"{round(dew_point_F)}", "size": 36},
+            {"text": f"{round(dew_point_F)}", "size": 36, "align": "top"},
             {"text": "°F", "size": 18, "align": "top"}
         ], position=(0.85, 0.25))
 
