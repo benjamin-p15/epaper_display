@@ -98,12 +98,12 @@ def render():
         sunrise_period = sunrise.strftime("%p")
         sunset_time = sunset.strftime("%-I:%M")
         sunset_period = sunset.strftime("%p")
-        screen.add_image(os.path.join(script_directory, "icons", "sunrise.png"),(0.6, 0.27),(0.05,0.05),invert=True)
+        screen.add_image(os.path.join(script_directory, "icons", "sunrise.png"),(0.6, 0.27),(0.05,0.05),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{sunrise_time}", "size": 36},
             {"text": f"{sunrise_period}", "size": 18, "align": "bottom"}
         ], position=(0.65, 0.25),align="left")
-        screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.6, 0.37),(0.05,0.05),invert=True)
+        screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.6, 0.37),(0.05,0.05),invert=True,color_black=True)
         screen.add_text([
             {"text": f"{sunset_time}", "size": 36},
             {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
