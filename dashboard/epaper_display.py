@@ -149,7 +149,8 @@ class ImageDrawer:
 
                 fonts = []
                 widths = []
-                heights = []
+                ascents = []
+                descents = []
 
                 # Preload fonts and measure
                 for block in cmd["text"]:
@@ -160,10 +161,13 @@ class ImageDrawer:
                     fonts.append(font)
                     w, h = font.getsize(block["text"])
                     widths.append(w)
-                    heights.append(h)
+                    ascent, descent = font.getmetrics()
+                    ascents.append(ascent)
+                    descents.append(descent)
 
                 total_width = sum(widths)
-                max_height = max(heights)
+                max_ascent = max(ascents)
+                max_descent = max(descents)
 
                 # Determine starting x based on horizontal alignment
                 if cmd["align"] == "center":
@@ -177,19 +181,22 @@ class ImageDrawer:
                 for i, block in enumerate(cmd["text"]):
                     font = fonts[i]
                     t = block["text"]
-                    block_height = heights[i]
+                    ascent = ascents[i]
+                    descent = descents[i]
 
                     # Align vertically by top/middle/bottom
                     block_vertical_align = block.get("align", "middle")
                     if block_vertical_align == "top":
                         draw_y = y
                     elif block_vertical_align == "middle":
-                        draw_y = y + (max_height - block_height) // 2
+                        draw_y = y + (max_ascent - ascent) // 2
                     else:  # bottom
-                        draw_y = y + (max_height - block_height)
+                        draw_y = y + max_ascent - ascent
 
                     draw.text((x_start + x_offset, draw_y), t, font=font, fill=cmd["fill"])
                     x_offset += widths[i]
+
+
 
 
 
