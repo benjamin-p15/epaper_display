@@ -2,7 +2,6 @@ from PIL import Image
 import requests, math, time, csv, os, datetime
 from zoneinfo import ZoneInfo
 from epaper_display import ImageDrawer
-from datetime import datetime, timedelta, date
 screen = ImageDrawer()
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -29,8 +28,8 @@ weather_data = {}
 
 def render():
     global _last_update, _cache_img, script_directory, weather_data
-    now = datetime.now()
-    today = now.date()
+    now = time.time()
+    today=datetime.datetime.today()
     if now - _last_update >= 5 * 60:
         _last_update = now
 
