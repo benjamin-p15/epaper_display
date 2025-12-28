@@ -148,7 +148,6 @@ class ImageDrawer:
                 # variables used to algin text
                 x,y=cmd["position"]
                 fonts=[]; text_sizes=[]
-                widths=[]; heights=[]; ascents=[]
                 max_height=0; max_ascent=0; total_width=0
 
                 # Loop through array to display all text
@@ -180,21 +179,13 @@ class ImageDrawer:
                     # get element alginment data
                     element_height=text_sizes[i]["height"]
                     element_alignment=text_element.get("align","middle")
-                    # Figure out where to draw next text element
+                    # Figure out where to draw next text element, no clue why /4 works
                     if element_alignment=="top": draw_y = y-max_height/2-element_height/4
                     elif element_alignment=="bottom": draw_y = y + (max_ascent - text_sizes[i]["ascent"])
                     else:draw_y=y+(max_height-element_height)//2
                     # Draw text and record it's size for next alginment
                     draw.text((x_start+x_offset,draw_y),text_element["text"],font=fonts[i],fill=cmd["fill"])
                     x_offset+=text_sizes[i]["width"]
-
-
-
-
-
-
-
-
 
             # Add image to screen
             elif cmd["type"] == "image":
