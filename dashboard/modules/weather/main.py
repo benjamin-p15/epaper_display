@@ -139,7 +139,7 @@ def render():
         ], position=(0.65, 0.29),align="left")
 
         #(moonphase)
-        moon=moon_phase_index(date=)
+        #moon=moon_phase_index(date=)
         screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.3),(0.05,0.08),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{visibility}", "size": 36},
