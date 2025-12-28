@@ -56,13 +56,13 @@ def render():
             for key, value in metar_dict.items():
                 print(f"{key}: {value}")
         
-        screen.add_rectangle((0,0.75), (0.15,0.3), fill=0, radius=15, thickness=2)
-        screen.add_rectangle((0.14,0.75), (0.15,0.3), fill=0, radius=15, thickness=2)
-        screen.add_rectangle((0.28,0.75), (0.15,0.3), fill=0, radius=15, thickness=2)
-        screen.add_rectangle((0.42,0.75), (0.15,0.3), fill=0, radius=15, thickness=2)
-        screen.add_rectangle((0.56,0.75), (0.15,0.3), fill=0, radius=15, thickness=2)
-        screen.add_rectangle((0.7,0.75), (0.15,0.3), fill=0, radius=15, thickness=2)
-        screen.add_rectangle((0.84,0.75), (0.15,0.3), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0,0.75), (0.13,0.3), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.15,0.75), (0.13,0.3), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.30,0.75), (0.13,0.3), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.45,0.75), (0.13,0.3), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.60,0.75), (0.13,0.3), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.75,0.75), (0.13,0.3), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.90,0.75), (0.13,0.3), fill=0, radius=15, thickness=2)
         _cache_img=screen.render()
 
         if(_cache_img is None): return None, False
