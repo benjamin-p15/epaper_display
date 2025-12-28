@@ -146,11 +146,7 @@ class ImageDrawer:
             # Add text to screen, and align based and selected option
             if cmd["type"] == "text":
                 x, y = cmd["position"]
-
-                fonts = []
-                widths = []
-                heights = []
-
+                fonts = []; widths = []; heights = []
                 for block in cmd["text"]:
                     font_path = cmd["font_path"]
                     if cmd.get("bold", False):
@@ -160,34 +156,20 @@ class ImageDrawer:
                     w, h = font.getsize(block["text"])
                     widths.append(w)
                     heights.append(h)
-
                 max_height = max(heights)
                 total_width = sum(widths)
-
-                # Determine starting x for horizontal alignment
-                if cmd["align"] == "center":
-                    x_start = x - total_width // 2
-                elif cmd["align"] == "right":
-                    x_start = x - total_width
-                else:  # left
-                    x_start = x
-
+                if cmd["align"] == "center": x_start = x - total_width // 2
+                elif cmd["align"] == "right": x_start = x - total_width
+                else: x_start = x
                 x_offset = 0
                 for i, block in enumerate(cmd["text"]):
                     font = fonts[i]
                     t = block["text"]
                     h = heights[i]
-
-                    # Vertical alignment - FIXED for text_y_max alignment
                     block_align = block.get("align", "middle")
-                    if block_align == "top":
-                        draw_y = y + max_height
-                    elif block_align == "bottom":
-                        draw_y = y + max_height - h
-                    else:  # middle
-                        # Center the text vertically
-                        draw_y = y + (max_height - h) // 2
-
+                    if block_align == "top": draw_y = y + max_height -h
+                    elif block_align == "bottom": draw_y = y + max_height + h
+                    else: draw_y = y + (max_height - h) // 2
                     draw.text((x_start + x_offset, draw_y), t, font=font, fill=cmd["fill"])
                     x_offset += widths[i]
 
