@@ -150,7 +150,6 @@ class ImageDrawer:
                 fonts = []
                 widths = []
                 heights = []
-                text_blocks = []
 
                 for block in cmd["text"]:
                     font_path = cmd["font_path"]
@@ -161,7 +160,6 @@ class ImageDrawer:
                     w, h = font.getsize(block["text"])
                     widths.append(w)
                     heights.append(h)
-                    text_blocks.append(block)
 
                 max_height = max(heights)
                 total_width = sum(widths)
@@ -175,21 +173,23 @@ class ImageDrawer:
                     x_start = x
 
                 x_offset = 0
-                for i, block in enumerate(text_blocks):
+                for i, block in enumerate(cmd["text"]):
                     font = fonts[i]
                     t = block["text"]
                     h = heights[i]
-                    block_align = block.get("align", "middle")
 
-                    # Vertical alignment - FIXED
-                    # All "top" aligned blocks should align at y
-                    # All "bottom" aligned blocks should align at y + max_height - h
-                    # All "middle" aligned blocks should be centered within max_height
+                    # Vertical alignment - FIXED for text_y_max alignment
+                    block_align = block.get("align", "middle")
                     if block_align == "top":
-                        draw_y = y
-                    elif block_align == "bottom":
+                        # Align tops: text_y_max should be same for all top-aligned blocks
+                        # So position the bottom of each text at y + max_height
                         draw_y = y + max_height - h
-                    else:  # middle/default
+                    elif block_align == "bottom":
+                        # Align bottoms: text_y_min should be same for all bottom-aligned blocks  
+                        # So position the text starting at y
+                        draw_y = y
+                    else:  # middle
+                        # Center the text vertically
                         draw_y = y + (max_height - h) // 2
 
                     draw.text((x_start + x_offset, draw_y), t, font=font, fill=cmd["fill"])
