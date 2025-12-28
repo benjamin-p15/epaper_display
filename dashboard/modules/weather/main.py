@@ -93,7 +93,7 @@ def render():
         screen.add_text([
             {"text": f"{round(dew_point_F)}", "size": 36, "align": "top"},
             {"text": "°F", "size": 18, "align": "top"}
-        ], position=(0.85, 0.25))
+        ], position=(0.85, 0.15))
 
         #(visibility)
         visibility,marker=parse_us_metar_vis(weather_data["visib"])
