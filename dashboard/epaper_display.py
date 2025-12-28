@@ -119,7 +119,7 @@ class ImageDrawer:
         if font is None: font = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
-        self.commands.append({"type": "text","text": text,"position": (px, py),"font_path": font,"fill": fill, "align": align, "bold": bold})
+        self.commands.append({"type": "text","text": text,"position": (px, py),"font_path": font,"fill": fill, "align": align, "bold": bold, "size": size})
 
     # Add image to render que
     def add_image(self, img, position, size=None):
@@ -150,14 +150,14 @@ class ImageDrawer:
                 fonts=[]; widths=[]; heights=[]
 
                 # Loop through array to display all text
-                for block in cmd["text"]:
+                for element in cmd["text"]:
                     font_path=cmd["font_path"]
                     # If text is set as bold switch to bold font
                     if cmd.get("bold",False): font_path=font_path.replace(".ttf","-Bold.ttf")
                     # Create font object of certain size, and look all text sizes
-                    font=ImageFont.truetype(font_path,block.get("size",12))
+                    font=ImageFont.truetype(font_path,element.get("size",12))
                     fonts.append(font)
-                    w,h=font.getsize(block["text"])
+                    w,h=font.getsize(element["text"])
                     widths.append(w)
                     heights.append(h)
                 # Find the maximum font being displayed 
