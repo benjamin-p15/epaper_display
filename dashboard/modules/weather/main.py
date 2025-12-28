@@ -105,16 +105,19 @@ def render():
 
         #(pressure) 
         screen.add_text([
-            {"text": f"{round(weather_data['altim'] / 33.8639, 2)}", "size": 36},
+            {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
             {"text": "inHg", "size": 18, "align": "bottom"}
         ], position=(0.85, 0.45))
 
         #(wind speed and diretcion) UPDATE
         wind_speed = knots_to_mph(weather_data['wspd'])
+        wind_gust = knots_to_mph(weather_data['wgst'])
         screen.add_text([
             {"text": f"{round(wind_speed)}", "size": 36},
             {"text": "mph", "size": 18, "align": "bottom"},
             {"text": f" | {weather_data['wdir']}°", "size": 36},
+            {"text": f" | {round(wind_gust)}", "size": 36},
+            {"text": "mph", "size": 18, "align": "bottom"}
         ], position=(0.65, 0.55))
 
 
