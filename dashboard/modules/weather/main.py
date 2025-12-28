@@ -29,6 +29,7 @@ weather_data = {}
 def render():
     global _last_update, _cache_img, script_directory, weather_data
     now = time.time()
+    now_datetime = datetime.datetime.time()
     today=datetime.datetime.today()
     if now - _last_update >= 5 * 60:
         _last_update = now
@@ -55,11 +56,11 @@ def render():
 
         for i in range(7):
             if i < 6:
-                hour = (now + datetime.timedelta(hours=i+1)).hour  # next hours
+                hour = (now_datetime + datetime.timedelta(hours=i+1)).hour  # next hours
                 hour_str = f"{hour%12 or 12}{'am' if hour<12 else 'pm'}"
             else:
                 # Last box: next day abbreviation
-                next_day = now + datetime.timedelta(days=1)
+                next_day = now_datetime + datetime.timedelta(days=1)
                 hour_str = next_day.strftime('%a').lower()  # e.g., 'tue'
             hours.append(hour_str)
 
