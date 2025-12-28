@@ -63,7 +63,7 @@ def render():
         
         screen.add_text([
         {"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},
-        {"text": "°F", "size": 36, "align": "top"}
+        {"text": "°F", "size": 36, "align": "top", "font":"/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"}
         ], position=(0.3, 0.35), align="middle", bold=True)
         
         #screen.add_text(f"Feels like {round(feel_tempasure_f)}°",position=(0.3, 0.46),size=18,fill=0,align="center")
