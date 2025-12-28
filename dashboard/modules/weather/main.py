@@ -132,7 +132,7 @@ def render():
         except Exception as error:
             data.append({"text": f" | --", "size": 36})
             data.append({"text": "mph", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.85, 0.55))
+        screen.add_text(data, position=(0.65, 0.55))
 
         # Cloud coverage
         data=[]
@@ -143,7 +143,7 @@ def render():
         except Exception as error:
             data.append({"text": "--", "size": 36})
             data.append({"text": "%", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.65, 0.45))
+        screen.add_text(data, position=(0.85, 0.45))
 
         _cache_img=screen.render()
 
