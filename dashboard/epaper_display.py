@@ -166,8 +166,9 @@ class ImageDrawer:
                     font = fonts[i]
                     t = block["text"]
                     h = heights[i]
+                    ascent, descent = font.getmetrics()
                     block_align = block.get("align", "middle")
-                    if block_align == "top": draw_y = y + max_height + h
+                    if block_align == "top": draw_y = y + (max_height - ascent)
                     elif block_align == "bottom": draw_y = y - h
                     else: draw_y = y + (max_height - h) // 2
                     draw.text((x_start + x_offset, draw_y), t, font=font, fill=cmd["fill"])
