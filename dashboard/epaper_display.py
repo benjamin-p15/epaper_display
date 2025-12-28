@@ -123,10 +123,11 @@ class ImageDrawer:
         self.commands.append({"type": "text","text": text,"position": (px, py),"font_path": font,"fill": fill, "align": align, "bold": bold, "size": size})
 
     # Add image to render que
-    def add_image(self, img, position, size=None):
+    def add_image(self, img, position, size=None, invert=False):
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
-        img= Image.open(img)
+        img=Image.open(img)
+        if(invert==True): img.invert
         # Convert size percentage to pixels if 0-1
         if size and size[0] <= 1 and size[1] <= 1:
             size = (int(size[0] * self.width), int(size[1] * self.height))
