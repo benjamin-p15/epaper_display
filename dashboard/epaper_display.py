@@ -221,4 +221,6 @@ class ImageDrawer:
 
         # Clear commands after render
         self.commands = []
-        return self.image
+        imgage = self.image
+        self.image = Image.new("1", (self.width, self.fheight), color=self.background) # Base image color
+        return imgage
