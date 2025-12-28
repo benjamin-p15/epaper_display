@@ -78,7 +78,7 @@ def render():
 
 
 
-        screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, 0.01))
+        screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, -0.02))
         
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
