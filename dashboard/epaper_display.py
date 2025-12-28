@@ -168,7 +168,7 @@ class ImageDrawer:
                     print(h)
                     block_align=block.get("align","middle")
                     if block_align=="top":draw_y=y-h
-                    elif block_align=="bottom":draw_y=y+max_height-h
+                    elif block_align=="bottom":draw_y=y+max_height-h/2
                     else:draw_y=y+(max_height-h)//2
                     draw.text((x_start+x_offset,draw_y),t,font=font,fill=cmd["fill"])
                     x_offset+=widths[i]
