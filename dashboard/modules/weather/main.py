@@ -116,14 +116,14 @@ def render():
         screen.add_text([
             {"text": f"{round(precent)}", "size": 36},
             {"text": "%", "size": 18, "align": "bottom"}
-        ], position=(0.65, 0.45),align="left")
+        ], position=(0.6, 0.25),align="left")
 
         #(dew point)
         dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
         screen.add_text([
             {"text": f"{round(dew_point_F)}", "size": 36, "align": "top"},
             {"text": "°F", "size": 18, "align": "top"}
-        ], position=(0.85, 0.15))
+        ], position=(0.5, 0.15))
 
         #(visibility)
         visibility,marker=parse_us_metar_vis(weather_data["visib"])
@@ -132,14 +132,14 @@ def render():
             {"text": f"{visibility}", "size": 36},
             {"text": f"{marker}", "size": 28, "align": "center"},
             {"text": "mi", "size": 18, "align": "bottom"}
-        ], position=(0.85, 0.35),align="left")
+        ], position=(0.6, 0.35),align="left")
 
         #(pressure) 
         screen.add_image(os.path.join(script_directory, "icons", "pressure.png"),(0.8, 0.25),(0.04,0.07),invert=True, color_black=False)
         screen.add_text([
             {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
             {"text": "inHg", "size": 18, "align": "bottom"}
-        ], position=(0.85, 0.45))
+        ], position=(0.8, 0.25))
 
         #wind data UPDATE
         # Wind speed
@@ -177,7 +177,7 @@ def render():
         except Exception as error:
             data.append({"text": "--", "size": 36})
             data.append({"text": "%", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.85, 0.25))
+        screen.add_text(data, position=(0.8, 0.35))
 
         _cache_img=screen.render()
 
