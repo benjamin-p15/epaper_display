@@ -144,7 +144,7 @@ def render():
         #wind data UPDATE
         # Wind speed
         data=[]
-        screen.add_image(os.path.join(script_directory, "icons", "wind.png"),(0.39, 0.58),(0.04,0.07),invert=True,color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "wind.png"),(0.6, 0.55),(0.04,0.07),invert=True,color_black=True)
         try:
             wind_speed = knots_to_mph(weather_data['wspd'])
             data.append({"text": f"{round(wind_speed)}", "size": 36})
@@ -165,7 +165,7 @@ def render():
         except Exception as error:
             data.append({"text": f"|--", "size": 36})
             data.append({"text": "mph", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.65, 0.55))
+        screen.add_text(data, position=(0.65, 0.55),align="left")
 
         # Cloud coverage
         data=[]
