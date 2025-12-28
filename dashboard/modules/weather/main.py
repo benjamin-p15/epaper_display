@@ -57,6 +57,12 @@ def render():
                 print(f"{key}: {value}")
         
         screen.add_rectangle((0,0.75), (0.15,0.25), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.1,0.75), (0.15,0.25), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.2,0.75), (0.15,0.25), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.3,0.75), (0.15,0.25), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.4,0.75), (0.15,0.25), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.5,0.75), (0.15,0.25), fill=0, radius=15, thickness=2)
+        screen.add_rectangle((0.6,0.75), (0.15,0.25), fill=0, radius=15, thickness=2)
         _cache_img=screen.render()
 
         if(_cache_img is None): return None, False
