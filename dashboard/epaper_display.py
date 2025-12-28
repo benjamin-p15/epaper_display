@@ -127,7 +127,7 @@ class ImageDrawer:
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
         img = Image.open(img).convert("RGBA")
-        if(invert==True): img=ImageOps.invert(img)
+        if(invert==True): img=ImageOps.invert(img.convert("RGB"))
         # Shading option
         if color_black:
             pixels = img.load()
