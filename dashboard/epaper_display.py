@@ -158,15 +158,16 @@ class ImageDrawer:
                     font=ImageFont.truetype(font_path,element.get("size",12))
                     fonts.append(font)
                     w,h=font.getsize(element["text"])
+                    ascent, descent = font.getmetrics()
                     widths.append(w)
-                    heights.append(h)
+                    heights.append(ascent)
                 # Find the maximum font being displayed 
                 max_height=max(heights)
                 total_width=sum(widths)
                 # Shift text to align it to correct location
-                if cmd["align"]=="center":x_start=x-total_width//2
-                elif cmd["align"]=="right":x_start=x-total_width
-                else:x_start=x
+                if cmd["align"]=="center": x_start=x-total_width//2
+                elif cmd["align"]=="right": x_start=x-total_width
+                else: x_start=x
 
                 x_offset=0
                 for i,text_element in enumerate(cmd["text"]):
