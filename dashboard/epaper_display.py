@@ -181,7 +181,7 @@ class ImageDrawer:
                     # Vertical alignment - FIXED for text_y_max alignment
                     block_align = block.get("align", "middle")
                     if block_align == "top":
-                        draw_y = y + max_height - h
+                        draw_y = y + max_height
                     elif block_align == "bottom":
                         draw_y = y + max_height - h
                     else:  # middle
