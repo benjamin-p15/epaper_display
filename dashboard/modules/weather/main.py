@@ -30,7 +30,9 @@ def render():
     global _last_update, _cache_img, script_directory, weather_data
     now = time.time()
     now_datetime = datetime.datetime.now()
+    local_timezone=datetime.datetime.get_localzone()
     today=datetime.datetime.today()
+    print(today)
     if now - _last_update >= 5 * 60:
         _last_update = now
 
@@ -129,6 +131,15 @@ def render():
 
         #(visibility)
         visibility,marker=parse_us_metar_vis(weather_data["visib"])
+        screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.3),(0.05,0.08),invert=True, color_black=True)
+        screen.add_text([
+            {"text": f"{visibility}", "size": 36},
+            {"text": f"{marker}", "size": 28, "align": "center"},
+            {"text": "mi", "size": 18, "align": "bottom"}
+        ], position=(0.65, 0.29),align="left")
+
+        #(moonphase)
+        moon=moon_phase_index(date=)
         screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.3),(0.05,0.08),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{visibility}", "size": 36},
@@ -360,3 +371,19 @@ def calculate_weighted_cloud_coverage(cloud_layers):
         total_weight += thickness
     # Return weight average
     return round(weighted_sum / total_weight)
+
+# Calulate moon phase using astronomical new moon and estimate of phase during month
+def moon_phase_index(date=None):
+    if date is None: date = datetime.utcnow()
+    known_new_moon = datetime(2000, 1, 6, 18, 14)
+    synodic_month = 29.530588853
+    days = (date - known_new_moon).total_seconds() / 86400.0
+    phase = (days % synodic_month) / synodic_month
+    if phase < 1/16 or phase >= 15/16:return "new"
+    elif phase < 3/16:return "wax_c"
+    elif phase < 5/16:return "first_q"
+    elif phase < 7/16:return "wax_g"
+    elif phase < 9/16:return "full"
+    elif phase < 11/16:return "wan_g"
+    elif phase < 13/16:return "last_q"
+    else:return "wan_c"
