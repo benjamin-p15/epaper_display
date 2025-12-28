@@ -116,7 +116,7 @@ def render():
         screen.add_text([
             {"text": f"{round(precent)}", "size": 36},
             {"text": "%", "size": 18, "align": "bottom"}
-        ], position=(0.65, 0.45))
+        ], position=(0.65, 0.45),align="left")
 
         #(dew point)
         dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
@@ -132,7 +132,7 @@ def render():
             {"text": f"{visibility}", "size": 36},
             {"text": f"{marker}", "size": 28, "align": "center"},
             {"text": "mi", "size": 18, "align": "bottom"}
-        ], position=(0.85, 0.35))
+        ], position=(0.85, 0.35),align="left")
 
         #(pressure) 
         screen.add_text([
