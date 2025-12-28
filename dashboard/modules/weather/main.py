@@ -66,8 +66,8 @@ def render():
 
         # Draw rectangles and add text
         for i in range(7):
-            screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
             screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745))
+            screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
 
 
 
