@@ -74,19 +74,26 @@ def render():
         screen.add_text([
             {"text": f"{sunrise_time}", "size": 36},
             {"text": f"{sunrise_period}", "size": 18, "align": "bottom"}
-        ], position=(0.75, 0.25))
+        ], position=(0.65, 0.25))
         screen.add_text([
             {"text": f"{sunset_time}", "size": 36},
             {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
-        ], position=(0.75, 0.35))
+        ], position=(0.65, 0.35))
 
 
         #(humidity)
         precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
         screen.add_text([
-            {"text": f"{round(precent)}%", "size": 36},
+            {"text": f"{round(precent)}", "size": 36},
             {"text": "%", "size": 18, "align": "bottom"}
-        ], position=(0.75, 0.45))
+        ], position=(0.65, 0.45))
+
+        #(dew point)
+        dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
+        screen.add_text([
+            {"text": f"{round(dew_point_F)}", "size": 36},
+            {"text": "°F", "size": 18, "align": "bottom"}
+        ], position=(0.85, 0.25))
 
         #(wind speed and diretcion)
         wind_speed = knots_to_mph(weather_data['wspd'])
@@ -94,7 +101,7 @@ def render():
             {"text": f"{round(wind_speed)}", "size": 36},
             {"text": "mph", "size": 18, "align": "bottom"},
             {"text": f" | {weather_data['wdir']}°", "size": 36},
-        ], position=(0.75, 0.55))
+        ], position=(0.65, 0.55))
 
 
         _cache_img=screen.render()
