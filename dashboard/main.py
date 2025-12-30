@@ -10,10 +10,12 @@ from epaper_display import EpaperDisplay
 from modules.clock import main as clock
 from modules.weather import main as weather
 from modules.image_display import main as image
+from modules.grapher import main as grapher
 
 current_layout = None #"weather"
 update_state = False
 image_threshold = 128
+layouts=["clock", "weather", "image", "grapher"]
 
 # Start website
 def start_dashboard():
@@ -31,7 +33,7 @@ def start_dashboard():
         # When buttons are clicked saved thier changed state
         global current_layout, update_state
         layout = request.form.get("layout")
-        if layout in ("clock", "weather", "image"):
+        if layout in layouts:
             current_layout = layout
             update_state = True
             return f"Layout set to {layout}"
@@ -92,6 +94,10 @@ def display_loop(display):
         # Run clock time curcit
         elif(current_layout=="clock"):
             img, update_display = clock.render()
+            if update_display: current_display = img
+        # Run Grapher time curcit
+        elif(current_layout=="grapher"):
+            img, update_display = grapher.render()
             if update_display: current_display = img
 
         # Update display if requested and wait before running check again
