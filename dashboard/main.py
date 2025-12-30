@@ -6,7 +6,7 @@ import time
 import os
 
 # Import classes to talk to epaper display and all of the modules
-from epaper_display import EpaperDisplay
+from dashboard.epaper_display import EpaperDisplay
 from modules.clock import main as clock
 from modules.weather import main as weather
 from modules.image_display import main as image

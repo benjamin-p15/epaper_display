@@ -1,5 +1,7 @@
 import spidev
-import RPi.GPIO as GPIO
+try: import RPi.GPIO as GPIO
+except: pass
+
 import time
 from PIL import ImageOps,Image, ImageDraw, ImageFont
 
@@ -172,7 +174,11 @@ class ImageDrawer:
                     # Create font object of certain size, and look all text sizes
                     font=ImageFont.truetype(font_path,element.get("size",12))
                     fonts.append(font)
-                    w,h=font.getsize(element["text"])
+                    #w,h=font.getsize(element["text"])
+                    bbox = font.getbbox(element["text"])
+                    w = bbox[2] - bbox[0]
+                    h = bbox[3] - bbox[1]
+
                     ascent, descent = font.getmetrics()
                     text_sizes.append({"width": w, "height": h, "ascent": ascent, "descent": descent})
 
@@ -213,24 +219,21 @@ class ImageDrawer:
                 radius = cmd.get("radius", 0)
                 fill = cmd.get("fill", 0)
                 thickness = cmd.get("thickness")
-                # If thickness is None draw solid rectangle like normal uing rounded function
+
+                # If thickness is None draw solid rectangle like normal using rounded function
                 if thickness is None:
-                    if radius > 0: draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=fill)
-                    else: draw.rectangle([x, y, x + w, y + h], fill=fill)
-                # If thickness is not solid draw 2 rectangles to produce a hollow rectangle
-                else:
-                    # If round rectangle is being drown
                     if radius > 0:
                         draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=fill)
-                        ix, iy = x + thickness, y + thickness
-                        iw, ih = w - (2 * thickness), h - (2 * thickness)
-                        if iw > 0 and ih > 0: draw.rounded_rectangle([ix, iy, ix + iw, iy + ih], radius=max(0, radius - thickness), fill=1 - fill)
-                    # If normal rectangle is being drown 
                     else:
                         draw.rectangle([x, y, x + w, y + h], fill=fill)
-                        ix, iy = x + thickness, y + thickness
-                        iw, ih = w - (2 * thickness), h - (2 * thickness)
-                        if iw > 0 and ih > 0: draw.rectangle([ix, iy, ix + iw, iy + ih], fill=1 - fill)
+
+                # If thickness is not solid draw hollow rectangle
+                else:
+                    if radius > 0:
+                        draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, outline=fill, width=thickness)
+                    else:
+                        draw.rectangle([x, y, x + w, y + h], outline=fill, width=thickness)
+
 
         # Clear commands after render
         self.commands = []

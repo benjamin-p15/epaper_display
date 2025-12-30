@@ -1,7 +1,7 @@
-from PIL import Image
-import requests, math, time, csv, os, datetime
+import requests, math, time, csv, os, datetime, sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 from zoneinfo import ZoneInfo
-from epaper_display import ImageDrawer
+from dashboard.epaper_display import ImageDrawer
 screen = ImageDrawer()
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -95,7 +95,7 @@ def render():
             # Draw estimated precipitation 
             precip = data.get("precipitation_prob")
             precip_text = f"{precip}%" if precip is not None else "--"
-            screen.add_image(os.path.join(script_directory, "icons", 'chance.png'),(x_pos+0.029, 0.955),(0.025, 0.035))
+            screen.add_image(os.path.join(script_directory, "icons", 'chance.png'),(x_pos+0.029, 0.955),(0.02, 0.02*scale_factor))
             screen.add_text([{"text": precip_text, "size": 18}], position=(x_pos+0.053, 0.95),bold=True,align="left")
 
 
@@ -112,14 +112,14 @@ def render():
         # Get current weather and draw it onto the screen
         current = forecast_data.get("current", {})
         invert, icon_file = weather_to_icon(current.get("weather_text"))
-        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0, 0.11),(0.27, 0.27*scale_factor),invert=invert,color_black=invert)
+        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0, 0.11),(0.27, 0.27*scale_factor),invert=invert,color_black=True)
 
 
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
         feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
         screen.add_text([{"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},{"text": "°F", "size": 36, "align": "top"}], position=(0.4, 0.35), bold=True)
-        screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.38, 0.42))
+        screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.38, 0.44))
         
 
 
@@ -152,21 +152,6 @@ def render():
             {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
         ], position=(0.85, 0.1),align="left")
 
-        #(Humidity, dew point)
-        # Usig dew point calulate relative humidity
-        precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
-        dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
-        # Add humidity text and icon to screen and dew point under it
-        screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, 0.2),(0.04,0.07),invert=True, color_black=True)
-        screen.add_text([
-            {"text": f"{round(precent)}", "size": 36},
-            {"text": "%", "size": 18, "align": "bottom"}
-        ], position=(0.64, 0.19),align="left")
-        screen.add_text([
-            {"text": f"Dew {round(dew_point_F)}", "size": 18, "align": "top"},
-            {"text": "°F", "size": 9, "align": "top"}
-        ], position=(0.64, 0.29),align="left")
-
         # (Pressure) 
         # Convert pressure to inHg and add image and text to screen
         screen.add_image(os.path.join(script_directory, "icons", "pressure2.png"),(0.8, 0.2),(0.04,0.07),invert=True, color_black=False)
@@ -184,6 +169,21 @@ def render():
             {"text": f"{marker}", "size": 28, "align": "center"},
             {"text": "mi", "size": 18, "align": "bottom"}
         ], position=(0.65, 0.29),align="left")
+
+        #(Humidity, dew point)
+        # Usig dew point calulate relative humidity
+        precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
+        dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
+        # Add humidity text and icon to screen and dew point under it
+        screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, 0.2),(0.04,0.07),invert=True, color_black=True)
+        screen.add_text([
+            {"text": f"{round(precent)}", "size": 36},
+            {"text": "%", "size": 18, "align": "bottom"}
+        ], position=(0.64, 0.19),align="left")
+        screen.add_text([
+            {"text": f"Dew {round(dew_point_F)}", "size": 18, "align": "top"},
+            {"text": "°F", "size": 9, "align": "top"}
+        ], position=(0.64, 0.29),align="left")
 
         # (Cloud coverage)
         # Estimate cloud coverage by taking an weighted average of the clouds then display on screen with icon
@@ -252,7 +252,7 @@ def weather_to_icon(text):
     if "partly cloudy" in t: return True, "partly_cloudy.png"
     if "cloudy" in t: return False, "cloudy.png"
     if "sunny" in t or "clear" in t: return True, "sunny.png"
-    return False, "cloudy.png"
+    return False, "sunny.png"
 
 # Get meter from a specific airport
 def fetch_metar(icao_code):
@@ -456,9 +456,13 @@ def calculate_sunrise_sunset(latitude, longitude, date, timezone_offset):
         local_hour_angle = (360 - rad_to_deg(math.acos(cos_local_hour_angle))) / 15 if is_sunrise else rad_to_deg(math.acos(cos_local_hour_angle)) / 15
         local_mean_time = local_hour_angle + sun_right_ascension_hours - (0.06571 * approximate_time) - 6.622
         utc_time = (local_mean_time - longitude_hour) % 24
-        local_time = utc_time + timezone_offset
-        hour = int(local_time) % 24
-        minute = int((local_time - hour) * 60)
+        local_time = (utc_time + timezone_offset) % 24
+        hour = int(local_time)
+        minute = int(round((local_time - hour) * 60))
+        # Clamp time to prevent range errors
+        if minute == 60:
+            minute = 0
+            hour = (hour + 1) % 24
         return datetime.time(hour, minute)
 
     return compute_sun_time(True), compute_sun_time(False)
@@ -532,3 +536,13 @@ def moon_phase_index(date=None):
     elif phase < 11/16:return "wan_g"
     elif phase < 13/16:return "last_q"
     else:return "wan_c"
+
+# Image viewer script to run code without screen
+def main():
+    global _last_update
+    _last_update=0
+    img, show = render()
+    img.show()
+
+if __name__ == "__main__":
+    main()
