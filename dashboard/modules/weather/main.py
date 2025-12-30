@@ -107,7 +107,7 @@ def render():
 
 
         # Add city and state to screen
-        screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, -0.02))
+        screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, -0.02),bold=True)
         
         # Get current weather and draw it onto the screen
         current = forecast_data.get("current", {})
