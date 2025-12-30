@@ -9,8 +9,8 @@ x_digits = 5
 scale_x = 20
 scale_y = 20
 
-_last_update
-_cache_img
+_last_update=0
+_cache_img=None
 
 equations = [
     lambda x: math.sin(x / 10) * 20,
