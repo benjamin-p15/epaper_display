@@ -55,29 +55,10 @@ def render():
 
 
 
-        forecast = fetch_forecast(location_data["latitude"], location_data["longitude"]) or {"current": {}, "hourly": [], "tomorrow": {}}
-
-        print("Current conditions:")
-        for k, v in forecast["current"].items():
-            if k == "cloud_layers":
-                print(f"{k}:")
-                for layer in v: print(f"  {layer}")
-            else: print(f"{k}: {v}")
-        print("-" * 40)
-
-        print("Hourly forecast (next 6 hours):")
-        for hour in forecast["hourly"]:
-            print(", ".join(f"{k}: {v}" for k, v in hour.items()))
-        print("-" * 40)
-
-        print("Tomorrow forecast:")
-        if forecast["tomorrow"]: print(", ".join(f"{k}: {v}" for k, v in forecast["tomorrow"].items()))
-
-
-
-
-
-
+        forecast_data = fetch_forecast(location_data["latitude"], location_data["longitude"]) or {}
+        forecast_data.setdefault("current", {})
+        forecast_data.setdefault("hourly", [])
+        forecast_data.setdefault("tomorrow", {})
 
 
 
