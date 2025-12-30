@@ -84,7 +84,7 @@ def draw_equation(image_draw, equation_function, image_width, image_height, scal
             image_draw.line((previous_pixel[0], previous_pixel[1], x_pixel, y_pixel), fill=0)
         previous_pixel = (x_pixel, y_pixel)
 
-def render_graph():
+def render():
     global _last_render_time, _cached_image
     current_time = time.time()
     if _cached_image is None or current_time - _last_render_time >= 5 * 60:
