@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw
-import random, math
+import random, math, time
 
 # Example graphing parameters
 img_width = 400
