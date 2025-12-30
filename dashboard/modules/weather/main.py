@@ -69,7 +69,6 @@ def render():
         
 
 
-
         for i in range(7):
             # Generate hourly text
             if i < 6:
@@ -92,12 +91,12 @@ def render():
             
             # Draw estimated tempasure
             temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
-            screen.add_text([{"text": temp_text, "size": 14}], position=(x_pos, 0.95), bold=True)
+            screen.add_text([{"text": temp_text, "size": 14}], position=(x_pos, 0.9), bold=True)
 
             # Draw estimated precipitation 
             precip = data.get("precipitation_prob")
             precip_text = f"{precip}%" if precip is not None else "--"
-            screen.add_text([{"text": precip_text, "size": 12}], position=(x_pos, 0.97))
+            screen.add_text([{"text": precip_text, "size": 12}], position=(x_pos, 0.92))
 
 
 
