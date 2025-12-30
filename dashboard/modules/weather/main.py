@@ -111,6 +111,24 @@ def render():
             screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
             screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
 
+        for i, hour in enumerate(forecast_data["hourly"][:6]):
+            icon = weather_to_icon(hour.get("weather"))
+            screen.add_image(
+                os.path.join(script_directory, "icons", icon),
+                (0.006 + i*0.142 + 0.047, 0.80),
+                (0.04, 0.07),
+                invert=True,
+                color_black=True
+            )
+        if forecast_data["tomorrow"]:
+            icon = weather_to_icon(forecast_data["tomorrow"].get("weather"))
+            screen.add_image(
+                os.path.join(script_directory, "icons", icon),
+                (0.90, 0.80),
+                (0.05, 0.08),
+                invert=True,
+                color_black=True
+            )
 
 
 
@@ -246,6 +264,19 @@ def render():
         if(_cache_img is None): return None, False
         else: return _cache_img, True 
     return None, False
+
+def weather_to_icon(text):
+    t = (text or "").lower()
+    if "thunder" in t: return "thunderstorms.png"
+    if "snow" in t: return "snowy.png"
+    if "rain" in t or "showers" in t: return "rain_showers.png"
+    if "drizzle" in t: return "drizzle.png"
+    if "fog" in t or "mist" in t: return "fog.png"
+    if "mostly cloudy" in t: return "mostly_cloudy.png"
+    if "partly cloudy" in t: return "partly_cloudy.png"
+    if "cloudy" in t: return "mostly_cloudy.png"
+    if "sunny" in t or "clear" in t: return "sunny.png"
+    return "partly_cloudy.png"
 
 # Get meter from a specific airport
 def fetch_metar(icao_code):
