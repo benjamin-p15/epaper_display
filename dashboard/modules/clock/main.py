@@ -7,17 +7,19 @@ script_directory = os.path.dirname(os.path.abspath(__file__))
 
 _last_update = 0
 _cache_img = None
+seconds_until_next_minute=60
 
 def render():
     global _last_update, _cache_img, script_directory
     now = time.time()
     now_datetime = datetime.datetime.now()
     
-    # Calulate seconds untill next minute for screen refreash 
-    seconds_until_next_minute = 60 - now_datetime.second - now_datetime.microsecond / 1_000_000
-    
     # Update only if we reached the next minute
     if now - _last_update >= seconds_until_next_minute:
+        global seconds_until_next_minute
+        # Calulate seconds untill next minute for screen refreash 
+        seconds_until_next_minute = round(60 - now_datetime.second - now_datetime.microsecond / 1_000_000)
+
         _last_update = now
         # Date/time data
         today = datetime.date.today()
