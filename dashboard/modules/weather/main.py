@@ -51,7 +51,8 @@ def render():
         if metar_data: weather_data = metar_data[0]
         else: weather_data = {}
 
-
+        print("Meter data:")
+        for key, value in weather_data.items(): print(f"{key}: {value}")
 
 
 
@@ -59,24 +60,9 @@ def render():
         forecast_data.setdefault("current", {})
         forecast_data.setdefault("hourly", [])
         forecast_data.setdefault("tomorrow", {})
-
-
-
-
-
-
-
-
-
-
-
-
-        print("Meter data:")
-        for key, value in weather_data.items(): print(f"{key}: {value}")
-
-
-        # Generate the hour data for forecast
         hours = []
+
+        # Draw rectangles forecast text
         for i in range(7):
             # Generate hourly text
             if i < 6:
@@ -87,29 +73,17 @@ def render():
                 next_day = now_datetime + datetime.timedelta(days=1)
                 hour_str = next_day.strftime('%a').lower() 
             hours.append(hour_str)
-        # Draw rectangles forecast text
+
+
         for i in range(7):
             screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
             screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
-
         for i, hour in enumerate(forecast_data["hourly"][:6]):
             icon = weather_to_icon(hour.get("weather"))
-            screen.add_image(
-                os.path.join(script_directory, "icons", icon),
-                (0.006 + i*0.142 + 0.047, 0.80),
-                (0.04, 0.07),
-                invert=True,
-                color_black=True
-            )
+            screen.add_image(os.path.join(script_directory, "icons", icon),(0.006 + i*0.142 + 0.047, 0.80),(0.04, 0.07),invert=True,color_black=True)
         if forecast_data["tomorrow"]:
             icon = weather_to_icon(forecast_data["tomorrow"].get("weather"))
-            screen.add_image(
-                os.path.join(script_directory, "icons", icon),
-                (0.90, 0.80),
-                (0.05, 0.08),
-                invert=True,
-                color_black=True
-            )
+            screen.add_image(os.path.join(script_directory, "icons", icon),(0.90, 0.80),(0.05, 0.08),invert=True,color_black=True)
 
 
 
