@@ -248,7 +248,7 @@ def weather_to_icon(text):
     if "mostly cloudy" in t: return False, "mostly_cloudy.png"
     if "partly cloudy" in t: return True, "partly_cloudy.png"
     if "cloudy" in t: return False, "cloudy.png"
-    if "sunny" in t or "clear" in t: return False, "drizzle.png"#"sunny.png"
+    if "sunny" in t or "clear" in t: return True, "drizzle.png"#"sunny.png"
     return False, "cloudy.png"
 
 # Get meter from a specific airport
