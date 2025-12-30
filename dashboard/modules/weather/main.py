@@ -242,13 +242,13 @@ def weather_to_icon(text):
     t = (text or "").lower()
     if "thunder" in t: return False, "thunderstorms.png"
     if "snow" in t: return False, "snowy.png"
-    if "rain" in t or "showers" in t: return False, "rain_showers.png"
+    if "rain" in t or "showers" in t: return False, "rain_shower.png"
     if "drizzle" in t: return True, "drizzle.png"
     if "fog" in t or "mist" in t: return False, "fog.png"
     if "mostly cloudy" in t: return False, "mostly_cloudy.png"
     if "partly cloudy" in t: return True, "partly_cloudy.png"
     if "cloudy" in t: return False, "cloudy.png"
-    if "sunny" in t or "clear" in t: return True, "rain_showers.png"#"sunny.png"
+    if "sunny" in t or "clear" in t: return True, "rain_shower.png"#"sunny.png"
     return False, "cloudy.png"
 
 # Get meter from a specific airport
