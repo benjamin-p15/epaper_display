@@ -102,15 +102,6 @@ def render():
 
 
 
-        
-
-
-        
-        icons_data = forecast_data.get("hourly", [])[:6] + ([forecast_data["tomorrow"]] if forecast_data.get("tomorrow") else [])
-        for i, data in enumerate(icons_data):
-            icon = weather_to_icon(data.get("weather"))
-            screen.add_image(os.path.join(script_directory, "icons", icon),(-0.031 + i*0.142 + 0.047, 0.78),(0.11, 0.135),invert=True,color_black=True)
-
 
 
 
