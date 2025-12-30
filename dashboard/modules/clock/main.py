@@ -10,13 +10,12 @@ _cache_img = None
 seconds_until_next_minute=60
 
 def render():
-    global _last_update, _cache_img, script_directory
+    global _last_update, _cache_img, script_directory, seconds_until_next_minute
     now = time.time()
     now_datetime = datetime.datetime.now()
     
     # Update only if we reached the next minute
     if now - _last_update >= seconds_until_next_minute:
-        global seconds_until_next_minute
         # Calulate seconds untill next minute for screen refreash 
         seconds_until_next_minute = round(60 - now_datetime.second - now_datetime.microsecond / 1_000_000)
 
