@@ -86,7 +86,7 @@ def render():
         for i, data in enumerate(icons_data):
             invert, icon = weather_to_icon(data.get("weather"))
             x_pos = -0.031 + i*0.142 + 0.047
-            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos+0.03, 0.78),(0.075, 0.075*scale_factor),invert=invert,color_black=True)
+            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos+0.02, 0.78),(0.075, 0.075*scale_factor),invert=invert,color_black=True)
             
             # Draw estimated tempasure
             temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
