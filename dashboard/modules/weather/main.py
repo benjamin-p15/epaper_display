@@ -110,14 +110,14 @@ def render():
         # Get current weather and draw it onto the screen
         current = forecast_data.get("current", {})
         invert, icon_file = weather_to_icon(current.get("weather_text"))
-        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0.1, 0.15),(0.25, 0.3),invert=invert,color_black=invert)
+        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0.05, 0.15),(0.30, 0.40),invert=invert,color_black=invert)
 
 
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
         feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
-        screen.add_text([{"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},{"text": "°F", "size": 36, "align": "top"}], position=(0.3, 0.35), bold=True)
-        screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.28, 0.42))
+        screen.add_text([{"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},{"text": "°F", "size": 36, "align": "top"}], position=(0.4, 0.35), bold=True)
+        screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.38, 0.42))
         
 
 
