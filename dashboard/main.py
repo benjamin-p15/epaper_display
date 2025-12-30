@@ -11,11 +11,12 @@ from modules.clock import main as clock
 from modules.weather import main as weather
 from modules.image_display import main as image
 from modules.grapher import main as grapher
+from modules.analog_clock import main as analog_clock
 
 current_layout = None #"weather"
 update_state = False
 image_threshold = 128
-layouts=["clock", "weather", "image", "grapher"]
+layouts=["clock", "weather", "image", "grapher", "analog_clock"]
 
 # Start website
 def start_dashboard():
@@ -94,6 +95,9 @@ def display_loop(display):
         # Run clock time curcit
         elif(current_layout=="clock"):
             img, update_display = clock.render()
+            if update_display: current_display = img
+        elif(current_layout=="analog_clock"):
+            img, update_display = analog_clock.render()
             if update_display: current_display = img
         # Run Grapher time curcit
         elif(current_layout=="grapher"):
