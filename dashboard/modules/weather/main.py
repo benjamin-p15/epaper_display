@@ -64,6 +64,13 @@ def render():
 
         # Draw rectangles forecast text
         for i in range(7):
+            screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
+            screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
+        
+
+
+
+        for i in range(7):
             # Generate hourly text
             if i < 6:
                 hour = (now_datetime + datetime.timedelta(hours=i+1)).hour 
@@ -85,18 +92,15 @@ def render():
             
             # Draw estimated tempasure
             temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
-            screen.add_text([{"text": temp_text, "size": 14}], position=(x_pos, 0.9), bold=True)
+            screen.add_text([{"text": temp_text, "size": 14}], position=(x_pos, 0.95), bold=True)
 
             # Draw estimated precipitation 
             precip = data.get("precipitation_prob")
             precip_text = f"{precip}%" if precip is not None else "--"
-            screen.add_text([{"text": precip_text, "size": 12}], position=(x_pos, 0.92))
+            screen.add_text([{"text": precip_text, "size": 12}], position=(x_pos, 0.97))
 
 
 
-        for i in range(7):
-            screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
-            screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
         
 
 
