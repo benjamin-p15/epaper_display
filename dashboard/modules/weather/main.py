@@ -154,7 +154,7 @@ def render():
 
         # (Pressure) 
         # Convert pressure to inHg and add image and text to screen
-        screen.add_image(os.path.join(script_directory, "icons", "pressure2.png"),(0.8, 0.2),(0.04,0.07),invert=True, color_black=False)
+        screen.add_image(os.path.join(script_directory, "icons", "pressure.png"),(0.8, 0.2),(0.04,0.07),invert=True, color_black=False)
         screen.add_text([
             {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
             {"text": "inHg", "size": 18, "align": "bottom"}
@@ -183,7 +183,7 @@ def render():
         screen.add_text([
             {"text": f"Dew {round(dew_point_F)}", "size": 18, "align": "top"},
             {"text": "°F", "size": 9, "align": "top"}
-        ], position=(0.64, 0.29),align="left")
+        ], position=(0.64, 0.28),align="left")
 
         # (Cloud coverage)
         # Estimate cloud coverage by taking an weighted average of the clouds then display on screen with icon
@@ -198,14 +198,15 @@ def render():
             data.append({"text": "%", "size": 18, "align": "bottom"})
         screen.add_text(data, position=(0.86, 0.3),align="left")
 
-        #(Moonphase)
-        #moon=moon_phase_index(date=)
-        screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.4),(0.05,0.08),invert=True, color_black=True)
-        screen.add_text([
-            {"text": f"{visibility}", "size": 36},
-            {"text": f"{marker}", "size": 28, "align": "center"},
-            {"text": "mi", "size": 18, "align": "bottom"}
-        ], position=(0.65, 0.39),align="left")
+        #(Air quaility)
+        air=fetch_air_quality(location_data["latitude"], location_data["longitude"],"e68ce140b337a07f309590d691db0e80")
+        screen.add_image(os.path.join(script_directory, "icons", "aqi.png"),(0.6, 0.4),(0.05,0.08),invert=False, color_black=True)
+        screen.add_text([{"text": f"{air}", "size": 36}], position=(0.65, 0.39),align="left")
+
+        #(UV index)
+        uv=fetch_uv_index(location_data["latitude"], location_data["longitude"],"e68ce140b337a07f309590d691db0e80")
+        screen.add_image(os.path.join(script_directory, "icons", "uvi.png"),(0.8, 0.4),(0.05,0.08),invert=False, color_black=True)
+        screen.add_text([{"text": f"{uv}", "size": 36}], position=(0.85, 0.39),align="left")
 
 
         # (Wind speed, wind direction, gust speed)
@@ -241,6 +242,39 @@ def render():
         else: return _cache_img, True 
     return None, False
 
+def fetch_uv_index(latitude, longitude, api_key):
+    # Setup url and api call parms
+    url = "https://api.openweathermap.org/data/3.0/onecall"
+    params = {"lat": latitude,"lon": longitude,"exclude": "minutely,hourly,daily,alerts","appid": api_key}
+    try:
+        # Request data
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+        # Return uv index on a 0-11 scale
+        uvi = r.json().get("current").get("uvi")
+        if uvi == None or uvi == "": return "--"
+        uvi = min(round(uvi), 11)
+        return f"{uvi}/11"
+    except Exception as e:
+        return "--"
+    
+def fetch_air_quality(latitude, longitude, api_key):
+    # Setup url and api call parms
+    url = "https://api.openweathermap.org/data/2.5/air_pollution"
+    params = {"lat": latitude,"lon": longitude,"appid": api_key}
+    try:
+        # Request data
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+        data = r.json()["list"][0]
+        # Return air quility which is on a 0-500 scale
+        return f"{round(data["aqi"])}"
+    # If it fails return no data
+    except Exception:
+        return "--"
+
+
+# Using the data return form the NWS calulate which icon to use for display depending on weather type
 def weather_to_icon(text):
     t = (text or "").lower()
     if "thunder" in t: return False, "thunderstorms.png"
@@ -267,46 +301,26 @@ def fetch_metar(icao_code):
     data = resp.json()
     return data
 
-# Get taf for the next 24h of a specific airport 
-def fetch_taf(icao_code):
-    # Build aviationweather.gov taf api link with desierd station
-    url = f"https://aviationweather.gov/api/data/taf?ids={icao_code}&format=json"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    # Make request to website for data
-    response = requests.get(url, headers=headers)
-
-    # Make sure the airport is returning the taf data, if it is return taf pharsed taf JSON data
-    if response.status_code != 200:
-        print(f"Error fetching TAF: {response.status_code}")
-        return None
-    try: data = response.json()
-    except ValueError:
-        print("No JSON returned, response text:", response.text)
-        return None
-    if not data.get("data"):
-        print("No TAF data available for this station")
-        return None
-    
-    return data
-
+# Fetch forcast from NWS
 def fetch_forecast(latitude, longitude):
+    # Appear as user agent to prevent botting issues
     headers = {"User-Agent": "example@example.com"}
 
-    # 1) Get forecast & station URLs
+    # Setup url for the NWS api, pull current json point data, then pull out the day/hour/current point data
     point_url = f"https://api.weather.gov/points/{latitude},{longitude}"
     point_data = requests.get(point_url, headers=headers).json()
     hourly_url = point_data["properties"]["forecastHourly"]
     daily_url  = point_data["properties"]["forecast"]
     stations_url = point_data["properties"]["observationStations"]
 
-    # 2) Get nearest station for current conditions
+    # Using pulled point data of area and closest station pull current forcast data
     stations_data = requests.get(stations_url, headers=headers).json()
     station_id = stations_data["features"][0]["properties"]["stationIdentifier"]
     obs_url = f"https://api.weather.gov/stations/{station_id}/observations/latest"
     obs_data = requests.get(obs_url, headers=headers).json()
     obs_props = obs_data["properties"]
 
-    # Current conditions
+    # Take current conditions and format them
     current = {
         "temperature": obs_props.get("temperature", {}).get("value"),
         "temperature_unit": obs_props.get("temperature", {}).get("unitCode"),
@@ -324,7 +338,7 @@ def fetch_forecast(latitude, longitude):
         "weather_text": obs_props.get("textDescription")
     }
 
-    # 3) Hourly forecast
+    # Request current hourly conditions and format them
     hourly_data = requests.get(hourly_url, headers=headers).json()
     hourly = [{
         "time": p["startTime"],
@@ -334,7 +348,7 @@ def fetch_forecast(latitude, longitude):
         "weather": p.get("shortForecast")
     } for p in hourly_data["properties"]["periods"][:6]]
 
-    # 4) Tomorrow forecast
+    # Request current daily conditions and format them
     daily_data = requests.get(daily_url, headers=headers).json()
     today = datetime.date.today()
     tomorrow = None
@@ -349,12 +363,8 @@ def fetch_forecast(latitude, longitude):
                 "weather": p.get("shortForecast")
             }
             break
-
-    return {
-        "current": current,
-        "hourly": hourly,
-        "tomorrow": tomorrow
-    }
+    # Return current weather, hourly forcast for next 6 hours, and tomarrows forcast
+    return {"current": current,"hourly": hourly,"tomorrow": tomorrow}
 
 # Get current location info using ip address
 def get_current_location():

@@ -1,4 +1,4 @@
-import time, os, datetime, sys, datetime, calendar
+import time, os, datetime, sys, datetime, calendar, math
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 from dashboard.epaper_display import ImageDrawer
 
@@ -10,20 +10,20 @@ _cache_img = None
 seconds_until_next_minute=60
 
 def render():
-    global _last_update, _cache_img, script_directory, seconds_until_next_minute
+    global _last_update, _cache_img, seconds_until_next_minute
     now = time.time()
-    now_datetime = datetime.datetime.now()
     
     # Update only if we reached the next minute
     if now - _last_update >= seconds_until_next_minute:
-        # Calulate seconds untill next minute for screen refreash 
-        seconds_until_next_minute = round(60 - now_datetime.second - now_datetime.microsecond / 1_000_000)
-
         _last_update = now
-        # Date/time data
+
+        # Pull current date/time info
         today = datetime.date.today()
         now = datetime.datetime.now()
         year = today.year
+
+        # Calulate seconds untill next minute, making the screen refreash on every minute
+        seconds_until_next_minute = round(60 - now.second - now.microsecond / 1_000_000)
 
         # Calulate current time
         hour_12 = now.hour % 12 or 12  # Convert to 12 hour format
@@ -38,9 +38,15 @@ def render():
 
         # Display length of time until certain events
         name, days = get_holiday_info(today)
-        screen.add_text([{"text": f"{name}", "size": 32}], position=(0.5,0.87),bold=True)
-        if (days>1): screen.add_text([{"text": f"{days} days", "size": 17}], position=(0.5,0.95),bold=True)
-        else: screen.add_text([{"text": f"{days} day", "size": 16}], position=(0.5,0.95),bold=True)
+        # If today is not a holiday display holiday name with number of days until event under with day/days correction
+        if(days>0):
+            screen.add_text([{"text": f"{name}", "size": 32}], position=(0.5,0.87),bold=True)
+            if (days>1): screen.add_text([{"text": f"{days} days", "size": 17}], position=(0.5,0.95),bold=True)
+            else: screen.add_text([{"text": f"{days} day", "size": 16}], position=(0.5,0.95),bold=True)
+        # If today is a holiday only display holiday name and make it bigger
+        else: screen.add_text([{"text": f"{name}", "size": 48}], position=(0.5,0.87),bold=True)
+
+
 
         # Calulate year number of days in year then use that data to show how complete the year is with a rectangle
         day_of_year = today.timetuple().tm_yday
@@ -50,7 +56,7 @@ def render():
         screen.add_rectangle(position=(0.1, 0.6), size=(0.8*precent_complete, 0.15), fill=0, radius=15, thickness=None)
         screen.add_rectangle(position=(0.1, 0.6), size=(0.8, 0.15), fill=0, radius=15, thickness=2)
         screen.add_text([{"text": f"{year}", "size": 32}], position=(0.5, 0.53),bold=True)
-        screen.add_text([{"text": f"{round(precent_complete*100, 1)}% complete", "size": 16}], position=(0.5, 0.76),bold=True)
+        screen.add_text([{"text": f"{math.floor(precent_complete*100, 1)}% complete", "size": 16}], position=(0.5, 0.76),bold=True)
 
         # Render the screen
         _cache_img = screen.render()
@@ -58,7 +64,7 @@ def render():
         else: return _cache_img, True
     return _cache_img, False
 
-# Return prefix of number .i.e 3rd
+# Return prefix of number .i.e the 3rd by rounding numbers into multiples of 10, then returning st,nd,rd for numbers 1,2,3 and th for the rest
 def get_ordinal(n):
     if 10 <= n % 100 <= 20: return "th"
     else: return {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
@@ -75,23 +81,24 @@ def get_formatted_date(today=None):
 # Function to calulate date of holidays which do not fall on certain date but instead fall onto a certain part of a week/month
 def weekday_of_month(year, month, weekday, n=None):
     if n is None: 
-        d = datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
-        while d.weekday() != weekday:
-            d -= datetime.timedelta(days=1)
-        return d
+        day = datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
+        while day.weekday() != weekday: day -= datetime.timedelta(days=1)
+        return day
     else:
-        d = datetime.date(year, month, 1)
+        day = datetime.date(year, month, 1)
         count = 0
         while True:
-            if d.weekday() == weekday:
+            if day.weekday() == weekday:
                 count += 1
-                if count == n: return d
-            d += datetime.timedelta(days=1)
+                if count == n: return day
+            day += datetime.timedelta(days=1)
 
 # Calulate how many days away each holiday is and return closest one
 def get_holiday_info(today=None):
+    # First get infomation about current date and year
     if today is None: today = datetime.date.today()
     year = today.year
+    # Construct list of holidays and thier absolute date or date within the month
     holidays = {
         datetime.date(year, 1, 1): "New Year's Day",
         datetime.date(year, 6, 19): "Juneteenth",
@@ -108,24 +115,27 @@ def get_holiday_info(today=None):
         weekday_of_month(year, 6, 6, 3): "Father's Day",
     }
 
-    # Add birthdays to list from hiddel file
+    # Add birthdays to holiday list, for privecy reasons they are stored under home/user/birthday.txt
     birthdays_file = os.path.join(os.path.expanduser("~"), "birthdays.txt")
+    # Open birthday file
     with open(birthdays_file, "r") as f:
+        # Pull each line of code, paste in current year and add to holidays array with formating
         for line in f:
             line = line.strip()
-            if not line or line.startswith("#"):
-                continue
+            if not line or line.startswith("#"): continue
             line = line.replace("year", str(year))
             key, value = line.split(":", 1)
             key_date = eval(key.strip())          
-            value_str = value.strip().strip(",").strip('"').strip("'")
-            holidays[key_date] = value_str         
-
+            string_value = value.strip().strip(",").strip('"').strip("'")
+            holidays[key_date] = string_value        
+    # If today is a holiday return 0
     if today in holidays: return holidays[today], 0
 
+    # Create a variable which stores the nearest name/day
     nearest_name = None
     nearest_days = None
 
+    # Loop through list and if a date is closer then update the nesrest day variables
     for d, name in holidays.items():
         future = d if d >= today else datetime.date(year + 1, d.month, d.day)
         delta = (future - today).days
@@ -133,8 +143,8 @@ def get_holiday_info(today=None):
             nearest_days = delta
             nearest_name = name
 
+    # Return data
     return nearest_name, nearest_days
-
 
 # Image viewer script to run code without screen
 def main():

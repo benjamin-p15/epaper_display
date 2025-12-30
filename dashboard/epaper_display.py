@@ -205,7 +205,6 @@ class ImageDrawer:
                     # Draw text and record it's size for next alginment
                     draw.text((x_start+x_offset,draw_y),text_element["text"],font=fonts[i],fill=cmd["fill"])
                     x_offset+=text_sizes[i]["width"]
-
             # Add image to screen
             elif cmd["type"] == "image":
                 img = cmd["img"]
@@ -214,29 +213,27 @@ class ImageDrawer:
                 self.image.paste(img, cmd["position"])
             # Draw rectangle to screen with rounded edges
             elif cmd["type"] == "rectangle":
+                # Get rectangle variables
                 x, y = cmd["position"]
                 w, h = cmd["size"]
                 radius = cmd.get("radius", 0)
                 fill = cmd.get("fill", 0)
                 thickness = cmd.get("thickness")
 
-                # If thickness is None draw solid rectangle like normal using rounded function
+                # If rectangle has no thickness draw solid rectangle 
                 if thickness is None:
-                    if radius > 0:
-                        draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=fill)
-                    else:
-                        draw.rectangle([x, y, x + w, y + h], fill=fill)
+                    # Use diffrent draw commands depending on if a rounded corner is being drawn
+                    if radius > 0: draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=fill)
+                    else: draw.rectangle([x, y, x + w, y + h], fill=fill)
 
-                # If thickness is not solid draw hollow rectangle
+                # If rectangle has a thickness draw hollow rectangle 
                 else:
-                    if radius > 0:
-                        draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, outline=fill, width=thickness)
-                    else:
-                        draw.rectangle([x, y, x + w, y + h], outline=fill, width=thickness)
-
+                    # Use diffrent draw commands depending on if a rounded corner is being drawn
+                    if radius > 0: draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, outline=fill, width=thickness)
+                    else:draw.rectangle([x, y, x + w, y + h], outline=fill, width=thickness)
 
         # Clear commands after render
         self.commands = []
-        imgage = self.image
+        image = self.image
         self.image = Image.new("1", (self.width, self.height), color=self.background) # Base image color
-        return imgage
+        return image
