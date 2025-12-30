@@ -51,11 +51,6 @@ def render():
         if metar_data: weather_data = metar_data[0]
         else: weather_data = {}
 
-        print("Meter data:")
-        for key, value in weather_data.items(): print(f"{key}: {value}")
-
-
-
         forecast_data = fetch_forecast(location_data["latitude"], location_data["longitude"]) or {}
         forecast_data.setdefault("current", {})
         forecast_data.setdefault("hourly", [])
@@ -112,6 +107,12 @@ def render():
         # Add city and state to screen
         screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, -0.02))
         
+        # Get current weather and draw it onto the screen
+        current = forecast_data.get("current", {})
+        invert, icon_file = weather_to_icon(current.get("weather_text"))
+        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0.1, 0.85),(0.25, 0.25),invert=invert,color_black=invert)
+
+
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
         feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
