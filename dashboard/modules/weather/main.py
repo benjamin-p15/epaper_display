@@ -6,6 +6,8 @@ screen = ImageDrawer()
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 
+scale_factor=1.667
+
 _last_update = 0
 _cache_img = None
 location_data = {
@@ -28,7 +30,7 @@ weather_data = {}
 forecast_data = {}
 
 def render():
-    global _last_update, _cache_img, script_directory, weather_data
+    global _last_update, _cache_img, script_directory, weather_data, scale_factor
     now = time.time()
     now_datetime = datetime.datetime.now()
     today=datetime.datetime.today()
@@ -84,7 +86,7 @@ def render():
         for i, data in enumerate(icons_data):
             invert, icon = weather_to_icon(data.get("weather"))
             x_pos = -0.031 + i*0.142 + 0.047
-            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos+0.01, 0.78),(0.095, 0.13),invert=invert,color_black=True)
+            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos+0.01, 0.78),(0.1, 0.1*scale_factor),invert=invert,color_black=True)
             
             # Draw estimated tempasure
             temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
@@ -110,7 +112,7 @@ def render():
         # Get current weather and draw it onto the screen
         current = forecast_data.get("current", {})
         invert, icon_file = weather_to_icon(current.get("weather_text"))
-        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0, 0.11),(0.30, 0.30*1.667),invert=invert,color_black=invert)
+        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0, 0.11),(0.30, 0.30*scale_factor),invert=invert,color_black=invert)
 
 
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
