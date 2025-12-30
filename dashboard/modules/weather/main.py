@@ -98,7 +98,7 @@ def render():
             # Draw estimated precipitation 
             precip = data.get("precipitation_prob")
             precip_text = f"{precip}%" if precip is not None else "--"
-            screen.add_image(os.path.join(script_directory, "icons", "chance.png"),(x_pos+0.02, 0.94),(0.05, 0.05),invert=False)
+            screen.add_image(os.path.join(script_directory, "icons", "chance.png"),(x_pos+0.02, 0.8),(0.05, 0.05),invert=False)//0.94
             screen.add_text([{"text": precip_text, "size": 18}], position=(x_pos+0.055, 0.94))
 
 
