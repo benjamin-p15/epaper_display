@@ -51,12 +51,12 @@ def render():
         # Calulate year number of days in year then use that data to show how complete the year is with a rectangle
         day_of_year = today.timetuple().tm_yday
         total_days = 366 if calendar.isleap(year) else 365
-        precent_complete=day_of_year/total_days
+        percent_complete=day_of_year/total_days
         screen.add_rectangle(position=(0.1, 0.6), size=(0.8, 0.15), fill=1, radius=15, thickness=None)
-        screen.add_rectangle(position=(0.1, 0.6), size=(0.8*precent_complete, 0.15), fill=0, radius=15, thickness=None)
+        screen.add_rectangle(position=(0.1, 0.6), size=(0.8*percent_complete, 0.15), fill=0, radius=15, thickness=None)
         screen.add_rectangle(position=(0.1, 0.6), size=(0.8, 0.15), fill=0, radius=15, thickness=2)
         screen.add_text([{"text": f"{year}", "size": 32}], position=(0.5, 0.53),bold=True)
-        screen.add_text([{"text": f"{math.floor(precent_complete*100, 1)}% complete", "size": 16}], position=(0.5, 0.76),bold=True)
+        screen.add_text([{"text": f"{math.floor(percent_complete*1000)/10}% complete", "size": 16}], position=(0.5, 0.76),bold=True)
 
         # Render the screen
         _cache_img = screen.render()
