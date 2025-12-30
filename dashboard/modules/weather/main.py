@@ -89,11 +89,11 @@ def render():
         for i, data in enumerate(icons_data):
             invert, icon = weather_to_icon(data.get("weather"))
             x_pos = -0.031 + i*0.142 + 0.047
-            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos, 0.78),(0.105, 0.13),invert=invert,color_black=True)
+            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos, 0.78),(0.1, 0.125),invert=invert,color_black=True)
             
             # Draw estimated tempasure
             temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
-            screen.add_text([{"text": temp_text, "size": 18}], position=(x_pos+0.06, 0.9), bold=True)
+            screen.add_text([{"text": temp_text, "size": 18}], position=(x_pos+0.062, 0.9), bold=True)
 
             # Draw estimated precipitation 
             precip = data.get("precipitation_prob")
