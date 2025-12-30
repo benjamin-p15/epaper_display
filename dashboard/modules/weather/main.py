@@ -52,10 +52,10 @@ def render():
         if metar_data: weather_data = metar_data[0]
         else: weather_data = {}
 
-        # Get taf data and save it to forcast data object
-        taf_data = fetch_taf(location_data['airport_icao_code'])
-        if taf_data: forcast_data = taf_data[0]
-        else: forcast_data = {}
+        # Get weather forcast and save it as object
+        forcast = fetch_forecast(location_data["latitude"],location_data["longitude"])
+        if forcast: forcast_data = forcast
+        else: forcast_data = {"hourly": [], "tomorrow": {}}
 
         for key, value in forcast_data.items(): print(f"{key}: {value}")
         for key, value in weather_data.items(): print(f"{key}: {value}")
@@ -232,33 +232,58 @@ def fetch_taf(icao_code):
     # Build aviationweather.gov taf api link with desierd station
     url = f"https://aviationweather.gov/api/data/taf?ids={icao_code}&format=json"
     headers = {"User-Agent": "Mozilla/5.0"}
-
+    # Make request to website for data
     response = requests.get(url, headers=headers)
 
-
+    # Make sure the airport is returning the taf data, if it is return taf pharsed taf JSON data
     if response.status_code != 200:
         print(f"Error fetching TAF: {response.status_code}")
         return None
-    
-    try:
-        data = response.json()
+    try: data = response.json()
     except ValueError:
         print("No JSON returned, response text:", response.text)
         return None
-    
     if not data.get("data"):
         print("No TAF data available for this station")
         return None
     
     return data
 
-    # Make request to website for data
-    resp = requests.get(url)
-    resp.raise_for_status()
+def fetch_forecast(latitude, longitude):
+    # Change request style to not get denied due to bot system
+    headers = {"User-Agent": "example@example.com"}
 
-    # Parse and return JSON data
-    data = resp.json()
-    return data
+    # Generate required urls to get forcast
+    point_url = f"https://api.weather.gov/points/{latitude},{longitude}"
+    point_data = requests.get(point_url, headers=headers).json()
+    hourly_url = point_data["properties"]["forecastHourly"]
+    daily_url  = point_data["properties"]["forecast"]
+
+    # Request hourly forcast and format
+    hourly_data = requests.get(hourly_url, headers=headers).json()
+    next_hours = [{
+        "time": p["startTime"],
+        "temperature": p["temperature"],
+        "unit": p.get("temperatureUnit"),
+        "precipitation": p.get("probabilityOfPrecipitation", {}).get("value")
+    } for p in hourly_data["properties"]["periods"][:6]]
+
+    # Request daily forcast and format
+    daily_data = requests.get(daily_url, headers=headers).json()
+    today = datetime.date.today()
+    tomorrow_data = None
+    for p in daily_data["properties"]["periods"]:
+        p_date = datetime.date.fromisoformat(p["startTime"][:10])
+        if p_date > today:
+            tomorrow_data = {
+                "name": p["name"],
+                "temperature": p["temperature"],
+                "unit": p.get("temperatureUnit"),
+                "precipitation": p.get("probabilityOfPrecipitation", {}).get("value")
+            }
+            break
+    # Return forcast data
+    return {"hourly": next_hours, "tomorrow": tomorrow_data}
 
 # Get current location info using ip address
 def get_current_location():

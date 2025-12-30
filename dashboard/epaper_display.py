@@ -106,7 +106,7 @@ class EpaperDisplay():
         self.spi.close()
         GPIO.cleanup()
 
-# Image drawer to render things to screen
+# Image drawer to render things to an image that can be render to the screen
 class ImageDrawer:
     def __init__(self, width=800, height=480, background=1):
         self.background=background
