@@ -268,7 +268,7 @@ def fetch_air_quality(latitude, longitude, api_key):
         r.raise_for_status()
         data = r.json()["list"][0]
         # Return air quility which is on a 0-500 scale
-        return f"{round(data["aqi"])}"
+        return f"{round(data['aqi'])}"
     # If it fails return no data
     except Exception:
         return "--"
