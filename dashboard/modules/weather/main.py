@@ -110,7 +110,7 @@ def render():
         # Get current weather and draw it onto the screen
         current = forecast_data.get("current", {})
         invert, icon_file = weather_to_icon(current.get("weather_text"))
-        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0, 0.13),(0.30, 0.40),invert=invert,color_black=invert)
+        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0, 0.13),(0.30, 0.30*1.667),invert=invert,color_black=invert)
 
 
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
