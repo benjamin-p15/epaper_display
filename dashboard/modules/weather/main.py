@@ -198,7 +198,7 @@ def render():
         # (Cloud coverage)
         # Estimate cloud coverage by taking an weighted average of the clouds then display on screen with icon
         data=[]
-        screen.add_image(os.path.join(script_directory, "icons", "03d.png"),(0.8, data_column_y*3),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "cloudy.png"),(0.8, data_column_y*3),(0.05,0.08),invert=True, color_black=True)
         try:
             coverage = calculate_weighted_cloud_coverage(weather_data['clouds'])
             data.append({"text": f"{coverage}", "size": 36})
@@ -209,9 +209,10 @@ def render():
         screen.add_text(data, position=(0.86, data_column_y*3),align="left")
 
         #(Air quaility)
-        air=fetch_air_quality(location_data["latitude"], location_data["longitude"],"e68ce140b337a07f309590d691db0e80")
+        air,aqi_state,pollutant=fetch_air_quality(location_data["latitude"], location_data["longitude"],"e68ce140b337a07f309590d691db0e80")
         screen.add_image(os.path.join(script_directory, "icons", "aqi.png"),(0.6, data_column_y*4),(0.05,0.08),invert=False, color_black=True)
-        screen.add_text([{"text": f"{air}", "size": 36}], position=(0.65, data_column_y*4-0.01),align="left")
+        screen.add_text([{"text": f"{air}/500", "size": 26}], position=(0.65, data_column_y*4+0.01),align="left")
+        screen.add_text([{"text": f"{aqi_state} | {pollutant}", "size": 12,"algin":"below"}], position=(0.65, data_column_y*4+0.06),align="left")
 
         #(UV index)
         uv=fetch_uv_index(location_data["latitude"], location_data["longitude"],"e68ce140b337a07f309590d691db0e80")
@@ -260,20 +261,34 @@ def render():
     return None, False
 
 # Fetch current locations uv index from openweathermap
-def fetch_uv_index(latitude, longitude, api_key):
+def fetch_uv_index(latitude, longitude, api_key=None):
     # Setup url and api call parms
-    url = "https://api.openweathermap.org/data/3.0/onecall"
-    params = {"lat": latitude,"lon": longitude,"exclude": "minutely,hourly,daily,alerts","appid": api_key}
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {"latitude": latitude, "longitude": longitude, "hourly": "uv_index"}
+
     try:
         # Request data
         r = requests.get(url, params=params, timeout=10)
         r.raise_for_status()
-        # Return uv index on a 0-11 scale
-        uvi = r.json().get("current").get("uvi")
-        if uvi == None or uvi == "": return "--"
-        uvi = min(round(uvi), 11)
-        return f"{uvi}/11"
-    except Exception as e:
+        data = r.json()
+
+        # Get hourly times and uv index list
+        times = data.get("hourly", {}).get("time", [])
+        uv_list = data.get("hourly", {}).get("uv_index", [])
+        if not uv_list or not times: return "--"
+
+        # Find current hour in UTC
+        now_utc = datetime.datetime.now(datetime.timezone.utc).replace(minute=0, second=0, microsecond=0)
+        now_iso = now_utc.strftime("%Y-%m-%dT%H:00")
+        if now_iso in times: idx = times.index(now_iso)
+        # If that fails return closest hour
+        else: idx = min(range(len(times)), key=lambda i: abs(datetime.fromisoformat(times[i]) - now_utc))
+
+        # Get current hours uv index and return it
+        uvi = uv_list[idx]
+        return f"{round(uvi)}/11"
+    except Exception as error:
+        print(error)
         return "--"
     
 # Fetch current locations aqi from openweathermap
@@ -286,11 +301,44 @@ def fetch_air_quality(latitude, longitude, api_key):
         r = requests.get(url, params=params, timeout=10)
         r.raise_for_status()
         data = r.json()["list"][0]
+        aqi_state = data.get("main", {}).get("aqi")
+        aqi_state = ["Unknown","Good","Fair","Moderate","Poor","Very Poor"][aqi_state]
+        aqi, pollutant = calculate_aqi(data.get("components"))
         # Return air quility which is on a 0-500 scale
-        return f"{round(data['aqi'])}"
+        return f"{round(aqi)}", aqi_state, pollutant
     # If it fails return no data
     except Exception:
-        return "--"
+        return "--", "", ""
+    
+def calculate_aqi(components):
+    breakpoints = {
+        "pm2_5": [(0.0,12.0,0,50),(12.1,35.4,51,100),(35.5,55.4,101,150),(55.5,150.4,151,200),(150.5,250.4,201,300),(250.5,350.4,301,400),(350.5,500.4,401,500)],
+        "pm10": [(0,54,0,50),(55,154,51,100),(155,254,101,150),(255,354,151,200),(355,424,201,300),(425,504,301,400),(505,604,401,500)],
+        "co": [(0.0,4.4,0,50),(4.5,9.4,51,100),(9.5,12.4,101,150),(12.5,15.4,151,200),(15.5,30.4,201,300),(30.5,40.4,301,400),(40.5,50.4,401,500)],
+        "o3": [(0.0,54,0,50),(55,70,51,100),(71,85,101,150),(86,105,151,200),(106,200,201,300)],
+        "no2": [(0,53,0,50),(54,100,51,100),(101,360,101,150),(361,649,151,200),(650,1249,201,300),(1250,1649,301,400),(1650,2049,401,500)],
+        "so2": [(0,35,0,50),(36,75,51,100),(76,185,101,150),(186,304,151,200),(305,604,201,300),(605,804,301,400),(805,1004,401,500)]
+    }
+
+    mol_weights = {"co":28.01,"o3":48.00,"no2":46.01,"so2":64.07}
+
+    def aqi_linear(C, C_low, C_high, I_low, I_high):
+        return ((I_high - I_low)/(C_high - C_low))*(C - C_low) + I_low
+
+    aqi_list = []
+
+    for pollutant, bp_list in breakpoints.items():
+        value = components.get(pollutant)
+        if value is None:
+            continue
+        # Convert gases from µg/m³ to ppm
+        if pollutant in mol_weights:
+            value = (value * 24.45) / mol_weights[pollutant]
+        for C_low, C_high, I_low, I_high in bp_list:
+            if C_low <= value <= C_high:
+                aqi_list.append((round(aqi_linear(value, C_low, C_high, I_low, I_high)),pollutant))
+                break
+    return max(aqi_list, key=lambda x: x[0]) if aqi_list else (None, None)
 
 # Using the data return form the NWS calulate which icon to use for display depending on weather type
 def weather_to_icon(text):
@@ -301,11 +349,12 @@ def weather_to_icon(text):
     if "drizzle" in t: return True, "drizzle.png"
     if "fog" in t or "mist" in t: return False, "fog.png"
     if "mostly cloudy" in t: return False, "mostly_cloudy.png"
-    if "partly cloudy" in t: return True, "partly_cloudy.png"
+    if "partly cloudy" in t: return False, "partly_cloudy.png"
     if "cloudy" in t: return False, "cloudy.png"
     if "sunny" in t or "clear" in t: return True, "sunny.png"
     return False, "sunny.png"
 
+# Calulate the text that corrasponds to certain types of weather
 def weather_to_text(text):
     t = (text or "").lower()
     if "thunder" in t: return False, "Stormy"

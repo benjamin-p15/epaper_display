@@ -1,4 +1,4 @@
-import time, os, datetime, sys, datetime, calendar, math
+import time, os, datetime, sys, calendar, math
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 from dashboard.epaper_display import ImageDrawer
 
