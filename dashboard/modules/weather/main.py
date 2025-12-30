@@ -75,6 +75,30 @@ def render():
             hours.append(hour_str)
 
 
+        icons_data = forecast_data.get("hourly", [])[:6] + ([forecast_data["tomorrow"]] if forecast_data.get("tomorrow") else [])
+
+        for i, data in enumerate(icons_data):
+            icon = weather_to_icon(data.get("weather"))
+            x_pos = -0.031 + i*0.142 + 0.047
+            screen.add_image(
+                os.path.join(script_directory, "icons", icon),
+                (x_pos, 0.78),
+                (0.11, 0.135),
+                invert=True,
+                color_black=True
+            )
+            
+            # Draw predicted temperature below icon
+            temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
+            screen.add_text([{"text": temp_text, "size": 14}], position=(x_pos+0.03, 0.70), bold=True)
+
+            # Draw predicted precipitation below temperature
+            precip = data.get("precipitation_prob")
+            precip_text = f"{precip}%" if precip is not None else "--"
+            screen.add_text([{"text": precip_text, "size": 12}], position=(x_pos+0.03, 0.68))
+
+
+
         for i in range(7):
             screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
             screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
