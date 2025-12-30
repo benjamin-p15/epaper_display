@@ -13,7 +13,7 @@ from modules.image_display import main as image
 from modules.grapher import main as grapher
 from modules.analog_clock import main as analog_clock
 
-current_layout = None #"weather"
+current_layout = "clock"
 update_state = False
 image_threshold = 128
 layouts=["clock", "weather", "image", "grapher", "analog_clock"]
