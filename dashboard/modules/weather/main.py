@@ -79,10 +79,13 @@ def render():
             screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
             screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
         
+
+
+        
         icons_data = forecast_data.get("hourly", [])[:6] + ([forecast_data["tomorrow"]] if forecast_data.get("tomorrow") else [])
         for i, data in enumerate(icons_data):
             icon = weather_to_icon(data.get("weather"))
-            screen.add_image(os.path.join(script_directory, "icons", icon),(0 + i*0.142 + 0.047, 0.80),(0.05, 0.08),invert=True,color_black=True)
+            screen.add_image(os.path.join(script_directory, "icons", icon),(0 + i*0.142 + 0.047, 0.80),(0.15, 0.18),invert=True,color_black=True)
 
 
 
