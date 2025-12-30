@@ -32,7 +32,6 @@ def render():
     now = time.time()
     now_datetime = datetime.datetime.now()
     today=datetime.datetime.today()
-    print(today)
     if now - _last_update >= 5 * 60:
         _last_update = now
 
