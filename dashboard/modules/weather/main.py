@@ -86,7 +86,7 @@ def render():
         for i, data in enumerate(icons_data):
             invert, icon = weather_to_icon(data.get("weather"))
             x_pos = -0.031 + i*0.142 + 0.047
-            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos+0.01, 0.78),(0.09, 0.09*scale_factor),invert=invert,color_black=True)
+            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos+0.01, 0.78),(0.075, 0.075*scale_factor),invert=invert,color_black=True)
             
             # Draw estimated tempasure
             temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
@@ -112,7 +112,7 @@ def render():
         # Get current weather and draw it onto the screen
         current = forecast_data.get("current", {})
         invert, icon_file = weather_to_icon(current.get("weather_text"))
-        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0, 0.11),(0.30, 0.30*scale_factor),invert=invert,color_black=invert)
+        screen.add_image(os.path.join(script_directory, "icons", icon_file),(0, 0.11),(0.27, 0.27*scale_factor),invert=invert,color_black=invert)
 
 
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
