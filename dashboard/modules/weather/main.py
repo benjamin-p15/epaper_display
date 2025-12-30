@@ -87,9 +87,9 @@ def render():
 
 
         for i, data in enumerate(icons_data):
-            icon = weather_to_icon(data.get("weather"))
+            invert, icon = weather_to_icon(data.get("weather"))
             x_pos = -0.031 + i*0.142 + 0.047
-            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos, 0.78),(0.11, 0.135),invert=True,color_black=True)
+            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos, 0.78),(0.11, 0.135),invert=invert,color_black=True)
             
             # Draw estimated tempasure
             temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
@@ -240,16 +240,16 @@ def render():
 
 def weather_to_icon(text):
     t = (text or "").lower()
-    if "thunder" in t: return "thunderstorms.png"
-    if "snow" in t: return "snowy.png"
-    if "rain" in t or "showers" in t: return "rain_showers.png"
-    if "drizzle" in t: return "drizzle.png"
-    if "fog" in t or "mist" in t: return "fog.png"
-    if "mostly cloudy" in t: return "mostly_cloudy.png"
-    if "partly cloudy" in t: return "partly_cloudy.png"
-    if "cloudy" in t: return "cloudy.png"
-    if "sunny" in t or "clear" in t: return "partly_cloudy.png"#"sunny.png"
-    return "partly_cloudy.png"
+    if "thunder" in t: return False, "thunderstorms.png"
+    if "snow" in t: return False, "snowy.png"
+    if "rain" in t or "showers" in t: return False, "rain_showers.png"
+    if "drizzle" in t: return False, "drizzle.png"
+    if "fog" in t or "mist" in t: return False, "fog.png"
+    if "mostly cloudy" in t: return False, "mostly_cloudy.png"
+    if "partly cloudy" in t: return False, "partly_cloudy.png"
+    if "cloudy" in t: return False, "cloudy.png"
+    if "sunny" in t or "clear" in t: return True, "partly_cloudy.png"#"sunny.png"
+    return True, "partly_cloudy.png"
 
 # Get meter from a specific airport
 def fetch_metar(icao_code):
