@@ -29,6 +29,8 @@ location_data = {
 weather_data = {}
 forecast_data = {}
 
+moon_phases=["new.png", "wax_c.png", "first_q.png", "wax_g.png", "full.png", "wan_g.png", "last_q.png", "wan_c.png"]
+
 def render():
     global _last_update, _cache_img, script_directory, weather_data, scale_factor
     now = time.time()
@@ -48,7 +50,7 @@ def render():
             airport, airport_distance = find_nearest_airport(location_data['latitude'], location_data['longitude'], airports_csv)
             location_data.update({'airport_icao_code': airport["icao_code"], 'continent': airport["continent"], 'airport_iata_code': airport["iata_code"], 'airport_type': airport["type"], 'airport_name': airport["name"], 'elevation': airport["elevation_ft"], 'airport_distance': airport_distance})
         
-        # Get meter data and save it to weather data object
+        # Get meter data and save it to weather data object, keep old data if new data is not provided
         metar_data = fetch_metar(location_data['airport_icao_code'])
         if metar_data: weather_data = metar_data[0]
         else: weather_data = {}
@@ -106,24 +108,32 @@ def render():
 
 
 
-        # Add city and state to screen
+        # Add city and date and state to screen
         screen.add_text([{"text":f"{location_data['city']}, {location_data['region']}","size":40}],position=(0.5, -0.02),bold=True)
+        todays_date = datetime.date.today().strftime("%m/%d/%Y")
+        screen.add_text([{"text": todays_date, "size": 18}], position=(0.5, 0.07), bold=True)
         
         # Get current weather and draw it onto the screen
         current = forecast_data.get("current", {})
         invert, icon_file = weather_to_icon(current.get("weather_text"))
         screen.add_image(os.path.join(script_directory, "icons", icon_file),(0, 0.11),(0.27, 0.27*scale_factor),invert=invert,color_black=True)
 
-
         # Using helper functions display tempasure and what it feels like (tempasure, feels like)
         tempasure_f = celsius_to_fahrenheit(weather_data["temp"])
         feel_tempasure_f = wind_chill_f(tempasure_f,weather_data["wspd"])
-        screen.add_text([{"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},{"text": "°F", "size": 36, "align": "top"}], position=(0.4, 0.35), bold=True)
-        screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.38, 0.44))
-        
+        screen.add_text([{"text": f"{round(tempasure_f)}", "size": 96, "align": "top"},{"text": "°F", "size": 36, "align": "top"}], position=(0.4, 0.33), bold=True)
+        screen.add_text([{"text":f"Feels like {round(feel_tempasure_f)}°","size":18}],position=(0.38, 0.42))
+
+        # Add currect weather and precipitation to screen
+        precip=current.get("precipitation_last_hour")
+        if(precip is None): precip=0
+        screen.add_image(os.path.join(script_directory, "icons", "chance.png"),(0.05, 0.65),(0.03, 0.03*scale_factor),invert=False,color_black=True)
+        screen.add_text([{"text":f"{weather_to_text(current.get("weather_text"))}","size":48,"align": "center"}],position=(0.05, 0.55),align="left",bold=True)
+        screen.add_text([{"text":f"Rain {round(precip/25.4, 1)}","size":24,"align": "center"},{"text":"in","size":12,"align":"bottom"}],position=(0.08, 0.65),align="left",bold=True)
+        #precip = data.get("precipitation_prob")
 
 
-
+        data_column_y=0.11
 
 
         # (Sunrise, sunset)
@@ -141,54 +151,54 @@ def render():
         sunset_time = sunset.strftime("%-I:%M")
         sunset_period = sunset.strftime("%p")
         # Add sunrise and sunset images and text to screen
-        screen.add_image(os.path.join(script_directory, "icons", "sunrise.png"),(0.6, 0.1),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "sunrise.png"),(0.6, data_column_y*1),(0.05,0.08),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{sunrise_time}", "size": 36},
             {"text": f"{sunrise_period}", "size": 18, "align": "bottom"}
-        ], position=(0.65, 0.1),align="left")
-        screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.8, 0.1),(0.05,0.08),invert=True,color_black=True)
+        ], position=(0.65, data_column_y*1),align="left")
+        screen.add_image(os.path.join(script_directory, "icons", "sunset.png"),(0.8, data_column_y*1),(0.05,0.08),invert=True,color_black=True)
         screen.add_text([
             {"text": f"{sunset_time}", "size": 36},
             {"text": f"{sunset_period}", "size": 18, "align": "bottom"}
-        ], position=(0.85, 0.1),align="left")
+        ], position=(0.85, data_column_y*1),align="left")
 
         # (Pressure) 
         # Convert pressure to inHg and add image and text to screen
-        screen.add_image(os.path.join(script_directory, "icons", "pressure.png"),(0.8, 0.2),(0.04,0.07),invert=True, color_black=False)
+        screen.add_image(os.path.join(script_directory, "icons", "pressure.png"),(0.8, data_column_y*2),(0.04,0.07),invert=True, color_black=False)
         screen.add_text([
             {"text": f"{round(weather_data['altim'] / 33.8639, 1)}", "size": 36},
             {"text": "inHg", "size": 18, "align": "bottom"}
-        ], position=(0.84, 0.19),align="left")
+        ], position=(0.84, data_column_y*2-0.01),align="left")
 
         # (Visibility)
         # Reformat US meter visibility data into screen friendly formate then add text, marker, and icon to screen
         visibility,marker=parse_us_metar_vis(weather_data["visib"])
-        screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, 0.3),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "visibility.png"),(0.6, data_column_y*3),(0.05,0.08),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{visibility}", "size": 36},
             {"text": f"{marker}", "size": 28, "align": "center"},
             {"text": "mi", "size": 18, "align": "bottom"}
-        ], position=(0.65, 0.29),align="left")
+        ], position=(0.65, data_column_y*3-0.01),align="left")
 
         #(Humidity, dew point)
         # Usig dew point calulate relative humidity
         precent = calulate_relative_humidity(weather_data['temp'], weather_data['dewp'])
         dew_point_F=celsius_to_fahrenheit(weather_data['dewp'])
         # Add humidity text and icon to screen and dew point under it
-        screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, 0.2),(0.04,0.07),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "humidity.png"),(0.6, data_column_y*2),(0.04,0.07),invert=True, color_black=True)
         screen.add_text([
             {"text": f"{round(precent)}", "size": 36},
             {"text": "%", "size": 18, "align": "bottom"}
-        ], position=(0.64, 0.19),align="left")
+        ], position=(0.64, data_column_y*2-0.01),align="left")
         screen.add_text([
             {"text": f"Dew {round(dew_point_F)}", "size": 18, "align": "top"},
             {"text": "°F", "size": 9, "align": "top"}
-        ], position=(0.64, 0.28),align="left")
+        ], position=(0.64, data_column_y*2+0.08),align="left")
 
         # (Cloud coverage)
         # Estimate cloud coverage by taking an weighted average of the clouds then display on screen with icon
         data=[]
-        screen.add_image(os.path.join(script_directory, "icons", "03d.png"),(0.8, 0.3),(0.05,0.08),invert=True, color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "03d.png"),(0.8, data_column_y*3),(0.05,0.08),invert=True, color_black=True)
         try:
             coverage = calculate_weighted_cloud_coverage(weather_data['clouds'])
             data.append({"text": f"{coverage}", "size": 36})
@@ -196,44 +206,51 @@ def render():
         except Exception as error:
             data.append({"text": "--", "size": 36})
             data.append({"text": "%", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.86, 0.3),align="left")
+        screen.add_text(data, position=(0.86, data_column_y*3),align="left")
 
         #(Air quaility)
         air=fetch_air_quality(location_data["latitude"], location_data["longitude"],"e68ce140b337a07f309590d691db0e80")
-        screen.add_image(os.path.join(script_directory, "icons", "aqi.png"),(0.6, 0.4),(0.05,0.08),invert=False, color_black=True)
-        screen.add_text([{"text": f"{air}", "size": 36}], position=(0.65, 0.39),align="left")
+        screen.add_image(os.path.join(script_directory, "icons", "aqi.png"),(0.6, data_column_y*4),(0.05,0.08),invert=False, color_black=True)
+        screen.add_text([{"text": f"{air}", "size": 36}], position=(0.65, data_column_y*4-0.01),align="left")
 
         #(UV index)
         uv=fetch_uv_index(location_data["latitude"], location_data["longitude"],"e68ce140b337a07f309590d691db0e80")
-        screen.add_image(os.path.join(script_directory, "icons", "uvi.png"),(0.8, 0.4),(0.05,0.08),invert=False, color_black=True)
-        screen.add_text([{"text": f"{uv}", "size": 36}], position=(0.85, 0.39),align="left")
+        screen.add_image(os.path.join(script_directory, "icons", "uvi.png"),(0.8, data_column_y*4),(0.05,0.08),invert=False, color_black=True)
+        screen.add_text([{"text": f"{uv}", "size": 36}], position=(0.85, data_column_y*4-0.01),align="left")
 
 
         # (Wind speed, wind direction, gust speed)
         # Convert speeds to mph then add icon and text to screen
         data=[]
-        screen.add_image(os.path.join(script_directory, "icons", "wind.png"),(0.6, 0.55),(0.04,0.07),invert=True,color_black=True)
+        screen.add_image(os.path.join(script_directory, "icons", "wind.png"),(0.6, data_column_y*5),(0.04,0.07),invert=True,color_black=True)
         try:
             wind_speed = knots_to_mph(weather_data['wspd'])
-            data.append({"text": f"{round(wind_speed)}", "size": 36})
+            data.append({"text": f"{round(wind_speed)}", "size": 36, "align": "bottom"})
             data.append({"text": "mph", "size": 18, "align": "bottom"})
         except Exception as error:
-            data.append({"text": "--", "size": 36})
+            data.append({"text": "--", "size": 36, "align": "bottom"})
             data.append({"text": "mph", "size": 18, "align": "bottom"})
         # Wind direction
         try:
-            data.append({"text": f" | {round(weather_data['wdir'])}°", "size": 36})
+            data.append({"text": f" | {round(weather_data['wdir'])}°", "size": 36, "align": "bottom"})
         except Exception as error:
-            data.append({"text": "|--", "size": 36})
+            data.append({"text": "|--", "size": 36, "align": "bottom"})
         # Wind gust
         try:
             wind_gust = knots_to_mph(weather_data['wgst'])
-            data.append({"text": f"|{round(wind_gust)}", "size": 36})
+            data.append({"text": f"|{round(wind_gust)}", "size": 36, "align": "bottom"})
             data.append({"text": "mph", "size": 18, "align": "bottom"})
         except Exception as error:
-            data.append({"text": f"|--", "size": 36})
+            data.append({"text": f"|--", "size": 36, "align": "bottom"})
             data.append({"text": "mph", "size": 18, "align": "bottom"})
-        screen.add_text(data, position=(0.65, 0.53),align="left")
+        screen.add_text(data, position=(0.65, data_column_y*5-0.02),align="left")
+
+        #(Moon phase)
+        index, moon=get_moon_phase()
+        moon_image=moon_phases[index]
+        screen.add_image(os.path.join(script_directory, "icons", moon_image),(0.6, data_column_y*6-0.02),(0.05,0.08),invert=True, color_black=True)
+        screen.add_text([{"text": f"{moon}", "size": 24,"align": "center"}], position=(0.67, data_column_y*6-0.01),align="left",bold=True)
+
 
 
         # After image as been made render out image and send off to main.py to have it displayed
@@ -242,6 +259,7 @@ def render():
         else: return _cache_img, True 
     return None, False
 
+# Fetch current locations uv index from openweathermap
 def fetch_uv_index(latitude, longitude, api_key):
     # Setup url and api call parms
     url = "https://api.openweathermap.org/data/3.0/onecall"
@@ -258,6 +276,7 @@ def fetch_uv_index(latitude, longitude, api_key):
     except Exception as e:
         return "--"
     
+# Fetch current locations aqi from openweathermap
 def fetch_air_quality(latitude, longitude, api_key):
     # Setup url and api call parms
     url = "https://api.openweathermap.org/data/2.5/air_pollution"
@@ -273,7 +292,6 @@ def fetch_air_quality(latitude, longitude, api_key):
     except Exception:
         return "--"
 
-
 # Using the data return form the NWS calulate which icon to use for display depending on weather type
 def weather_to_icon(text):
     t = (text or "").lower()
@@ -287,6 +305,19 @@ def weather_to_icon(text):
     if "cloudy" in t: return False, "cloudy.png"
     if "sunny" in t or "clear" in t: return True, "sunny.png"
     return False, "sunny.png"
+
+def weather_to_text(text):
+    t = (text or "").lower()
+    if "thunder" in t: return False, "Stormy"
+    if "snow" in t: return "Snowing"
+    if "rain" in t or "showers" in t: return False, "Raining"
+    if "drizzle" in t: return True, "Lightly Raining"
+    if "fog" in t or "mist" in t: return False, "Foggy"
+    if "mostly cloudy" in t: return False, "Overcast"
+    if "partly cloudy" in t: return True, "Partly Clear"
+    if "cloudy" in t: return "Cloudy"
+    if "sunny" in t or "clear" in t: return "Clear"
+    return False, "Clear"
 
 # Get meter from a specific airport
 def fetch_metar(icao_code):
@@ -531,21 +562,28 @@ def calculate_weighted_cloud_coverage(cloud_layers):
     # Return weight average
     return round(weighted_sum / total_weight)
 
-# Calulate moon phase using astronomical new moon and estimate of phase during month
-def moon_phase_index(date=None):
-    if date is None: date = datetime.utcnow()
-    known_new_moon = datetime(2000, 1, 6, 18, 14)
-    synodic_month = 29.530588853
-    days = (date - known_new_moon).total_seconds() / 86400.0
-    phase = (days % synodic_month) / synodic_month
-    if phase < 1/16 or phase >= 15/16:return "new"
-    elif phase < 3/16:return "wax_c"
-    elif phase < 5/16:return "first_q"
-    elif phase < 7/16:return "wax_g"
-    elif phase < 9/16:return "full"
-    elif phase < 11/16:return "wan_g"
-    elif phase < 13/16:return "last_q"
-    else:return "wan_c"
+# Calulate current moon phase
+def get_moon_phase():
+    # Requires utc date
+    date = datetime.datetime.now(datetime.timezone.utc)
+
+    # Using a known date as an refrence to calulate moon phase off of
+    known_new_moon = datetime.datetime(2000, 1, 6, 18, 14, tzinfo=datetime.timezone.utc)  # UTC
+    synodic_month = 29.530588853  # Average length of a synodic month
+
+    # Calulate number of days since known moon apperence and calulate where it should be now
+    days_since_new_moon = (date-known_new_moon).total_seconds()/86400
+    phase_fraction = (days_since_new_moon % synodic_month) / synodic_month
+
+    # Return current moon phase
+    if phase_fraction < 0.0625 or phase_fraction >= 0.9375: return 0, "New Moon"
+    elif phase_fraction < 0.1875: return 1, "Waxing Crescent"
+    elif phase_fraction < 0.3125: return 2, "First Quarter"
+    elif phase_fraction < 0.4375: return 3, "Waxing Gibbous"
+    elif phase_fraction < 0.5625: return 4, "Full Moon"
+    elif phase_fraction < 0.6875: return 5, "Waning Gibbous"
+    elif phase_fraction < 0.8125: return 6, "Last Quarter"
+    else: return 7, "Waning Crescent"
 
 # Image viewer script to run code without screen
 def main():
