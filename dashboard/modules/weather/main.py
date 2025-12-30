@@ -56,12 +56,14 @@ def render():
         if forecast: forecast_data = forecast
         else: forecast_data = {"hourly": [], "tomorrow": {}}
 
-        for key, value in forecast_data.items(): print(f"{key}: {value}")
+        print("Hourly data:")
+        #for key, value in forecast_data.items(): print(f"{key}: {value}")
         for hour in forecast_data["hourly"]: print(", ".join(f"{k}: {v}" for k, v in hour.items()))
+        print("Tomarrow data:")
         if forecast_data["tomorrow"]: print(", ".join(f"{k}: {v}" for k, v in forecast_data["tomorrow"].items()))
 
 
-
+        print("Meter data:")
         for key, value in weather_data.items(): print(f"{key}: {value}")
 
 
