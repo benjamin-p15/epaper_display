@@ -71,7 +71,3 @@ def render():
         screen.render(_cache_img)
         return _cache_img, True
     return None, False
-
-while True:
-    img, updated = render()
-    time.sleep(1)
