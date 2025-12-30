@@ -25,7 +25,7 @@ location_data = {
 }
 
 weather_data = {}
-forcast_data = {}
+forecast_data = {}
 
 def render():
     global _last_update, _cache_img, script_directory, weather_data
@@ -51,16 +51,21 @@ def render():
         if metar_data: weather_data = metar_data[0]
         else: weather_data = {}
 
-        # Get weather forcast and save it as object
-        forcast = fetch_forecast(location_data["latitude"],location_data["longitude"])
-        if forcast: forcast_data = forcast
-        else: forcast_data = {"hourly": [], "tomorrow": {}}
+        # Get weather forecast and save it as object
+        forecast = fetch_forecast(location_data["latitude"],location_data["longitude"])
+        if forecast: forecast_data = forecast
+        else: forecast_data = {"hourly": [], "tomorrow": {}}
 
-        for key, value in forcast_data.items(): print(f"{key}: {value}")
+        for key, value in forecast_data.items(): print(f"{key}: {value}")
+        for hour in forecast_data["hourly"]: print(", ".join(f"{k}: {v}" for k, v in hour.items()))
+        if forecast_data["tomorrow"]: print(", ".join(f"{k}: {v}" for k, v in forecast_data["tomorrow"].items()))
+
+
+
         for key, value in weather_data.items(): print(f"{key}: {value}")
 
 
-        # Generate the hour data for forcast
+        # Generate the hour data for forecast
         hours = []
         for i in range(7):
             # Generate hourly text
@@ -72,7 +77,7 @@ def render():
                 next_day = now_datetime + datetime.timedelta(days=1)
                 hour_str = next_day.strftime('%a').lower() 
             hours.append(hour_str)
-        # Draw rectangles forcast text
+        # Draw rectangles forecast text
         for i in range(7):
             screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
             screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
@@ -252,13 +257,13 @@ def fetch_forecast(latitude, longitude):
     # Change request style to not get denied due to bot system
     headers = {"User-Agent": "example@example.com"}
 
-    # Generate required urls to get forcast
+    # Generate required urls to get forecast
     point_url = f"https://api.weather.gov/points/{latitude},{longitude}"
     point_data = requests.get(point_url, headers=headers).json()
     hourly_url = point_data["properties"]["forecastHourly"]
     daily_url  = point_data["properties"]["forecast"]
 
-    # Request hourly forcast and format
+    # Request hourly forecast and format
     hourly_data = requests.get(hourly_url, headers=headers).json()
     next_hours = [{
         "time": p["startTime"],
@@ -267,7 +272,7 @@ def fetch_forecast(latitude, longitude):
         "precipitation": p.get("probabilityOfPrecipitation", {}).get("value")
     } for p in hourly_data["properties"]["periods"][:6]]
 
-    # Request daily forcast and format
+    # Request daily forecast and format
     daily_data = requests.get(daily_url, headers=headers).json()
     today = datetime.date.today()
     tomorrow_data = None
@@ -281,7 +286,7 @@ def fetch_forecast(latitude, longitude):
                 "precipitation": p.get("probabilityOfPrecipitation", {}).get("value")
             }
             break
-    # Return forcast data
+    # Return forecast data
     return {"hourly": next_hours, "tomorrow": tomorrow_data}
 
 # Get current location info using ip address
