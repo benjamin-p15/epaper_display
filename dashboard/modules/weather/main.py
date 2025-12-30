@@ -51,16 +51,43 @@ def render():
         if metar_data: weather_data = metar_data[0]
         else: weather_data = {}
 
-        # Get weather forecast and save it as object
-        forecast = fetch_forecast(location_data["latitude"],location_data["longitude"])
-        if forecast: forecast_data = forecast
-        else: forecast_data = {"hourly": [], "tomorrow": {}}
 
-        print("Hourly data:")
-        #for key, value in forecast_data.items(): print(f"{key}: {value}")
-        for hour in forecast_data["hourly"]: print(", ".join(f"{k}: {v}" for k, v in hour.items()))
-        print("Tomarrow data:")
-        if forecast_data["tomorrow"]: print(", ".join(f"{k}: {v}" for k, v in forecast_data["tomorrow"].items()))
+
+
+
+        forecast = fetch_forecast(location_data["latitude"], location_data["longitude"]) or {"current": {}, "hourly": [], "tomorrow": {}}
+
+        print("Current conditions:")
+        for k, v in forecast["current"].items():
+            if k == "cloud_layers":
+                print(f"{k}:")
+                for layer in v: print(f"  {layer}")
+            else: print(f"{k}: {v}")
+        print("-" * 40)
+
+        print("Hourly forecast (next 6 hours):")
+        for hour in forecast["hourly"]:
+            print(", ".join(f"{k}: {v}" for k, v in hour.items()))
+        print("-" * 40)
+
+        print("Tomorrow forecast:")
+        if forecast["tomorrow"]: print(", ".join(f"{k}: {v}" for k, v in forecast["tomorrow"].items()))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         print("Meter data:")
@@ -256,40 +283,71 @@ def fetch_taf(icao_code):
     return data
 
 def fetch_forecast(latitude, longitude):
-    # Change request style to not get denied due to bot system
     headers = {"User-Agent": "example@example.com"}
 
-    # Generate required urls to get forecast
+    # 1) Get forecast & station URLs
     point_url = f"https://api.weather.gov/points/{latitude},{longitude}"
     point_data = requests.get(point_url, headers=headers).json()
     hourly_url = point_data["properties"]["forecastHourly"]
     daily_url  = point_data["properties"]["forecast"]
+    stations_url = point_data["properties"]["observationStations"]
 
-    # Request hourly forecast and format
+    # 2) Get nearest station for current conditions
+    stations_data = requests.get(stations_url, headers=headers).json()
+    station_id = stations_data["features"][0]["properties"]["stationIdentifier"]
+    obs_url = f"https://api.weather.gov/stations/{station_id}/observations/latest"
+    obs_data = requests.get(obs_url, headers=headers).json()
+    obs_props = obs_data["properties"]
+
+    # Current conditions
+    current = {
+        "temperature": obs_props.get("temperature", {}).get("value"),
+        "temperature_unit": obs_props.get("temperature", {}).get("unitCode"),
+        "wind_speed": obs_props.get("windSpeed", {}).get("value"),
+        "wind_direction": obs_props.get("windDirection", {}).get("value"),
+        "humidity": obs_props.get("relativeHumidity", {}).get("value"),
+        "precipitation_last_hour": obs_props.get("precipitationLastHour", {}).get("value"),
+        "cloud_layers": [
+            {
+                "amount": layer["amount"],
+                "base": layer.get("base", {}).get("value"),
+                "type": layer.get("type")
+            } for layer in obs_props.get("cloudLayers", [])
+        ],
+        "weather_text": obs_props.get("textDescription")
+    }
+
+    # 3) Hourly forecast
     hourly_data = requests.get(hourly_url, headers=headers).json()
-    next_hours = [{
+    hourly = [{
         "time": p["startTime"],
         "temperature": p["temperature"],
         "unit": p.get("temperatureUnit"),
-        "precipitation": p.get("probabilityOfPrecipitation", {}).get("value")
+        "precipitation_prob": p.get("probabilityOfPrecipitation", {}).get("value"),
+        "weather": p.get("shortForecast")
     } for p in hourly_data["properties"]["periods"][:6]]
 
-    # Request daily forecast and format
+    # 4) Tomorrow forecast
     daily_data = requests.get(daily_url, headers=headers).json()
     today = datetime.date.today()
-    tomorrow_data = None
+    tomorrow = None
     for p in daily_data["properties"]["periods"]:
         p_date = datetime.date.fromisoformat(p["startTime"][:10])
         if p_date > today:
-            tomorrow_data = {
+            tomorrow = {
                 "name": p["name"],
                 "temperature": p["temperature"],
                 "unit": p.get("temperatureUnit"),
-                "precipitation": p.get("probabilityOfPrecipitation", {}).get("value")
+                "precipitation_prob": p.get("probabilityOfPrecipitation", {}).get("value"),
+                "weather": p.get("shortForecast")
             }
             break
-    # Return forecast data
-    return {"hourly": next_hours, "tomorrow": tomorrow_data}
+
+    return {
+        "current": current,
+        "hourly": hourly,
+        "tomorrow": tomorrow
+    }
 
 # Get current location info using ip address
 def get_current_location():
