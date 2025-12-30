@@ -74,28 +74,23 @@ def render():
                 hour_str = next_day.strftime('%a').lower() 
             hours.append(hour_str)
 
-
+        # Pull icons for current weather
         icons_data = forecast_data.get("hourly", [])[:6] + ([forecast_data["tomorrow"]] if forecast_data.get("tomorrow") else [])
+
 
         for i, data in enumerate(icons_data):
             icon = weather_to_icon(data.get("weather"))
             x_pos = -0.031 + i*0.142 + 0.047
-            screen.add_image(
-                os.path.join(script_directory, "icons", icon),
-                (x_pos, 0.78),
-                (0.11, 0.135),
-                invert=True,
-                color_black=True
-            )
+            screen.add_image(os.path.join(script_directory, "icons", icon),(x_pos, 0.78),(0.11, 0.135),invert=True,color_black=True)
             
-            # Draw predicted temperature below icon
+            # Draw estimated tempasure
             temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
-            screen.add_text([{"text": temp_text, "size": 14}], position=(x_pos+0.03, 0.70), bold=True)
+            screen.add_text([{"text": temp_text, "size": 14}], position=(x_pos+0.07, 0.8), bold=True)
 
-            # Draw predicted precipitation below temperature
+            # Draw estimated precipitation 
             precip = data.get("precipitation_prob")
             precip_text = f"{precip}%" if precip is not None else "--"
-            screen.add_text([{"text": precip_text, "size": 12}], position=(x_pos+0.03, 0.68))
+            screen.add_text([{"text": precip_text, "size": 12}], position=(x_pos+0.73, 0.82)
 
 
 
