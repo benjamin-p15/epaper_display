@@ -93,12 +93,12 @@ def render():
             
             # Draw estimated tempasure
             temp_text = f"{data.get('temperature','--')}°{data.get('unit','F')}"
-            screen.add_text([{"text": temp_text, "size": 18}], position=(x_pos+0.05, 0.9), bold=True)
+            screen.add_text([{"text": temp_text, "size": 18}], position=(x_pos+0.06, 0.92), bold=True)
 
             # Draw estimated precipitation 
             precip = data.get("precipitation_prob")
             precip_text = f"{precip}%" if precip is not None else "--"
-            screen.add_text([{"text": precip_text, "size": 18}], position=(x_pos+0.05, 0.92))
+            screen.add_text([{"text": precip_text, "size": 18}], position=(x_pos+0.06, 0.94))
 
 
 
