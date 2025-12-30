@@ -64,12 +64,6 @@ def render():
 
         # Draw rectangles forecast text
         for i in range(7):
-            screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
-            screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
-        
-
-
-        for i in range(7):
             # Generate hourly text
             if i < 6:
                 hour = (now_datetime + datetime.timedelta(hours=i+1)).hour 
@@ -79,6 +73,14 @@ def render():
                 next_day = now_datetime + datetime.timedelta(days=1)
                 hour_str = next_day.strftime('%a').lower() 
             hours.append(hour_str)
+        
+
+        for i in range(7):
+            screen.add_rectangle(position=(0.006+i*0.142, 0.74), size=(0.135,0.25), fill=0, radius=15, thickness=2)
+            screen.add_text([{"text": hours[i], "size": 16}], position=(0.006+i*0.142 + 0.0675, 0.745),bold=True)
+        
+
+
 
         # Pull icons for current weather
         icons_data = forecast_data.get("hourly", [])[:6] + ([forecast_data["tomorrow"]] if forecast_data.get("tomorrow") else [])
