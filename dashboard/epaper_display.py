@@ -6,8 +6,8 @@ import time
 from PIL import ImageOps,Image, ImageDraw, ImageFont
 
 # Epaper display class for displaying data to the display
-class EpaperDisplay(): 
-    def __init__(self):
+class EpaperDisplay: 
+    def __init__(self, width: int=800, height: int=480):
         # Screen size
         self.width
         self.height  
@@ -29,6 +29,7 @@ class EpaperDisplay():
         GPIO.setup(self.DC_pin, GPIO.OUT)   
         GPIO.setup(self.RST_pin, GPIO.OUT)   
         GPIO.setup(self.BUSY_pin, GPIO.IN)     
+        self.initalize_display()
 
     def scale(self) -> float:
         return self.width/self.height
@@ -48,10 +49,7 @@ class EpaperDisplay():
         while GPIO.input(self.BUSY_pin) == 1: time.sleep(0.05)
 
     # Initalize display for new usage
-    def initalize_display(self, width: int=800, height: int=480):
-        # Set screen width
-        self.width=width
-        self.height=height
+    def initalize_display(self):
         # Reset display for new use
         GPIO.output(self.RST_pin, GPIO.LOW)
         time.sleep(0.2)

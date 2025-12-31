@@ -114,8 +114,7 @@ def display_loop(display):
 def main():
     global scale
     # Initilize the Epaper display
-    display = EpaperDisplay()
-    display.initalize_display(800,480)
+    display = EpaperDisplay(800,480)
     # Create background thread that starts and runs website
     threading.Thread(target=start_dashboard, daemon=True).start()
 
