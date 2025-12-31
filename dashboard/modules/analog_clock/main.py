@@ -4,9 +4,6 @@ from zoneinfo import ZoneInfo
 from dashboard.epaper_display import ImageDrawer
 screen = ImageDrawer()
 
-image_width = 800
-image_height = 480
-
 _last_update = 0
 _cache_img = None
 

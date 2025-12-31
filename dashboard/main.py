@@ -17,6 +17,7 @@ current_layout = "clock"
 update_state = False
 image_threshold = 128
 layouts=["clock", "weather", "image", "grapher", "analog_clock"]
+scale=0
 
 # Start website
 def start_dashboard():
@@ -70,6 +71,7 @@ def start_dashboard():
 
 # Check for display layout changes and run timmer circuits 
 def display_loop(display):
+    global scale
     last_layout = None
     current_display = None
 
@@ -90,7 +92,7 @@ def display_loop(display):
                 if update_display: current_display = img
         # Run weather time curcit
         elif(current_layout=="weather"):
-            img, update_display = weather.render()
+            img, update_display = weather.weatherRender(display.width, display.height).render()
             if update_display: current_display = img
         # Run clock time curcit
         elif(current_layout=="clock"):
@@ -110,10 +112,10 @@ def display_loop(display):
 
 # Startup script when file is ran
 def main():
+    global scale
     # Initilize the Epaper display
     display = EpaperDisplay()
-    display.initalize_display()
-    
+    display.initalize_display(800,480)
     # Create background thread that starts and runs website
     threading.Thread(target=start_dashboard, daemon=True).start()
 
