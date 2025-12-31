@@ -17,7 +17,6 @@ current_layout = "clock"
 update_state = False
 image_threshold = 128
 layouts=["clock", "weather", "image", "grapher", "analog_clock"]
-scale=0
 
 # Start website
 def start_dashboard():
@@ -112,8 +111,7 @@ def display_loop(display):
 
 # Startup script when file is ran
 def main():
-    global scale
-    # Initilize the Epaper display
+    # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480)
     # Create background thread that starts and runs website
     threading.Thread(target=start_dashboard, daemon=True).start()

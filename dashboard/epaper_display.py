@@ -9,8 +9,8 @@ from PIL import ImageOps,Image, ImageDraw, ImageFont
 class EpaperDisplay: 
     def __init__(self, width: int=800, height: int=480):
         # Screen size
-        self.width
-        self.height  
+        self.width=width
+        self.height=height
         self.buffer_length = self.width * self.height // 8   # screen buffer size 
         self.color_white=0x00
         self.color_black=0xFF
