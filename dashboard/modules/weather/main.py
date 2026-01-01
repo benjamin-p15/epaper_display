@@ -124,9 +124,9 @@ class weatherRender:
         # Add currect weather and precipitation to screen
         precip=current.get("precipitation_last_hour")
         if(precip is None): precip=0
-        self.screen.add_image(os.path.join(script_directory, "icons", "chance.png"),(0.05, 0.65),(0.03, 0.03*self.scale_factor),invert=False,color_black=True)
-        self.screen.add_text([{"text":f"{self.weatherToText(current.get('weather_text'))}","size":48,"align": "center"}],position=(0.05, 0.55),align="left",bold=True)
-        self.screen.add_text([{"text":f"Rain {round(precip/25.4, 1)}","size":24,"align": "center"},{"text":"in","size":12,"align":"bottom"}],position=(0.08, 0.65),align="left",bold=True)
+        self.screen.add_image(os.path.join(script_directory, "icons", "chance.png"),(0, 0.65),(0.03, 0.03*self.scale_factor),invert=False,color_black=True)
+        self.screen.add_text([{"text":f"{self.weatherToText(current.get('weather_text'))}","size":48,"align": "center"}],position=(0, 0.55),align="left",bold=True)
+        self.screen.add_text([{"text":f"Rain {round(precip/25.4, 1)}","size":24,"align": "center"},{"text":"in","size":12,"align":"bottom"}],position=(0.03, 0.65),align="left",bold=True)
     
     # Renders columes of usful data
     def renderColumeDate(self):
