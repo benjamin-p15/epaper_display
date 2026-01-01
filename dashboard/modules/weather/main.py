@@ -26,8 +26,8 @@ class weatherRender:
         }
         self.weather_data={}
         self.forecast_data={}
-        self.pilot_mode=True
-        self.metric=True
+        self.pilot_mode=False
+        self.metric=False
         self.screen=ImageDrawer(width,height)
         self.scale_factor=width/height
         self._last_update=0
