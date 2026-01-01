@@ -416,7 +416,7 @@ class weatherRender:
         t = (text or "").lower()
         if "thunder" in t: return False, "thunderstorms.png"
         if "snow" in t: return True, "snowy.png"
-        if "rain" in t or "showers" in t: return False, "rain_shower.png"
+        if "rain" in t or "showers" in t: return True, "rain_shower.png"
         if "drizzle" in t: return True, "drizzle.png"
         if "fog" in t or "mist" in t: return False, "fog.png"
         if "mostly cloudy" in t: return False, "mostly_cloudy.png"
