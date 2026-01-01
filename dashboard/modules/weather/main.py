@@ -37,7 +37,7 @@ class weatherRender:
         else: self.unit="C"
 
     # Renders the screen
-    def render(self, refreash_rate: float = 300) -> Tuple[bool,Image.Image]:
+    def render(self, refreash_rate: float = 300) -> Tuple[Image.Image, bool]:
         self.now = time.time()
         if self.now - self._last_update >= refreash_rate:
             self._last_update = self.now
@@ -421,7 +421,7 @@ class weatherRender:
         if "fog" in t or "mist" in t: return False, "fog.png"
         if "mostly cloudy" in t: return False, "mostly_cloudy.png"
         if "partly cloudy" in t: return False, "partly_cloudy.png"
-        if "cloudy" in t: return False, "cloudy.png"
+        if "cloudy" in t: return True, "cloudy.png"
         if "sunny" in t or "clear" in t: return True, "sunny.png"
         return False, "sunny.png"
     

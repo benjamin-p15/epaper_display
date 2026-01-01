@@ -149,7 +149,7 @@ class ImageDrawer:
             size = (int(size[0] * self.width), int(size[1] * self.height))
         self.commands.append({ "type": "image", "img": img, "position": (px, py), "size": size })
 
-    # Add shape to render que
+    # Add rectangle to render que
     def add_rectangle(self, position, size, fill=0, radius=0, thickness=None):
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
@@ -157,6 +157,21 @@ class ImageDrawer:
         if size[0] <= 1 and size[1] <= 1:
             size = (int(size[0] * self.width), int(size[1] * self.height))
         self.commands.append({"type": "rectangle","position": (px, py),"size": size,"fill": fill,"radius": radius, "thickness": thickness})
+
+    # Add line to render que
+    def add_line(self, start, end, fill=0, thickness=1):
+        x1 = int(start[0] * self.width) if start[0] <= 1 else int(start[0])
+        y1 = int(start[1] * self.height) if start[1] <= 1 else int(start[1])
+        x2 = int(end[0] * self.width) if end[0] <= 1 else int(end[0])
+        y2 = int(end[1] * self.height) if end[1] <= 1 else int(end[1])
+        self.commands.append({"type": "line","start": (x1, y1),"end": (x2, y2),"fill": fill,"thickness": thickness})
+
+    # Add circle to render que
+    def add_circle(self, center, radius, fill=0, thickness=1):
+        cx = int(center[0] * self.width) if center[0] <= 1 else int(center[0])
+        cy = int(center[1] * self.height) if center[1] <= 1 else int(center[1])
+        r = int(radius * min(self.width, self.height)) if radius <= 1 else int(radius)
+        self.commands.append({"type": "circle","center": (cx, cy),"radius": r,"fill": fill,"thickness": thickness})
 
     # Render diffrent data to display image
     def render(self):
@@ -235,6 +250,22 @@ class ImageDrawer:
                     # Use diffrent draw commands depending on if a rounded corner is being drawn
                     if radius > 0: draw.rounded_rectangle([x, y, x + w, y + h], radius=radius, outline=fill, width=thickness)
                     else:draw.rectangle([x, y, x + w, y + h], outline=fill, width=thickness)
+            # Draws a line between two points
+            elif cmd["type"] == "line":
+                x1, y1 = cmd["start"]
+                x2, y2 = cmd["end"]
+                fill = cmd.get("fill", 0)
+                thickness = cmd.get("thickness", 1)
+                draw.line([(x1, y1), (x2, y2)],fill=fill,width=thickness)
+            # Draws a circle at a location
+            elif cmd["type"] == "circle":
+                cx, cy = cmd["center"]
+                r = cmd["radius"]
+                fill = cmd.get("fill", 0)
+                thickness = cmd.get("thickness", 1)
+                # -1 draw filled circle
+                if thickness <= 0:  draw.ellipse([(cx - r, cy - r), (cx + r, cy + r)], fill=fill)
+                else: draw.ellipse([(cx - r, cy - r), (cx + r, cy + r)], outline=fill, width=thickness)
 
         # Clear commands after render
         self.commands = []

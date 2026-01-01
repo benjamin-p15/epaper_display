@@ -97,6 +97,7 @@ def display_loop(display):
         elif(current_layout=="clock"):
             img, update_display = clock.render()
             if update_display: current_display = img
+        # Run analog clock curcit
         elif(current_layout=="analog_clock"):
             img, update_display = analog_clock.render()
             if update_display: current_display = img
@@ -111,10 +112,11 @@ def display_loop(display):
 
 # Startup script when file is ran
 def main():
-    global weather
+    global weather, analog_clock
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480)
     weather = weather.weatherRender(display.width, display.height)
+    analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
     # Create background thread that starts and runs website
     threading.Thread(target=start_dashboard, daemon=True).start()
 
