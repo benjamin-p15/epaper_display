@@ -522,16 +522,16 @@ class weatherRender:
     # Calulate the text that corrasponds to certain types of weather
     def weatherToText(self, text: str) -> str:
         t = (text or "").lower()
-        if "thunder" in t: return False, "Stormy"
+        if "thunder" in t: return "Stormy"
         if "snow" in t: return "Snowing"
-        if "rain" in t or "showers" in t: return False, "Raining"
-        if "drizzle" in t: return True, "Lightly Raining"
-        if "fog" in t or "mist" in t: return False, "Foggy"
-        if "mostly cloudy" in t: return False, "Overcast"
-        if "partly cloudy" in t: return True, "Partly Clear"
+        if "rain" in t or "showers" in t: return "Raining"
+        if "drizzle" in t: return "Lightly Raining"
+        if "fog" in t or "mist" in t: return "Foggy"
+        if "mostly cloudy" in t: return "Overcast"
+        if "partly cloudy" in t: return "Partly Clear"
         if "cloudy" in t: return "Cloudy"
         if "sunny" in t or "clear" in t: return "Clear"
-        return False, "Clear"
+        return "Clear"
 
     # Convert from knots to mph
     def knotsToMph(self, knots: float) -> float:

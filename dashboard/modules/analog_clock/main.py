@@ -1,4 +1,4 @@
-import requests, math, time, csv, os, datetime, sys, random
+import requests, math, time, csv, os, datetime, sys, random, calendar
 from PIL import Image
 from typing import Optional, List, Tuple
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
@@ -15,7 +15,9 @@ class analogClockRenderer:
         #self.digits=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
         self.digits=["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
         self.days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+        self.seconds_until_next_minute=60
 
+    # Render an analog clock
     def renderClock(self):
         x_element_offset=0.25
         scale=0.85
@@ -55,13 +57,75 @@ class analogClockRenderer:
         self.screen.add_text([{"text": f"{t.tm_year}-{t.tm_mon:02}-{t.tm_mday:02}","size": math.floor(20*scale),"bold": True,"algin":"center"}],position=(x_element_offset,0.5+0.2*scale),font="DejaVuSans-Bold.ttf")
         self.screen.add_text([{"text": f"{self.days[t.tm_wday]}","size": math.floor(20*scale),"bold": True,"algin":"center"}],position=(x_element_offset,0.5-0.25*scale),font="DejaVuSans-Bold.ttf")
 
+    # Renders a calender
+    def renderCalender(self):
+        columns, rows = 7, 5
+        x_element_offset = 0.75
+        rect_width = 0.05
+        rect_height = 0.05 * self.scale_factor
+        gap_x = 0.01
+        gap_y = 0.01 * self.scale_factor
+        start_x = x_element_offset - (columns * rect_width + (columns - 1) * gap_x) / 2
+        start_y = 0.5 - (rows * rect_height + (rows - 1) * gap_y) / 2
+        today = datetime.date.today()
+        year, month = today.year, today.month
+        month_grid = calendar.monthcalendar(year, month)
+        first_weekday, days_in_month = calendar.monthrange(year, month)
+        previous_month = month - 1 or 12
+        previous_year = year - 1 if month == 1 else year
+        _, days_in_previous_month = calendar.monthrange(previous_year, previous_month)
+        next_day_counter = 1
+
+        weekday_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        label_y = start_y - rect_height * 0.6
+
+        self.screen.add_rectangle((start_x,start_y-0.06),(rect_width*columns+gap_x*(columns-1),0.05),fill=0,thickness=1,radius=7)
+
+        for week_index in range(rows):
+            for weekday_index in range(columns):
+                x = start_x + weekday_index * (rect_width + gap_x)
+                self.screen.add_text([{"text": weekday_labels[weekday_index], "size": 14, "bold": True}],position=(x + rect_width * 0.5, label_y),font="DejaVuSans-Bold.ttf")
+
+
+                x=start_x+weekday_index*(rect_width+gap_x)
+                y=start_y+week_index*(rect_height+gap_y)
+                if week_index<len(month_grid): day_value=month_grid[week_index][weekday_index]
+                else: day_value=0
+                if day_value == 0:
+                    if week_index == 0: day_number=days_in_previous_month-(first_weekday-weekday_index-1)
+                    else:
+                        day_number=next_day_counter
+                        next_day_counter+=1
+                    fill_value=0
+                    text_color=1
+                    thickness=1
+                    is_today=False
+                else:
+                    day_number=day_value
+                    fill_value=0
+                    text_color=0
+                    thickness=1
+                    is_today=(day_number == today.day)
+                if is_today:
+                    fill_value=0
+                    text_color=1
+                    thickness=None
+
+                self.screen.add_rectangle((x, y),(rect_width, rect_height),fill=fill_value,thickness=thickness,radius=7)
+                self.screen.add_text([{"text": str(day_number), "size": 18, "bold": True}],position=(x + rect_width * 0.5, y + rect_height * 0.55-0.02),font="DejaVuSans.ttf",fill=text_color,stroke_width=1,stroke_fill=0)
+
+
+
     # Renders the screen
-    def render(self, refreash_rate: float = 300) -> Tuple[Image.Image, bool]:
+    def render(self) -> Tuple[Image.Image, bool]:
         self.now = time.time()
-        if self.now - self._last_update >= refreash_rate:
+        if self.now - self._last_update >= self.seconds_until_next_minute:
             self._last_update = self.now
+            self.now = datetime.datetime.now()
+            self.seconds_until_next_minute = round(60 - self.now.second - self.now.microsecond / 1_000_000)
 
             self.renderClock()
+            self.renderCalender()
 
             _cache_img=self.screen.render()
             if(_cache_img is None): return None, False
