@@ -13,7 +13,7 @@ echo "Internet is up"
 cd "$REPO_DIR"
 echo "Updating repository..."
 git fetch origin
-git reset --hard origin/master
+git reset --hard origin/main
 
 echo "Starting epaper script..."
 exec /usr/bin/python3 "$REPO_DIR/$SCRIPT"
