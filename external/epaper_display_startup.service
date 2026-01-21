@@ -1,0 +1,17 @@
+[Unit]
+Description=My epaper display script
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=benjaminpi2
+WorkingDirectory=/home/benjaminpi2
+ExecStart=/home/benjaminpi2/start_epaper_display.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

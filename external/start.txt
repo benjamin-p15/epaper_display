@@ -1,0 +1,4 @@
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable epaper_display_startup.service
+sudo systemctl restart epaper_display_startup.service
