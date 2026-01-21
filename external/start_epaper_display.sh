@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO_DIR="/home/benjaminpi2/epaper_display"
+REPO_DIR="/home/benjaminpi2/epaper_display/external/start_epaper_display.sh"
 SCRIPT="external/main.python3"
 
 echo "Waiting for internet..."
