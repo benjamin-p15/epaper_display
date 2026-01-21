@@ -2,7 +2,7 @@
 set -e
 
 REPO_DIR="/home/benjaminpi2/epaper_display"
-SCRIPT="external/main.python3"
+SCRIPT="dashboard/main.python3"
 
 echo "Waiting for internet..."
 until ping -c1 -W1 8.8.8.8 >/dev/null 2>&1; do
