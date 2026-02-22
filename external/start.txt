@@ -1,6 +1,5 @@
 sudo chown 644 /etc/systemd/system/epaper_display_startup.service
-sudo chown root:root etc/systemd/system/epaper_display_startup.service
-
+sudo chown root:root /etc/systemd/system/epaper_display_startup.service
 sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
 sudo systemctl enable epaper_display_startup.service
