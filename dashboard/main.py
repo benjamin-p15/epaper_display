@@ -17,6 +17,7 @@ current_layout = "clock"
 update_state = False
 image_threshold = 128
 layouts=["clock", "weather", "image", "grapher", "analog_clock"]
+ENABLE_WEB = False
 
 # Start website
 def start_dashboard():
@@ -118,7 +119,7 @@ def main():
     weather = weather.weatherRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
     # Create background thread that starts and runs website
-    threading.Thread(target=start_dashboard, daemon=True).start()
+    if ENABLE_WEB: threading.Thread(target=start_dashboard, daemon=True).start()
 
     display_loop(display)
 
