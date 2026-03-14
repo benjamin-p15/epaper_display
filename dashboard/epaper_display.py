@@ -22,11 +22,14 @@ class EpaperDisplay:
         self.spi.mode = 0b00                 # Set clock mode
 
         # Setup used pi pins and initalize them
+        GPIO.setmode(GPIO.BCM)
         self.DC_pin=25
         self.BUSY_pin=24
         self.RST_pin=17
         #GPIO.setmode(GPIO.BCM)      
-        
+        GPIO.setup(self.DC_pin, GPIO.OUT)   
+        GPIO.setup(self.RST_pin, GPIO.OUT)   
+        GPIO.setup(self.BUSY_pin, GPIO.IN)     
         #self.initalize_display()
 
     def scale(self) -> float:
@@ -48,12 +51,6 @@ class EpaperDisplay:
 
     # Initalize display for new usage
     def initalize_display(self):
-
-        GPIO.setup(self.DC_pin, GPIO.OUT)   
-        GPIO.setup(self.RST_pin, GPIO.OUT)   
-        GPIO.setup(self.BUSY_pin, GPIO.IN)     
-
-        
         # Reset display for new use
         GPIO.output(self.RST_pin, GPIO.LOW)
         time.sleep(0.2)
