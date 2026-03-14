@@ -22,15 +22,15 @@ class EpaperDisplay:
         self.spi.mode = 0b00                 # Set clock mode
 
         # Setup used pi pins and initalize them
-        GPIO.setwarnings(False)
+        #GPIO.setwarnings(False)
         #try: GPIO.cleanup()
         #except: pass
 
 
-        try: GPIO.setmode(GPIO.BCM)
-        except Exception as e:
-            print(f"Button pin initialization error: {e}")
-            pass
+        #try: GPIO.setmode(GPIO.BCM)
+        #except Exception as e:
+        #    print(f"Button pin initialization error: {e}")
+        #    pass
             
         
         self.DC_pin=25
