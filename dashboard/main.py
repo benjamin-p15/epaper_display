@@ -131,9 +131,9 @@ def display_loop(display):
             if display_is_sleeping:
                 display.wake_display() 
                 display_is_sleeping = False
-            
+            time.sleeop(0.25)
             display.display_image(current_display, image_threshold)
-
+            time.sleeop(0.25)
             display.sleep_display()
             display_is_sleeping = True
 
