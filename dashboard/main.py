@@ -33,6 +33,8 @@ update_state = False
 image_threshold = 128
 layouts=["clock", "weather", "image", "grapher", "analog_clock"]
 ENABLE_WEB = False
+last_button_time=0
+message_time=3
 
 # Start website
 def start_dashboard():
@@ -128,17 +130,17 @@ def display_loop(display):
 
 # Handle button interface switcher
 def button_loop():
-    global current_layout, update_state
+    global current_layout, update_state, last_button_time, message_time
     while True:
         if GPIO.input(BUTTON_PIN) == 0:
-            print(" PUSH ")
-            try: i = layouts.index(current_layout)
-            except ValueError: i = 0
-            i = (i + 1) % len(layouts)
-            current_layout = layouts[i]
-            update_state = True
-            while GPIO.input(BUTTON_PIN) == GPIO.LOW: time.sleep(0.01)
-        time.sleep(0.05)
+            if time.time()-last_button_time>message_time:
+                print(" PUSH ")
+                try: i = layouts.index(current_layout)
+                except ValueError: i = 0
+                i = (i + 1) % len(layouts)
+                current_layout = layouts[i]
+                update_state = True
+            last_button_time=time.time()
 
 # Startup script when file is ran
 def main():
