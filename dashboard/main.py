@@ -132,7 +132,7 @@ def main():
 
     #GPIO.cleanup()
     #GPIO.setwarnings(False)
-    #GPIO.setmode(GPIO.BCM)
+    GPIO.setmode(GPIO.BCM)
     #GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     try:   
         GPIO.setup(25, GPIO.OUT)   
