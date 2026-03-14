@@ -131,9 +131,9 @@ def main():
     global weather, analog_clock
 
     #GPIO.cleanup()
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    #GPIO.setwarnings(False)
+    #GPIO.setmode(GPIO.BCM)
+    #GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     time.sleep(0.1)
 
     # Initilize the Epaper display and it's helper class
