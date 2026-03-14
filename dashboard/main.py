@@ -129,7 +129,8 @@ def button_loop():
 # Startup script when file is ran
 def main():
     global weather, analog_clock
-    
+
+    GPIO.cleanup()
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
 
