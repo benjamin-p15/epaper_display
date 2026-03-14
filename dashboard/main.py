@@ -144,7 +144,7 @@ def button_loop():
 
 # Startup script when file is ran
 def main():
-    global weather, analog_clock
+    global weather, analog_clock, display
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480,25,24,17)
