@@ -30,7 +30,7 @@ class EpaperDisplay:
         try: GPIO.setmode(GPIO.BCM)
         except Exception as e:
             print(f"Button pin initialization error: {e}")
-            sys.exit(1)
+            pass
             
         
         self.DC_pin=25
