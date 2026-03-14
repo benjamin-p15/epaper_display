@@ -127,6 +127,7 @@ def display_loop(display):
 
         # Update display if requested and wait before running check again
         if(update_display): display.display_image(current_display, image_threshold)
+        force_render = False
         time.sleep(1)
 
 # Handle button interface switcher
