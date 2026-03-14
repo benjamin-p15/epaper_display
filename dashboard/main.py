@@ -131,13 +131,13 @@ def main():
     global weather, analog_clock
 
     #GPIO.cleanup()
-    #GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
     #GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     try:   
         GPIO.setup(25, GPIO.OUT)   
-        GPIO.setup(24, GPIO.OUT)   
-        GPIO.setup(17, GPIO.IN) 
+        GPIO.setup(24, GPIO.IN)   
+        GPIO.setup(17, GPIO.OUT) 
         time.sleep(0.1)
     except Exception as e:
         print(f"GPIO Setup Error: {e}")
