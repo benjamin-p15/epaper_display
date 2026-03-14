@@ -3,7 +3,7 @@ from flask import Flask, render_template, request
 from PIL import Image
 import threading
 import time
-import os
+import RPi.GPIO as GPIO
 
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
@@ -18,6 +18,8 @@ update_state = False
 image_threshold = 128
 layouts=["clock", "weather", "image", "grapher", "analog_clock"]
 ENABLE_WEB = False
+
+BUTTON_PIN = 2
 
 # Start website
 def start_dashboard():
@@ -111,6 +113,19 @@ def display_loop(display):
         if(update_display): display.display_image(current_display, image_threshold)
         time.sleep(1)
 
+# Handle button interface switcher
+def button_loop():
+    global current_layout, update_state
+    while True:
+        if GPIO.input(BUTTON_PIN) == GPIO.LOW:
+            try: i = layouts.index(current_layout)
+            except ValueError: i = 0
+            i = (i + 1) % len(layouts)
+            current_layout = layouts[i]
+            update_state = True
+            while GPIO.input(BUTTON_PIN) == GPIO.LOW: time.sleep(0.01)
+        time.sleep(0.05)
+
 # Startup script when file is ran
 def main():
     global weather, analog_clock
@@ -118,6 +133,12 @@ def main():
     display = EpaperDisplay(800,480)
     weather = weather.weatherRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
+
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    threading.Thread(target=button_loop, daemon=True).start()
+
     # Create background thread that starts and runs website
     if ENABLE_WEB: threading.Thread(target=start_dashboard, daemon=True).start()
 
