@@ -5,6 +5,21 @@ import threading
 import time
 import RPi.GPIO as GPIO
 
+BUTTON_PIN = 2
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+try:   
+    GPIO.setup(25, GPIO.OUT)   
+    GPIO.setup(24, GPIO.IN)   
+    GPIO.setup(17, GPIO.OUT) 
+    time.sleep(0.1)
+except Exception as e:
+    print(f"GPIO Setup Error: {e}")
+    raise 
+time.sleep(0.1)
+
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
 from modules.clock import main as clock
@@ -18,8 +33,6 @@ update_state = False
 image_threshold = 128
 layouts=["clock", "weather", "image", "grapher", "analog_clock"]
 ENABLE_WEB = False
-
-BUTTON_PIN = 2
 
 # Start website
 def start_dashboard():
@@ -129,21 +142,6 @@ def button_loop():
 # Startup script when file is ran
 def main():
     global weather, analog_clock
-
-    #GPIO.cleanup()
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    time.sleep(1)
-    #GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    try:   
-        GPIO.setup(25, GPIO.OUT)   
-        GPIO.setup(24, GPIO.IN)   
-        GPIO.setup(17, GPIO.OUT) 
-        time.sleep(0.1)
-    except Exception as e:
-        print(f"GPIO Setup Error: {e}")
-        raise 
-    time.sleep(0.1)
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480,25,24,17)
