@@ -132,7 +132,7 @@ def main():
 
     #GPIO.cleanup()
     GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
+    #GPIO.setmode(GPIO.BCM)
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480)
