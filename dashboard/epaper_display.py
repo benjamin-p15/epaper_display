@@ -23,16 +23,21 @@ class EpaperDisplay:
 
         # Setup used pi pins and initalize them
         GPIO.setwarnings(False)
-        try: GPIO.getmode()
-        except: GPIO.setmode(GPIO.BCM)
+        try: GPIO.cleanup()
+        except: pass
+        GPIO.setmode(GPIO.BCM)
         
         self.DC_pin=25
         self.BUSY_pin=24
         self.RST_pin=17
-        #GPIO.setmode(GPIO.BCM)      
-        GPIO.setup(self.DC_pin, GPIO.OUT)   
-        GPIO.setup(self.RST_pin, GPIO.OUT)   
-        GPIO.setup(self.BUSY_pin, GPIO.IN)     
+        #GPIO.setmode(GPIO.BCM)   
+        try:   
+            GPIO.setup(self.DC_pin, GPIO.OUT)   
+            GPIO.setup(self.RST_pin, GPIO.OUT)   
+            GPIO.setup(self.BUSY_pin, GPIO.IN) 
+        except Exception as e:
+            print(f"GPIO Setup Error: {e}")
+            raise    
         #self.initalize_display()
 
     def scale(self) -> float:
