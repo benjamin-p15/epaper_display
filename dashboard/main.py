@@ -159,4 +159,5 @@ def main():
     display_loop(display)
 
 if __name__ == "__main__":
-    main()
+    try: main()
+    except KeyboardInterrupt: GPIO.cleanup()
