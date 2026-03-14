@@ -108,6 +108,17 @@ class EpaperDisplay:
         self.spi.close()
         GPIO.cleanup()
 
+    # Puts screen to sleep, used between updates to prevent screen issues
+    def sleep_display(self):
+        self.cmd(0x02)  
+        self.wait_busy()
+        self.cmd(0x07)  
+        self.data(0xA5) 
+
+    # Wakes screen from sleep
+    def wake_display(self):
+        self.initalize_display() 
+
 # Image drawer to render things to an image that can be render to the screen
 class ImageDrawer:
     def __init__(self, width=800, height=480, background=1):

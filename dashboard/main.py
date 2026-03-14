@@ -34,6 +34,7 @@ image_threshold = 128
 layouts=["clock", "weather", "analog_clock"] #"image", "grapher"
 ENABLE_WEB = False
 force_render = False
+display_is_sleeping = False
 last_button_time=0
 message_time=0.25
 
@@ -126,7 +127,16 @@ def display_loop(display):
             if update_display: current_display = img
 
         # Update display if requested and wait before running check again
-        if(update_display): display.display_image(current_display, image_threshold)
+        if(update_display): 
+            if display_is_sleeping:
+                display.wake_display() 
+                display_is_sleeping = False
+            
+            display.display_image(current_display, image_threshold)
+
+            display.sleep_display()
+            display_is_sleeping = True
+            
         force_render = False
         time.sleep(1)
 
