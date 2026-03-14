@@ -134,10 +134,18 @@ def main():
     #GPIO.setwarnings(False)
     #GPIO.setmode(GPIO.BCM)
     #GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    try:   
+        GPIO.setup(25, GPIO.OUT)   
+        GPIO.setup(24, GPIO.OUT)   
+        GPIO.setup(17, GPIO.IN) 
+        time.sleep(0.1)
+    except Exception as e:
+        print(f"GPIO Setup Error: {e}")
+        raise 
     time.sleep(0.1)
 
     # Initilize the Epaper display and it's helper class
-    display = EpaperDisplay(800,480)
+    display = EpaperDisplay(800,480,25,24,17)
     display.initalize_display()
     weather = weather.weatherRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)

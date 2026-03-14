@@ -7,7 +7,7 @@ from PIL import ImageOps,Image, ImageDraw, ImageFont
 
 # Epaper display class for displaying data to the display
 class EpaperDisplay: 
-    def __init__(self, width: int=800, height: int=480):
+    def __init__(self, width: int=800, height: int=480, DC_pin=25,BUSY_pin=24,RST_pin=17):
         # Screen size
         self.width=width
         self.height=height
@@ -15,36 +15,17 @@ class EpaperDisplay:
         self.color_white=0x00
         self.color_black=0xFF
 
+        self.DC_pin=DC_pin
+        self.BUSY_pin=BUSY_pin
+        self.RST_pin=RST_pin
+
         # Startup display
         self.spi = spidev.SpiDev()           # Setup spi class
         self.spi.open(0, 0)                  # Set spi modes
         self.spi.max_speed_hz = 2_000_000    # Set max spi pin speed
         self.spi.mode = 0b00                 # Set clock mode
-
-        # Setup used pi pins and initalize them
-        #GPIO.setwarnings(False)
-        #try: GPIO.cleanup()
-        #except: pass
-
-
-        #try: GPIO.setmode(GPIO.BCM)
-        #except Exception as e:
-        #    print(f"Button pin initialization error: {e}")
-        #    pass
-            
         
-        self.DC_pin=25
-        self.BUSY_pin=24
-        self.RST_pin=17
-        #GPIO.setmode(GPIO.BCM)   
-        try:   
-            GPIO.setup(self.DC_pin, GPIO.OUT)   
-            GPIO.setup(self.RST_pin, GPIO.OUT)   
-            GPIO.setup(self.BUSY_pin, GPIO.IN) 
-            time.sleep(0.1)
-        except Exception as e:
-            print(f"GPIO Setup Error: {e}")
-            raise    
+
         #self.initalize_display()
 
     def scale(self) -> float:
