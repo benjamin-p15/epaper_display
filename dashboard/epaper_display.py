@@ -23,8 +23,8 @@ class EpaperDisplay:
 
         # Setup used pi pins and initalize them
         GPIO.setwarnings(False)
-        try: GPIO.cleanup()
-        except: pass
+        #try: GPIO.cleanup()
+        #except: pass
 
 
         try: GPIO.setmode(GPIO.BCM)
