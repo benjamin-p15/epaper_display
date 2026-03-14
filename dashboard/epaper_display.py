@@ -41,6 +41,7 @@ class EpaperDisplay:
             GPIO.setup(self.DC_pin, GPIO.OUT)   
             GPIO.setup(self.RST_pin, GPIO.OUT)   
             GPIO.setup(self.BUSY_pin, GPIO.IN) 
+            time.sleep(0.1)
         except Exception as e:
             print(f"GPIO Setup Error: {e}")
             raise    
