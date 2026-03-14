@@ -132,6 +132,7 @@ def main():
 
     #GPIO.cleanup()
     GPIO.setwarnings(False)
+    GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     #GPIO.setmode(GPIO.BCM)
 
     # Initilize the Epaper display and it's helper class
