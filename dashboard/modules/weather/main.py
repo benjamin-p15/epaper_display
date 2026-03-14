@@ -422,6 +422,7 @@ class weatherRender:
         if "mostly cloudy" in t: return False, "mostly_cloudy.png"
         if "partly cloudy" in t: return False, "partly_cloudy.png"
         if "cloudy" in t: return True, "cloudy.png"
+        if "patchy" in t: return False, "partly_cloudy.png"
         if "sunny" in t or "clear" in t: return True, "sunny.png"
         return False, "sunny.png"
     
