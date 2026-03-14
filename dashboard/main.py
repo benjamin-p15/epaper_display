@@ -142,7 +142,7 @@ def button_loop():
                 #update_state = True
                 last_button_time=time.time()
                 
-                img, update_display = weather.render()
+                img, update_display = analog_clock.render()
                 current_display = img
                 display.display_image(current_display, image_threshold)
 
