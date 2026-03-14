@@ -33,6 +33,7 @@ update_state = False
 image_threshold = 128
 layouts=["clock", "weather", "analog_clock"] #"image", "grapher"
 ENABLE_WEB = False
+force_render = False
 last_button_time=0
 message_time=0.25
 
@@ -94,7 +95,7 @@ def display_loop(display):
 
     while True:
         # If layout changes refreash display
-        global current_layout, update_state, image_threshold
+        global current_layout, update_state, image_threshold, force_render
         if current_layout != last_layout:    
             last_layout = current_layout
             current_display = None
@@ -103,21 +104,21 @@ def display_loop(display):
         # Depending on what layout is selected run indavidual classes which have thier own built in timing circuits
         # For images every time a new image is uplouded change image
         if(current_layout=="image"):
-            if(update_state==True):
+            if(update_state==True or force_render):
                 update_state=False
                 img, update_display = image.render()
                 if update_display: current_display = img
         # Run weather time curcit
         elif(current_layout=="weather"):
-            img, update_display = weather.render()
+            img, update_display = weather.render(force=force_render)
             if update_display: current_display = img
         # Run clock time curcit
         elif(current_layout=="clock"):
-            img, update_display = clock.render()
+            img, update_display = clock.render(force=force_render)
             if update_display: current_display = img
         # Run analog clock curcit
         elif(current_layout=="analog_clock"):
-            img, update_display = analog_clock.render()
+            img, update_display = analog_clock.render(force=force_render)
             if update_display: current_display = img
         # Run Grapher time curcit
         elif(current_layout=="grapher"):
@@ -130,7 +131,7 @@ def display_loop(display):
 
 # Handle button interface switcher
 def button_loop():
-    global current_layout, update_state, last_button_time, message_time, display
+    global current_layout, update_state, last_button_time, message_time, display, force_render
     while True:
         if GPIO.input(BUTTON_PIN) == 0:
             if time.time()-last_button_time>message_time:
@@ -140,7 +141,9 @@ def button_loop():
                 i = (i + 1) % len(layouts)
                 current_layout = layouts[i]
                 update_state = True
+                force_render = True
                 last_button_time=time.time()
+        time.sleep(0.05)
 
 # Startup script when file is ran
 def main():

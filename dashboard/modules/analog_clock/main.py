@@ -117,9 +117,9 @@ class analogClockRenderer:
 
 
     # Renders the screen
-    def render(self) -> Tuple[Image.Image, bool]:
+    def render(self, force=False) -> Tuple[Image.Image, bool]:
         self.now = time.time()
-        if self.now - self._last_update >= self.seconds_until_next_minute:
+        if force or (self.now - self._last_update >= self.seconds_until_next_minute):
             self._last_update = self.now
             self.now = datetime.datetime.now()
             self.seconds_until_next_minute = round(60 - self.now.second - self.now.microsecond / 1_000_000)

@@ -9,12 +9,12 @@ _last_update = 0
 _cache_img = None
 seconds_until_next_minute=60
 
-def render():
+def render(force=False):
     global _last_update, _cache_img, seconds_until_next_minute
     now = time.time()
     
     # Update only if we reached the next minute
-    if now - _last_update >= seconds_until_next_minute:
+    if force or (now - _last_update >= seconds_until_next_minute):
         _last_update = now
 
         # Pull current date/time info

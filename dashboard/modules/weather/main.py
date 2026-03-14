@@ -37,9 +37,9 @@ class weatherRender:
         else: self.unit="C"
 
     # Renders the screen
-    def render(self, refreash_rate: float = 300) -> Tuple[Image.Image, bool]:
+    def render(self, refreash_rate: float = 300, force=False) -> Tuple[Image.Image, bool]:
         self.now = time.time()
-        if self.now - self._last_update >= refreash_rate:
+        if force or (self.now - self._last_update >= refreash_rate):
             self._last_update = self.now
             self.updateData("airports.csv")
             self.renderWeatherPrediction()
