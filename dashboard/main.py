@@ -96,7 +96,7 @@ def display_loop(display):
 
     while True:
         # If layout changes refreash display
-        global current_layout, update_state, image_threshold, force_render
+        global current_layout, update_state, image_threshold, force_render, display_is_sleeping
         if current_layout != last_layout:    
             last_layout = current_layout
             current_display = None
@@ -136,7 +136,7 @@ def display_loop(display):
 
             display.sleep_display()
             display_is_sleeping = True
-            
+
         force_render = False
         time.sleep(1)
 
