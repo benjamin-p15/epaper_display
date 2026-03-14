@@ -5,6 +5,9 @@ import threading
 import time
 import RPi.GPIO as GPIO
 
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
 from modules.clock import main as clock
@@ -131,8 +134,8 @@ def main():
     global weather, analog_clock
 
     #GPIO.cleanup()
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
+    #GPIO.setwarnings(False)
+    #GPIO.setmode(GPIO.BCM)
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480)
