@@ -130,7 +130,7 @@ def button_loop():
 def main():
     global weather, analog_clock
 
-    GPIO.cleanup()
+    #GPIO.cleanup()
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
 
