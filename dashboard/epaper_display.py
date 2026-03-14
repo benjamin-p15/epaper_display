@@ -2,7 +2,7 @@ import spidev
 try: import RPi.GPIO as GPIO
 except: pass
 
-import time
+import time, sys
 from PIL import ImageOps,Image, ImageDraw, ImageFont
 
 # Epaper display class for displaying data to the display
@@ -25,7 +25,13 @@ class EpaperDisplay:
         GPIO.setwarnings(False)
         try: GPIO.cleanup()
         except: pass
-        GPIO.setmode(GPIO.BCM)
+
+
+        try: GPIO.setmode(GPIO.BCM)
+        except Exception as e:
+            print(f"Button pin initialization error: {e}")
+            sys.exit(1)
+            
         
         self.DC_pin=25
         self.BUSY_pin=24
