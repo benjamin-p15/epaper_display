@@ -34,7 +34,7 @@ image_threshold = 128
 layouts=["clock", "weather", "image", "grapher", "analog_clock"]
 ENABLE_WEB = False
 last_button_time=0
-message_time=1
+message_time=0.25
 
 # Start website
 def start_dashboard():
@@ -141,7 +141,10 @@ def button_loop():
                 #current_layout = layouts[i]
                 #update_state = True
                 last_button_time=time.time()
-                display.clear_display()
+                
+                img, update_display = weather.render()
+                current_display = img
+                display.display_image(current_display, image_threshold)
 
 # Startup script when file is ran
 def main():
@@ -149,8 +152,6 @@ def main():
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480,25,24,17)
-    display.initalize_display()
-    display.clear_display()
 
     weather = weather.weatherRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)

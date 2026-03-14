@@ -25,8 +25,7 @@ class EpaperDisplay:
         self.spi.max_speed_hz = 2_000_000    # Set max spi pin speed
         self.spi.mode = 0b00                 # Set clock mode
         
-
-        #self.initalize_display()
+        self.initalize_display()
 
     def scale(self) -> float:
         return self.width/self.height
