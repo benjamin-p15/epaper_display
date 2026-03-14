@@ -128,10 +128,9 @@ def display_loop(display):
 
 # Handle button interface switcher
 def button_loop():
-    print("loop started")
     global current_layout, update_state
     while True:
-        print("loop cycle")
+        print(f"{GPIO.input(BUTTON_PIN)}")
 
         if GPIO.input(BUTTON_PIN) == GPIO.LOW:
             print(" PUSH ")
