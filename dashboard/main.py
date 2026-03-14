@@ -34,7 +34,7 @@ image_threshold = 128
 layouts=["clock", "weather", "image", "grapher", "analog_clock"]
 ENABLE_WEB = False
 last_button_time=0
-message_time=3
+message_time=1
 
 # Start website
 def start_dashboard():
@@ -149,6 +149,8 @@ def main():
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480,25,24,17)
     display.initalize_display()
+    display.color_white()
+    
     weather = weather.weatherRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
 
