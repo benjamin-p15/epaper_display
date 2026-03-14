@@ -31,7 +31,7 @@ from modules.analog_clock import main as analog_clock
 current_layout = "clock"
 update_state = False
 image_threshold = 128
-layouts=["clock", "weather", "image", "grapher", "analog_clock"]
+layouts=["clock", "weather", "analog_clock"] #"image", "grapher"
 ENABLE_WEB = False
 last_button_time=0
 message_time=0.25
@@ -135,16 +135,12 @@ def button_loop():
         if GPIO.input(BUTTON_PIN) == 0:
             if time.time()-last_button_time>message_time:
                 print("PRESS")
-                #try: i = layouts.index(current_layout)
-                #except ValueError: i = 0
-                #i = (i + 1) % len(layouts)
-                #current_layout = layouts[i]
-                #update_state = True
+                try: i = layouts.index(current_layout)
+                except ValueError: i = 0
+                i = (i + 1) % len(layouts)
+                current_layout = layouts[i]
+                update_state = True
                 last_button_time=time.time()
-                
-                img, update_display = analog_clock.render()
-                current_display = img
-                if update_display: display.display_image(current_display, image_threshold)
 
 # Startup script when file is ran
 def main():
