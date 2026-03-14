@@ -134,11 +134,12 @@ def button_loop():
     while True:
         if GPIO.input(BUTTON_PIN) == 0:
             if time.time()-last_button_time>message_time:
-                try: i = layouts.index(current_layout)
-                except ValueError: i = 0
-                i = (i + 1) % len(layouts)
-                current_layout = layouts[i]
-                update_state = True
+                print("PRESS")
+                #try: i = layouts.index(current_layout)
+                #except ValueError: i = 0
+                #i = (i + 1) % len(layouts)
+                #current_layout = layouts[i]
+                #update_state = True
                 last_button_time=time.time()
                 display.clear_display()
 
