@@ -25,7 +25,7 @@ class EpaperDisplay:
         self.DC_pin=25
         self.BUSY_pin=24
         self.RST_pin=17
-        GPIO.setmode(GPIO.BCM)      
+        #GPIO.setmode(GPIO.BCM)      
         GPIO.setup(self.DC_pin, GPIO.OUT)   
         GPIO.setup(self.RST_pin, GPIO.OUT)   
         GPIO.setup(self.BUSY_pin, GPIO.IN)     
