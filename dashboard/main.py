@@ -130,9 +130,10 @@ def button_loop():
 def main():
     global weather, analog_clock
 
-    GPIO.cleanup()
+    #GPIO.cleanup()
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
+    time.sleep(1)
     #GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     try:   
         GPIO.setup(25, GPIO.OUT)   
