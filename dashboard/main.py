@@ -130,17 +130,17 @@ def display_loop(display):
 
 # Handle button interface switcher
 def button_loop():
-    global current_layout, update_state, last_button_time, message_time
+    global current_layout, update_state, last_button_time, message_time, display
     while True:
         if GPIO.input(BUTTON_PIN) == 0:
             if time.time()-last_button_time>message_time:
-                print(" PUSH ")
                 try: i = layouts.index(current_layout)
                 except ValueError: i = 0
                 i = (i + 1) % len(layouts)
                 current_layout = layouts[i]
                 update_state = True
-            last_button_time=time.time()
+                last_button_time=time.time()
+                display.clear_display()
 
 # Startup script when file is ran
 def main():
