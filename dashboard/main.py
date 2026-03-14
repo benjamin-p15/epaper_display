@@ -144,7 +144,7 @@ def button_loop():
                 
                 img, update_display = analog_clock.render()
                 current_display = img
-                display.display_image(current_display, image_threshold)
+                if update_display: display.display_image(current_display, image_threshold)
 
 # Startup script when file is ran
 def main():
