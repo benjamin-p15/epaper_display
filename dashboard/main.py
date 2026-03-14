@@ -129,14 +129,15 @@ def button_loop():
 # Startup script when file is ran
 def main():
     global weather, analog_clock
+    
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480)
     weather = weather.weatherRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
 
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
     threading.Thread(target=button_loop, daemon=True).start()
 
     # Create background thread that starts and runs website
