@@ -136,6 +136,7 @@ def main():
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480)
+    display.initalize_display()
     weather = weather.weatherRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
 

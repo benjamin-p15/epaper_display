@@ -29,7 +29,7 @@ class EpaperDisplay:
         GPIO.setup(self.DC_pin, GPIO.OUT)   
         GPIO.setup(self.RST_pin, GPIO.OUT)   
         GPIO.setup(self.BUSY_pin, GPIO.IN)     
-        self.initalize_display()
+        #self.initalize_display()
 
     def scale(self) -> float:
         return self.width/self.height
