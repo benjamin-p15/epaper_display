@@ -131,6 +131,7 @@ def button_loop():
     global current_layout, update_state
     while True:
         if GPIO.input(BUTTON_PIN) == GPIO.LOW:
+            print(" PUSH ")
             try: i = layouts.index(current_layout)
             except ValueError: i = 0
             i = (i + 1) % len(layouts)
