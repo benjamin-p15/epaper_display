@@ -28,11 +28,12 @@ from modules.image_display import main as image
 from modules.grapher import main as grapher
 from modules.canvas import main as canvas
 from modules.analog_clock import main as analog_clock
+from modules.planetary_clock import main as planetary_clock
 
 current_layout = "clock"
 update_state = False
 image_threshold = 128
-layouts=["clock", "weather", "analog_clock", "canvas"] #"image", "grapher"
+layouts=["clock", "weather", "analog_clock", "canvas", "planetary_clock"] #"image", "grapher"
 ENABLE_WEB = False
 force_render = False
 display_is_sleeping = False
@@ -91,7 +92,7 @@ def start_dashboard():
 
 # Check for display layout changes and run timmer circuits 
 def display_loop(display):
-    global weather
+    global weather, planetary_clock
     last_layout = None
     current_display = None
 
@@ -113,6 +114,9 @@ def display_loop(display):
         # Run weather time curcit
         elif(current_layout=="weather"):
             img, update_display = weather.render(force=force_render)
+            if update_display: current_display = img
+        elif(current_layout=="planetary_clock"):
+            img, update_display = planetary_clock.render(force=force_render)
             if update_display: current_display = img
         # Run clock time curcit
         elif(current_layout=="clock"):
@@ -162,12 +166,13 @@ def button_loop():
 
 # Startup script when file is ran
 def main():
-    global weather, analog_clock, display
+    global weather, analog_clock, display, planetary_clock
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480,25,24,17)
 
     weather = weather.weatherRender(display.width, display.height)
+    planetary_clock = planetary_clock.PlanetaryDisplayRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
 
     threading.Thread(target=button_loop, daemon=True).start()

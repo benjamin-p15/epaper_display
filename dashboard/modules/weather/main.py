@@ -1,6 +1,6 @@
 import requests, math, time, csv, os, datetime, sys
 from PIL import Image
-from typing import Optional, List, Tuple
+from typing import Tuple
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 script_directory = os.path.dirname(os.path.abspath(__file__))
 from zoneinfo import ZoneInfo
