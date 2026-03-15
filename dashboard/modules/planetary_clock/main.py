@@ -39,12 +39,13 @@ class PlanetaryDisplayRender:
 
     # Get current station data, only updating when new data is availible 
     def get_stations(self):
+        file = None
         # Check if local file exists, if file has been updated in last 2 hours pull most recent data
         if os.path.exists(self.STATION_FILE):
             last_mod = os.path.getmtime(self.STATION_FILE)
             if time.time() - last_mod < self.STATION_UPDATE_INTERVAL: file = load.tle_file(self.STATION_FILE)
         # Otherwise, fetch new station data
-        else:
+        if file is None:
             response = requests.get(self.STATION_URL, headers={'User-Agent':'Mozilla/5.0'})
             response.raise_for_status()
             with open(self.STATION_FILE, "w") as f: f.write(response.text)
@@ -164,8 +165,6 @@ class PlanetaryDisplayRender:
 
             if mission["probability"] is not None: probability=f"| {mission["probability"]}%"
             else: probability=""
-
-            print(f"Status: {mission["status"]} {probability}")
 
             self.screen.add_text([{"text": f"{mission["name"]}", "size": 24}], position=(0, 0), align="left", bold=True)
             self.screen.add_text([{"text": f"{timee}", "size": 30}], position=(1, 0.5), align="right", bold=True)
