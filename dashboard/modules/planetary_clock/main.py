@@ -166,9 +166,9 @@ class PlanetaryDisplayRender:
             if mission["probability"] is not None: probability=f"| {mission['probability']}%"
             else: probability=""
 
-            self.screen.add_text([{"text": f"{mission["name"]}", "size": 24}], position=(0, 0), align="left", bold=True)
+            self.screen.add_text([{"text": f"{mission['name']}", "size": 24}], position=(0, 0), align="left", bold=True)
             self.screen.add_text([{"text": f"{timee}", "size": 30}], position=(1, 0.5), align="right", bold=True)
-            self.screen.add_text([{"text": f"Status: {mission["status"]} {probability}", "size": 16}], position=(0, 0.06), align="left", bold=True)
+            self.screen.add_text([{"text": f"Status: {mission['status']} {probability}", "size": 16}], position=(0, 0.06), align="left", bold=True)
 
             self.screen.add_image(os.path.join(os.path.dirname(__file__), "rocket.jpeg"), position=(0.5, 0), size=(0.5, 0.5))
 
