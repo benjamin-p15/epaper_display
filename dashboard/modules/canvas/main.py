@@ -1,4 +1,4 @@
-import requests, math, time, csv, os, datetime, sys, random
+import requests, math, time, csv, os, datetime, sys, random, re
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 from zoneinfo import ZoneInfo
 from dashboard.epaper_display import ImageDrawer
@@ -8,7 +8,7 @@ api_key = "2553~FvNmEDW7BY7JtDKnuTKXL9DfuGZ2w87ZhCTtMvD4F6keGHXGZ393HBvc9c8HvuCn
 BASE_URL = "https://nmt.instructure.com/api/v1"
 headers = {"Authorization": f"Bearer {api_key}"}
 LAST_TERM_ID = 43
-COURSES_URL = f"{BASE_URL}/courses?per_page=100" #&enrollment_state=active
+COURSES_URL = f"{BASE_URL}/courses?per_page=100"
 
 
 _last_update = 0
@@ -17,96 +17,108 @@ _cache_img = None
 screen = ImageDrawer()
 
 
-def render():
+def render(force=False):
     global _last_update, _cache_img, BASE_URL, headers, COURSES_URL
     now = time.time()
-    if _cache_img is None or now - _last_update >= 5 * 60:
+    if force or (_cache_img is None or now - _last_update >= 30 * 60):
         _last_update = now
 
-        # Pull current canvas courses
-        courses_response = requests.get(COURSES_URL, headers=headers)
-        courses = courses_response.json()
-        #courses = [c for c in courses if (c.get("id") is not None and c.get("id") == 35543)]
-        random.shuffle(courses)
-        courses = [c for c in courses if "Safety Training" not in c.get("name","")]
-        
+        # Pull all current canvas courses
+        resp = requests.get(COURSES_URL, headers=headers)
+        courses = resp.json()
+        now = datetime.datetime.now(datetime.timezone.utc)
+        current_term_id = None
 
-        # Pull semeser and time of year from course and display that
-        first_course_name = courses[0]["name"]
-        semester_year = first_course_name.split(" - ")[0] if " - " in first_course_name else ""
-        screen.add_text([{"text":f"{semester_year}","size":26}], position=(0.5, 0.08), bold=True)
+        for c in courses:
+            start = c.get("start_at")
+            end = c.get("end_at")
+            if start and end:
+                start = datetime.datetime.fromisoformat(start.replace("Z","+00:00"))
+                end = datetime.datetime.fromisoformat(end.replace("Z","+00:00"))
+                if start <= now <= end:
+                    current_term_id = c.get("enrollment_term_id")
+                    break
+        courses = [c for c in courses if c.get("enrollment_term_id") == current_term_id]
 
-        # Add title text to canvas
-        screen.add_text([{"text":"Canvas Courses","size":40}],position=(0.5, 0),bold=True)
+        # Get better course name
+        def get_course_code(full_name):
+            pattern = r"([A-Z]{2,4})[-/](\d{3,4}[A-Z]?)"
+            match = re.search(pattern, full_name)
+            if match: return f"{match.group(1)}-{match.group(2)}"
+            else: return " ".join(full_name.split()[:3])
 
+        # Get all feature assigments
+        all_assignments = []
+        now = datetime.datetime.now(datetime.timezone.utc)
+        for course in courses:
+            assignments_url = f"{BASE_URL}/courses/{course['id']}/assignments?per_page=100&include[]=submission"
+            resp = requests.get(assignments_url, headers=headers)
+            course_assignments = resp.json()
+            for a in course_assignments:
+                a["course_name"] = get_course_code(course["name"])
+                due = a.get("due_at")
+                if not due: continue
+                due_time = datetime.datetime.fromisoformat(due.replace("Z","+00:00"))
+                if due_time < now: continue
+                submission = a.get("submission")
+                if submission and submission.get("workflow_state") in ("submitted", "graded"): continue
+                all_assignments.append(a)
+        all_assignments.sort(key=lambda x: x["due_at"])
 
-        max_len = 14
-        for idx, course in enumerate(courses[:10]):
-            name = course["name"]
-            remainder = name.split(" - ",1)[1] if " - " in name else name
-            parts = remainder.split("-")
-            code_parts = [p for p in parts[:3] if any(c.isalpha() or c.isdigit() for c in p)]
-            code = "-".join(code_parts)
-            title = "-".join(parts[len(code_parts):]).replace("&","& ").strip()
-            words = title.split()
-            lines, current = [], ""
+        # Assigment settings
+        max_assignments = 8
+        y_start = 0.15   
+        y_gap = 0.10     
+        font_size = 18
+        max_line_length = 63  
+
+        # Title at top
+        screen.add_text([{"text":"Canvas Assigments","size":32}], position=(0.5, 0.03), bold=True)
+
+        # Draw outer box around all assignments
+        screen.add_rectangle(position=(0.01, y_start - 0.03), size=(0.98, 0.81), fill=None, radius=8, thickness=2)
+
+        for idx, a in enumerate(all_assignments[:max_assignments]):
+            due_time = datetime.datetime.fromisoformat(a['due_at'].replace("Z","+00:00"))
+            due_str = due_time.strftime("%m/%d")
+            y = y_start + idx * y_gap
+
+            # Box/Text positions/sizes
+            course_box_x = 0.015
+            course_box_w = 0.17
+            assignment_box_x = 0.19
+            assignment_box_w = 0.705
+            due_box_x = 0.9
+            due_box_w = 0.084
+
+            # Draw assigment boxes
+            screen.add_rectangle(position=(course_box_x, y - 0.02), size=(course_box_w, y_gap - 0.01), fill=None, radius=4, thickness=2)
+            screen.add_rectangle(position=(assignment_box_x, y - 0.02), size=(assignment_box_w, y_gap - 0.01), fill=None, radius=4, thickness=2)
+            screen.add_rectangle(position=(due_box_x, y - 0.02), size=(due_box_w, y_gap - 0.01), fill=None, radius=4, thickness=2)
+
+            # Course text
+            screen.add_text([{"text": a['course_name'], "size": font_size}], position=(course_box_x + 0.01, y), align="left")
+
+            # Assignment text (wrap max 2 lines)
+            words = a['name'].split()
+            lines = []
+            current_line = ""
             for w in words:
-                if len(current + w) + (1 if current else 0) > max_len:
-                    lines.append(current.strip())
-                    current = w
+                if len(current_line + " " + w) <= max_line_length:
+                    current_line = (current_line + " " + w).strip()
                 else:
-                    current = current + " " + w if current else w
-            if current: lines.append(current.strip())
-            row,col = idx//5,idx%5
-            screen.add_rectangle(position=(col*0.2+0.01,row*0.43+0.15), size=(0.18,0.39), fill=0, radius=15, thickness=2)
-            screen.add_text([{"text":code,"size":14}], position=(col*0.2+0.1,row*0.43+0.16), bold=True)
-            for i,l in enumerate(lines):
-                font_size = 16 if len(lines) <= 3 else 14  # reduce font for very long titles
-                screen.add_text([{"text":l,"size":font_size}], position=(col*0.2+0.1,row*0.43+0.45-0.05*(len(lines)-1-i)), bold=True)
+                    lines.append(current_line)
+                    current_line = w
+            if current_line:
+                lines.append(current_line)
+            lines = lines[:2]
 
+            for i, line in enumerate(lines):
+                line_y = y - 0.01 if len(lines) == 2 else y
+                screen.add_text([{"text": line, "size": font_size}], position=(assignment_box_x + 0.01, line_y + i * 0.03), align="left")
 
-
-
-
-
-
-
-
-
-
-
-        print("Your courses:")
-        for course in courses: print(f"{course['id']}: {course['name']}")
-
-        # Pull course assginments
-        #for course in courses:
-        #    assignments_url = f"{BASE_URL}/courses/{course['id']}/assignments?per_page=100"
-        #    resp = requests.get(assignments_url, headers=headers)
-        #    course_assignments = resp.json()
-
-        # Filter only real, visible assignments
-        #all_assignments = []
-        #for a in course_assignments:
-        #    points = a.get("points_possible", 0)
-        #    muted = a.get("muted", False)
-        #    published = a.get("workflow_state") == "published"
-
-        #    if (points > 0) and not muted and published:
-        #        # Keep course info if you want to display later
-        #        a["course_name"] = course["name"]
-        #        all_assignments.append(a)
-
-        # Print filtered assignments
-        #for a in all_assignments:
-        #    print(f"{a['course_name']}: {a['name']} (Points: {a['points_possible']})")
-
-
-
-
-
-
-
-
+            # Due date text
+            screen.add_text([{"text": due_str, "size": font_size}], position=(due_box_x + due_box_w - 0.01, y), align="right")
 
         _cache_img=screen.render()
         if(_cache_img is None): return None, False

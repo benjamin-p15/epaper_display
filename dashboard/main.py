@@ -26,12 +26,13 @@ from modules.clock import main as clock
 from modules.weather import main as weather
 from modules.image_display import main as image
 from modules.grapher import main as grapher
+from modules.canvas import main as canvas
 from modules.analog_clock import main as analog_clock
 
 current_layout = "clock"
 update_state = False
 image_threshold = 128
-layouts=["clock", "weather", "analog_clock"] #"image", "grapher"
+layouts=["clock", "weather", "analog_clock", "canvas"] #"image", "grapher"
 ENABLE_WEB = False
 force_render = False
 display_is_sleeping = False
@@ -124,6 +125,9 @@ def display_loop(display):
         # Run Grapher time curcit
         elif(current_layout=="grapher"):
             img, update_display = grapher.render()
+            if update_display: current_display = img
+        elif(current_layout=="canvas"):
+            img, update_display = canvas.render()
             if update_display: current_display = img
 
         # Update display if requested and wait before running check again
