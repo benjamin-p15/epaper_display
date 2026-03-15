@@ -163,7 +163,7 @@ class PlanetaryDisplayRender:
             if (timedelta(0) < delta <= timedelta(hours=2)) and mission["webcast_live"]: timee="Live!"
             else: timee=f"{delta.days}d:{delta.seconds//3600}h:{(delta.seconds%3600)//60}m"
 
-            if mission["probability"] is not None: probability=f"| {mission["probability"]}%"
+            if mission["probability"] is not None: probability=f"| {mission['probability']}%"
             else: probability=""
 
             self.screen.add_text([{"text": f"{mission["name"]}", "size": 24}], position=(0, 0), align="left", bold=True)
