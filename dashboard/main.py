@@ -30,10 +30,10 @@ from modules.canvas import main as canvas
 from modules.analog_clock import main as analog_clock
 from modules.planetary_clock import main as planetary_clock
 
-current_layout = "clock"
 update_state = False
 image_threshold = 128
 layouts=["planetary_clock", "clock", "canvas", "weather", "analog_clock"] #"image", "grapher"
+current_layout = layouts[0]
 ENABLE_WEB = False
 force_render = False
 display_is_sleeping = False

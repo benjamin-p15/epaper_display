@@ -1,6 +1,7 @@
 import requests, time, os, datetime, sys, re, json
 from skyfield.api import load, wgs84        #sudo apt install python3-skyfield
 import numpy as np
+from zoneinfo import ZoneInfo
 from datetime import datetime, timezone, timedelta
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 from dashboard.epaper_display import ImageDrawer
@@ -15,6 +16,7 @@ class PlanetaryDisplayRender:
         self.STATION_FILE = os.path.join(os.path.dirname(__file__), "stations.txt")
         self.STATION_UPDATE_INTERVAL = 2 * 60 * 60
         self.STATION_NAME = "ISS" # CSS
+        self.STATION_ORBIT_PERIOD=92.5
 
         self.LAUNCH_URL = f"https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=50&offset=0"
         self.LAUNCH_FILE = os.path.join(os.path.dirname(__file__), "launches.txt")
@@ -24,6 +26,7 @@ class PlanetaryDisplayRender:
     
         self.latitude=None
         self.longitude=None
+        self.timezone="UTC"
         self.rise_time=None
         self.set_time=None
         self.rise_direction=None
@@ -81,10 +84,11 @@ class PlanetaryDisplayRender:
             # Get and return latitude and longitude data
             location_str = location_data.get("loc")  
             if location_str: self.latitude, self.longitude = map(float, location_str.split(","))
+            self.timezone = location_data.get("timezone")
         
         except Exception as error: print("Error getting location:", error)
 
-    def fetch_iss_data(self):
+    def fetch_station_data(self):
         self.getCurrentLocation()
 
         # Send iss request to get name and spline info, used to get satellite and observer timescale/other data
@@ -92,7 +96,8 @@ class PlanetaryDisplayRender:
         satellite = self.get_stations()
         observer = wgs84.latlon(self.latitude, self.longitude)
         time_zero = time_scale.now()
-        time_one = time_scale.utc(time_zero.utc_datetime().year, time_zero.utc_datetime().month, time_zero.utc_datetime().day + 3)
+        future_dt = time_zero.utc_datetime() + timedelta(days=3)
+        time_one = time_scale.utc(future_dt.year, future_dt.month, future_dt.day)
         times, events = satellite.find_events(observer, time_zero, time_one, altitude_degrees=10)
 
         # Return direction of ISS based on rise/set angles
@@ -102,6 +107,9 @@ class PlanetaryDisplayRender:
             return directions[index]
         
                 # Used returned data to get current ISS data
+        delta_rise_time = None
+        delta_set_time = None
+
         for timee, event in zip(times, events):
             difference = satellite - observer
             topocentric = difference.at(timee)
@@ -109,18 +117,26 @@ class PlanetaryDisplayRender:
 
             # Based on rise/max/set calulate times, directions, and speeds
             if event == 0: 
-                self.rise_time=timee.utc_strftime('%I:%M')
+                delta_rise_time = timee.utc_datetime()
+                if(delta_rise_time==None): continue
                 self.rise_direction = azimuth_to_direction(azimuth.degrees)
             elif event == 1:
                 altitude, azimuth, distance = (satellite - observer).at(time_zero).altaz()
                 self.distance_km = distance.km
                 self.speed_km_per_s = np.linalg.norm(topocentric.velocity.km_per_s)
             elif event == 2: 
-                self.set_time = timee.utc_strftime('%I:%M')
+                delta_set_time = timee.utc_datetime()
+                if(delta_set_time==None): continue
                 self.set_direction = azimuth_to_direction(azimuth.degrees)
 
+            if delta_set_time is None or delta_rise_time is None: continue
+            else: break
+
+        self.rise_time = delta_rise_time.astimezone(ZoneInfo(self.timezone)).strftime("%I:%M")
+        self.set_time = delta_set_time.astimezone(ZoneInfo(self.timezone)).strftime("%I:%M")
+
         # Calulate the the number of orbits of ISS based on orbit speed and launch date
-        seconds_per_orbit = 92.5 * 60  
+        seconds_per_orbit = self.STATION_ORBIT_PERIOD * 60  
         epoch = datetime(1998, 11, 20, tzinfo=timezone.utc)
         now_utc = datetime.now(timezone.utc) 
         elapsed_seconds = (now_utc - epoch).total_seconds()
@@ -181,12 +197,12 @@ class PlanetaryDisplayRender:
         if force or (self._cache_img is None or now - self._last_update >= 10 * 60):
             self._last_update = now
 
-            self.fetch_iss_data()
+            self.fetch_station_data()
             self.get_upcoming_launches()
             mission = self.next_mission_launch("artemis","spacex")
 
-            launch_dt = mission["launch_date_utc"]
-            now = datetime.now(timezone.utc)
+            launch_dt = mission["launch_date_utc"].astimezone(ZoneInfo(self.timezone))
+            now = datetime.now(ZoneInfo(self.timezone))
             delta = launch_dt - now  
 
             if (timedelta(0) < delta <= timedelta(hours=2)) and mission["webcast_live"]: timee="Live!"
