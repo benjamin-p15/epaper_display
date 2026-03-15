@@ -19,6 +19,8 @@ class PlanetaryDisplayRender:
         self.LAUNCH_URL = f"https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=50&offset=0"
         self.LAUNCH_FILE = os.path.join(os.path.dirname(__file__), "launches.txt")
         self.LAUNCH_UPDATE_INTERVAL = 60 * 60
+        self.LAUNCH_IMAGE_CATCHE=os.path.join(os.path.dirname(__file__), "last_image_url.txt")
+        self.LAUNCH_IMAGE=os.path.join(os.path.dirname(__file__), "launch.png")
     
         self.latitude=None
         self.longitude=None
@@ -124,24 +126,53 @@ class PlanetaryDisplayRender:
         elapsed_seconds = (now_utc - epoch).total_seconds()
         self.orbit_number = int(elapsed_seconds / seconds_per_orbit)
 
-    def next_mission_launch(self, mission):
+    def next_mission_launch(self, mission, fallback_mission):
+        def process_launch(launch):
+            name = launch.get("name", "")
+            launch_date = launch.get("net")
+            if not launch_date: return None
+            launch_dt = datetime.fromisoformat(launch_date.replace("Z","+00:00"))
+            now = datetime.now(timezone.utc) #+ timedelta(days=20)
+            if launch_dt < now: return None
+
+            # Download latest image if it hasn't been download before
+            image_url = launch.get("image")
+            download_image = False
+            if image_url:
+                if os.path.exists(self.LAUNCH_IMAGE_CATCHE):
+                    with open(self.LAUNCH_IMAGE_CATCHE, "r") as f: last_url = f.read().strip()
+                    if last_url != image_url: download_image = True
+                else: download_image = True  
+                if download_image:
+                    try:
+                        resp = requests.get(image_url, headers={"User-Agent": "Mozilla/5.0"})
+                        resp.raise_for_status()
+                        with open(self.LAUNCH_IMAGE, "wb") as f_img: f_img.write(resp.content)
+                        with open(self.LAUNCH_IMAGE_CATCHE, "w") as f: f.write(image_url)
+                    except Exception as e: image_url = None
+
+            return {
+                "name": name,
+                "launch_date_utc": launch_dt,
+                "status": launch.get("status", {}).get("name"),
+                "probability": launch.get("probability"),
+                "webcast_live": launch.get("webcast_live")
+            }
+
         with open(self.LAUNCH_FILE, "r") as f: launches = json.load(f)
         mission = mission.upper()
-        now = datetime.now(timezone.utc)
+        fallback = fallback_mission.upper()
+
         for launch in launches:
-            name = launch.get("name", "")
-            if mission in name.upper():
-                launch_date = launch.get("net")
-                if not launch_date: continue
-                launch_dt = datetime.fromisoformat(launch_date.replace("Z","+00:00"))
-                if launch_dt < now: continue 
-                return {
-                    "name": name,
-                    "launch_date_utc": launch_dt,
-                    "status": launch.get("status", {}).get("name"),
-                    "probability": launch.get("probability"),
-                    "webcast_live": launch.get("webcast_live"),
-                }
+            if mission in launch.get("name", "").upper() or mission in launch.get("launch_service_provider", {}).get("name", "").upper():
+                result = process_launch(launch)
+                if result: return result
+
+        for launch in launches:
+            if fallback in launch.get("name", "").upper() or fallback in launch.get("launch_service_provider", {}).get("name", "").upper():
+                result = process_launch(launch)
+                if result: return result
+
         return None
 
     def render(self,force=False):
@@ -151,10 +182,8 @@ class PlanetaryDisplayRender:
             self._last_update = now
 
             self.fetch_iss_data()
-            print(f"{self.STATION_NAME} rise/set: {self.rise_time}-{self.rise_direction} | {self.set_time}-{self.set_direction}, Orbit: {self.orbit_number}, Range: {int(round(self.distance_km, 0))}km | {round(self.speed_km_per_s,1)}km/s")
-
             self.get_upcoming_launches()
-            mission = self.next_mission_launch("artemis")
+            mission = self.next_mission_launch("artemis","spacex")
 
             launch_dt = mission["launch_date_utc"]
             now = datetime.now(timezone.utc)
@@ -166,11 +195,25 @@ class PlanetaryDisplayRender:
             if mission["probability"] is not None: probability=f"| {mission['probability']}%"
             else: probability=""
 
-            self.screen.add_text([{"text": f"{mission['name']}", "size": 24}], position=(0, 0), align="left", bold=True)
-            self.screen.add_text([{"text": f"{timee}", "size": 30}], position=(1, 0.5), align="right", bold=True)
-            self.screen.add_text([{"text": f"Status: {mission['status']} {probability}", "size": 16}], position=(0, 0.06), align="left", bold=True)
+            split_name=[s.strip() for s in mission['name'].split('|')]
 
-            self.screen.add_image(os.path.join(os.path.dirname(__file__), "rocket.jpeg"), position=(0.5, 0), size=(0.5, 0.5))
+            if len(mission['name']) <= 28: 
+                self.screen.add_text([{"text": f"{split_name[1]} | {split_name[0]}", "size": 26}], position=(0, 0.02), align="left", bold=True)
+                status_padding=0
+            else:
+                self.screen.add_text([{"text": f"{split_name[1]}", "size": 26}], position=(0, 0.02), align="left", bold=True)
+                self.screen.add_text([{"text": f"{split_name[0]}", "size": 20}], position=(0, 0.07), align="left", bold=True)
+                status_padding=0.05
+
+            self.screen.add_text([{"text": f"{timee}", "size": 20}], position=(0.97, 0.5+0.01), align="right", bold=True)
+            self.screen.add_text([{"text": f"Status: {mission['status']} {probability}", "size": 16}], position=(0, 0.06+0.02+status_padding), align="left", bold=True)
+
+            self.screen.add_rectangle(position=(0.75, 0.45), size=(0.3, 0.125), fill=None, radius=6, thickness=2)
+            self.screen.add_image(self.LAUNCH_IMAGE, position=(0.5, 0), size=(0.5, 0.5))
+            self.screen.add_rectangle(position=(0.5, -0.1), size=(0.6, 0.6), fill=None, radius=2, thickness=2)
+
+
+            self.screen.add_text([{"text": f"{self.STATION_NAME} rise/set: {self.rise_time}-{self.rise_direction} | {self.set_time}-{self.set_direction}, Orbit: {self.orbit_number}, Range: {int(round(self.distance_km, 0))}km | {round(self.speed_km_per_s,1)}km/s", "size": 18}], position=(0, 0.95), align="left", bold=True)
 
             # Screen render stuff
             self._cache_img=self.screen.render()

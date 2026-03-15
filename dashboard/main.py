@@ -33,7 +33,7 @@ from modules.planetary_clock import main as planetary_clock
 current_layout = "clock"
 update_state = False
 image_threshold = 128
-layouts=["clock", "weather", "analog_clock", "canvas", "planetary_clock"] #"image", "grapher"
+layouts=["planetary_clock", "clock", "canvas", "weather", "analog_clock"] #"image", "grapher"
 ENABLE_WEB = False
 force_render = False
 display_is_sleeping = False
