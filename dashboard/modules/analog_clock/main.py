@@ -54,8 +54,8 @@ class analogClockRenderer:
         self.screen.add_rectangle((x_element_offset-0.09*scale,0.5-0.255*scale),(0.18*scale,0.07*scale),fill=0,thickness=1,radius=math.floor(10*scale))
         self.screen.add_rectangle((x_element_offset-0.09*scale,0.5+0.195*scale),(0.18*scale,0.07*scale),fill=1,thickness=None,radius=math.floor(10*scale))
         self.screen.add_rectangle((x_element_offset-0.09*scale,0.5+0.195*scale),(0.18*scale,0.07*scale),fill=0,thickness=1,radius=math.floor(10*scale))
-        self.screen.add_text([{"text": f"{t.tm_year}-{t.tm_mon:02}-{t.tm_mday:02}","size": math.floor(20*scale),"bold": True,"algin":"center"}],position=(x_element_offset,0.5+0.2*scale),font="DejaVuSans-Bold.ttf")
-        self.screen.add_text([{"text": f"{self.days[t.tm_wday]}","size": math.floor(20*scale),"bold": True,"algin":"center"}],position=(x_element_offset,0.5-0.25*scale),font="DejaVuSans-Bold.ttf")
+        self.screen.add_text([{"text": f"{t.tm_mon:02}-{t.tm_mday:02}-{t.tm_year}","size": math.floor(20*scale),"bold": True,"algin":"center"}],position=(x_element_offset,0.5+0.205*scale),font="DejaVuSans-Bold.ttf")
+        self.screen.add_text([{"text": f"{self.days[t.tm_wday]}","size": math.floor(20*scale),"bold": True,"algin":"center"}],position=(x_element_offset,0.5-0.248*scale),font="DejaVuSans-Bold.ttf")
 
     # Renders a calender
     def renderCalender(self):

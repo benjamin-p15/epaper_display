@@ -214,22 +214,22 @@ class PlanetaryDisplayRender:
             split_name=[s.strip() for s in mission['name'].split('|')]
 
             if len(mission['name']) <= 28: 
-                self.screen.add_text([{"text": f"{split_name[1]} | {split_name[0]}", "size": 26}], position=(0, 0.02), align="left", bold=True)
+                self.screen.add_text([{"text": f"{split_name[1]} | {split_name[0]}", "size": 26}], position=(0.005, 0.02), align="left", bold=True)
                 status_padding=0
             else:
-                self.screen.add_text([{"text": f"{split_name[1]}", "size": 26}], position=(0, 0.02), align="left", bold=True)
-                self.screen.add_text([{"text": f"{split_name[0]}", "size": 20}], position=(0, 0.07), align="left", bold=True)
+                self.screen.add_text([{"text": f"{split_name[1]}", "size": 26}], position=(0.005, 0.02), align="left", bold=True)
+                self.screen.add_text([{"text": f"{split_name[0]}", "size": 20}], position=(0.005, 0.07), align="left", bold=True)
                 status_padding=0.05
 
             self.screen.add_text([{"text": f"{timee}", "size": 20}], position=(0.97, 0.5+0.01), align="right", bold=True)
-            self.screen.add_text([{"text": f"Status: {mission['status']} {probability}", "size": 16}], position=(0, 0.06+0.02+status_padding), align="left", bold=True)
+            self.screen.add_text([{"text": f"Status: {mission['status']} {probability}", "size": 16}], position=(0.005, 0.06+0.02+status_padding), align="left", bold=True)
 
             self.screen.add_rectangle(position=(0.75, 0.45), size=(0.3, 0.125), fill=None, radius=6, thickness=2)
             self.screen.add_image(self.LAUNCH_IMAGE, position=(0.5, 0), size=(0.5, 0.5))
             self.screen.add_rectangle(position=(0.5, -0.1), size=(0.6, 0.6), fill=None, radius=2, thickness=2)
 
 
-            self.screen.add_text([{"text": f"{self.STATION_NAME} rise/set: {self.rise_time}-{self.rise_direction} | {self.set_time}-{self.set_direction}, Orbit: {self.orbit_number}, Range: {int(round(self.distance_km, 0))}km | {round(self.speed_km_per_s,1)}km/s", "size": 18}], position=(0, 0.95), align="left", bold=True)
+            self.screen.add_text([{"text": f"{self.STATION_NAME} rise/set: {self.rise_time}-{self.rise_direction} | {self.set_time}-{self.set_direction}, Orbit: {self.orbit_number}, Range: {int(round(self.distance_km, 0))}km | {round(self.speed_km_per_s,1)}km/s", "size": 18}], position=(0.005, 0.95), align="left", bold=True)
 
             # Screen render stuff
             self._cache_img=self.screen.render()
