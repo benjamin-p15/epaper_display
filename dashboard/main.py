@@ -39,6 +39,7 @@ force_render = False
 display_is_sleeping = False
 last_button_time=0
 message_time=0.25
+last_cycle=time.time()
 
 # Start website
 def start_dashboard():
@@ -149,6 +150,20 @@ def display_loop(display):
         time.sleep(1)
 
 # Handle button interface switcher
+def screen_cycle():
+    global current_layout, update_state, display, force_render, last_cycle
+    now = time.time()
+    if now-last_cycle>=60*60*30:
+        try: i = layouts.index(current_layout)
+        except ValueError: i = 0
+        i = (i + 1) % len(layouts)
+        current_layout = layouts[i]
+        update_state = True
+        force_render = True
+        last_cycle=now
+        display.clear_display()
+    time.sleep(0.05)
+
 def button_loop():
     global current_layout, update_state, last_button_time, message_time, display, force_render
     while True:
@@ -176,7 +191,9 @@ def main():
     planetary_clock = planetary_clock.PlanetaryDisplayRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
 
+    # Loop display when button is pressured or every 30 minutes
     threading.Thread(target=button_loop, daemon=True).start()
+    threading.Thread(target=screen_cycle, daemon=True).start()
 
     # Create background thread that starts and runs website
     if ENABLE_WEB: threading.Thread(target=start_dashboard, daemon=True).start()
