@@ -129,11 +129,11 @@ class ImageDrawer:
         self.commands = []
 
     # Add text to render que
-    def add_text(self, text, position, font=None, size=12, fill=0, align="center", bold=False, stroke_fill=1, stroke_width=0):
+    def add_text(self, text, position, font=None, size=12, fill=0, align="center", bold=False, stroke_fill=1, stroke_width=0, offset=(0,0)):
         if font is None: font = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
         px = int(position[0] * self.width) if position[0] <= 1 else position[0]
         py = int(position[1] * self.height) if position[1] <= 1 else position[1]
-        self.commands.append({"type": "text","text": text,"position": (px, py),"font_path": font,"fill": fill, "align": align, "bold": bold, "size": size, "stroke_fill": stroke_fill, "stroke_width": stroke_width})
+        self.commands.append({"type": "text","text": text,"offset": (offset[0], offset[1]),"position": (px, py),"font_path": font,"fill": fill, "align": align, "bold": bold, "size": size, "stroke_fill": stroke_fill, "stroke_width": stroke_width})
 
     # Add image to render que
     def add_image(self, img, position, size=None, invert=False, color_black=False):
@@ -224,12 +224,14 @@ class ImageDrawer:
                     # get element alginment data
                     element_height=text_sizes[i]["height"]
                     element_alignment=text_element.get("align","middle")
+                    dx=text_element.get("offset", (0,0))[0]
+                    dy=text_element.get("offset", (0,0))[1]
                     # Figure out where to draw next text element, no clue why /4 works
                     if element_alignment=="top": draw_y = y-max_height/2-element_height/4
                     elif element_alignment=="bottom": draw_y = y + (max_ascent - text_sizes[i]["ascent"])
                     else:draw_y=y+(max_height-element_height)//2
                     # Draw text and record it's size for next alginment
-                    draw.text((x_start+x_offset,draw_y),text_element["text"],font=fonts[i],fill=cmd["fill"],stroke_fill=cmd["stroke_fill"],stroke_width=cmd["stroke_width"])
+                    draw.text((x_start+x_offset+dx,draw_y+dy),text_element["text"],font=fonts[i],fill=cmd["fill"],stroke_fill=cmd["stroke_fill"],stroke_width=cmd["stroke_width"])
                     x_offset+=text_sizes[i]["width"]
             # Add image to screen
             elif cmd["type"] == "image":

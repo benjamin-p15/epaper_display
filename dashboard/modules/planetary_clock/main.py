@@ -9,24 +9,32 @@ from dashboard.epaper_display import ImageDrawer
 class PlanetaryDisplayRender:
     def __init__(self, width: int, height: int):
         self.screen=ImageDrawer(width,height)
+        self.scale_factor=width/height
         self._cache_img = None
         self._last_update = 0
 
         self.STATION_URL="https://celestrak.org/NORAD/elements/stations.txt"
-        self.STATION_FILE = os.path.join(os.path.dirname(__file__), "stations.txt")
+        self.STATION_FILE = os.path.join(os.path.dirname(__file__), "data/stations.txt")
         self.STATION_UPDATE_INTERVAL = 2 * 60 * 60
         self.STATION_NAME = "ISS" # CSS
         self.STATION_ORBIT_PERIOD=92.5
 
         self.LAUNCH_URL = f"https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=50&offset=0"
-        self.LAUNCH_FILE = os.path.join(os.path.dirname(__file__), "launches.txt")
+        self.LAUNCH_FILE = os.path.join(os.path.dirname(__file__), "data/launches.txt")
         self.LAUNCH_UPDATE_INTERVAL = 60 * 60
-        self.LAUNCH_IMAGE_CATCHE=os.path.join(os.path.dirname(__file__), "last_image_url.txt")
-        self.LAUNCH_IMAGE=os.path.join(os.path.dirname(__file__), "launch.png")
+        self.LAUNCH_IMAGE_CATCHE=os.path.join(os.path.dirname(__file__), "data/last_image_url.txt")
+        self.LAUNCH_IMAGE=os.path.join(os.path.dirname(__file__), "data/launch.png")
+
+        self.SOLAR_XRAY_URL="https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json"
+        self.SOLAR_KP_URL="https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json"
+        self.SOLAR_WIND_URL="https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json"
+        self.SOLAR_FILE=os.path.join(os.path.dirname(__file__), "data/solarweather.json")
+        self.SOLAR_UPDATE_INTERVAL=5 * 60
     
         self.latitude=None
         self.longitude=None
         self.timezone="UTC"
+
         self.rise_time=None
         self.set_time=None
         self.rise_direction=None
@@ -34,6 +42,11 @@ class PlanetaryDisplayRender:
         self.orbit_number=0
         self.distance_km=0
         self.speed_km_per_s=0
+
+        self.solar_speed=0
+        self.solar_density=0
+        self.solar_kp=0
+        self.solar_xray=0
 
     # Finds data from the station based on the STATION_NAME
     def get_satellite_data(self, name, satellites):
@@ -88,6 +101,37 @@ class PlanetaryDisplayRender:
         
         except Exception as error: print("Error getting location:", error)
 
+    def getSolarFluxState(self):
+        if self.solar_xray < 1e-7: return "A"
+        elif self.solar_xray < 1e-6: return "B"
+        elif self.solar_xray < 1e-5: return "C"
+        elif self.solar_xray < 1e-4: return "M"
+        else: return "X"
+
+    def fetch_solar_data(self):
+        if os.path.exists(self.SOLAR_FILE) and time.time() - os.path.getmtime(self.SOLAR_FILE) < self.SOLAR_UPDATE_INTERVAL: 
+            jsonfile=json.load(open(self.SOLAR_FILE))
+            xray=jsonfile["xray"]
+            kp=jsonfile["kp"]
+            wind=jsonfile["solar_wind"]
+        else:
+            xray = requests.get(self.SOLAR_XRAY_URL).json()[-1]
+            kp = requests.get(self.SOLAR_KP_URL).json()[-1]
+            wind = requests.get(self.SOLAR_WIND_URL).json()[-1]
+            print(wind)
+
+        self.solar_density=wind["density"] if "density" in wind else wind[1]
+        self.solar_speed=wind["speed"] if "speed" in wind else wind[2]
+        self.solar_kp=kp["kp_index"] if "kp_index" in kp else kp[1]
+        self.solar_xray= xray["flux"]
+
+        data = {
+            "xray": {"flux": self.solar_xray},
+            "kp": {"kp_index": self.solar_kp},
+            "solar_wind": {"density": self.solar_density, "speed":self.solar_speed}
+        }
+        with open(self.SOLAR_FILE, "w") as f: json.dump(data, f)
+
     def fetch_station_data(self):
         self.getCurrentLocation()
 
@@ -106,10 +150,11 @@ class PlanetaryDisplayRender:
             index = round(azimuth/45)
             return directions[index]
         
-                # Used returned data to get current ISS data
+        # Used returned data to get current ISS data
         delta_rise_time = None
         delta_set_time = None
 
+        now_utc = datetime.now(timezone.utc) 
         for timee, event in zip(times, events):
             difference = satellite - observer
             topocentric = difference.at(timee)
@@ -128,7 +173,6 @@ class PlanetaryDisplayRender:
                 delta_set_time = timee.utc_datetime()
                 if(delta_set_time==None): continue
                 self.set_direction = azimuth_to_direction(azimuth.degrees)
-
             if delta_set_time is None or delta_rise_time is None: continue
             else: break
 
@@ -138,7 +182,6 @@ class PlanetaryDisplayRender:
         # Calulate the the number of orbits of ISS based on orbit speed and launch date
         seconds_per_orbit = self.STATION_ORBIT_PERIOD * 60  
         epoch = datetime(1998, 11, 20, tzinfo=timezone.utc)
-        now_utc = datetime.now(timezone.utc) 
         elapsed_seconds = (now_utc - epoch).total_seconds()
         self.orbit_number = int(elapsed_seconds / seconds_per_orbit)
 
@@ -197,10 +240,29 @@ class PlanetaryDisplayRender:
         if force or (self._cache_img is None or now - self._last_update >= 10 * 60):
             self._last_update = now
 
+            # Fetch newest screen data
             self.fetch_station_data()
             self.get_upcoming_launches()
+            self.fetch_solar_data()
             mission = self.next_mission_launch("artemis","spacex")
 
+            print(f"{self.solar_xray} {self.solar_kp} {self.solar_density} {self.solar_speed}")
+
+            # Render solar data
+            exponent = int(f"{self.solar_xray:e}".split("e")[-1])
+            scale = 10 ** -exponent
+            xray_value=round(self.solar_xray * scale,2)
+            magnetude=self.getSolarFluxState()
+
+            self.screen.add_image(os.path.join(os.path.dirname(__file__), f"icons/solar_flare_{magnetude}.png"), position=(0.01, 0.5), size=(0.3, 0.3*self.scale_factor))
+            self.screen.add_text([{"text": f"Flux: {magnetude}{xray_value} | Kp: {self.solar_kp}/9", "size": 18}], position=(0.01,0.45), align="left", bold=True)
+            self.screen.add_text([
+                {"text": f"Wind: {self.solar_density}p/cm", "size": 18},
+                {"text": f"3 ", "size": 16, "offset":(0,-4)},
+                {"text": f"| {self.solar_speed}km/s", "size": 18}
+                ], position=(0.01,0.5), align="left", bold=True)
+
+            # Render screen launch data
             launch_dt = mission["launch_date_utc"].astimezone(ZoneInfo(self.timezone))
             now = datetime.now(ZoneInfo(self.timezone))
             delta = launch_dt - now  
@@ -228,7 +290,7 @@ class PlanetaryDisplayRender:
             self.screen.add_image(self.LAUNCH_IMAGE, position=(0.5, 0), size=(0.5, 0.5))
             self.screen.add_rectangle(position=(0.5, -0.1), size=(0.6, 0.6), fill=None, radius=2, thickness=2)
 
-
+            # Render screen satilight data
             self.screen.add_text([{"text": f"{self.STATION_NAME} rise/set: {self.rise_time}-{self.rise_direction} | {self.set_time}-{self.set_direction}, Orbit: {self.orbit_number}, Range: {int(round(self.distance_km, 0))}km | {round(self.speed_km_per_s,1)}km/s", "size": 18}], position=(0.005, 0.95), align="left", bold=True)
 
             # Screen render stuff
