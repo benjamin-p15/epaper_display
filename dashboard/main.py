@@ -162,6 +162,7 @@ def button_loop():
                 update_state = True
                 force_render = True
                 last_button_time=time.time()
+                display.clear_display()
         time.sleep(0.05)
 
 # Startup script when file is ran
