@@ -83,18 +83,28 @@ class EpaperDisplay:
         img = img.convert("L").resize((self.width, self.height))
         img = ImageOps.invert(img)
         pixels = img.load()
-        for y_block in range(0, self.height, 8):
-            self.cmd(0x13)
-            for y in range(y_block, min(y_block + 8, self.height)):
-                for x in range(0, self.width, 8):
-                    byte = self.color_black
-                    for bit in range(8):
-                        if x + bit >= self.width: continue
-                        if pixels[x + bit, y] < threshold:
-                            byte &= ~(1 << (7 - bit))
-                    self.data(byte)
-            self.cmd(0x12)
-            self.wait_busy()
+        self.cmd(0x13)
+        for y in range(self.height):
+            for x in range(0, self.width, 8):
+                byte = 0xFF
+                for bit in range(8):
+                    if x + bit >= self.width: continue
+                    if pixels[x + bit, y] < threshold:
+                        byte &= ~(1 << (7 - bit))
+                self.data(byte)
+        self.cmd(0x12)
+        self.wait_busy()
+        self.cmd(0x13)
+        for y in range(self.height):
+            for x in range(0, self.width, 8):
+                byte = 0xFF
+                for bit in range(8):
+                    if x + bit >= self.width: continue
+                    if pixels[x + bit, y] < threshold:
+                        byte &= ~(1 << (7 - bit))
+                self.data(byte)
+        self.cmd(0x12)
+        self.wait_busy()
 
     # Shutdown down display when it's no longer being used
     def shutdown_display(self):
