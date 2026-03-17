@@ -6,6 +6,7 @@ import time
 import RPi.GPIO as GPIO
 
 BUTTON_PIN = 2
+startup=True
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -186,6 +187,11 @@ def main():
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480,25,24,17)
+
+    if startup:
+        startup=False
+        display.clear_display()
+        time.sleep(5)
 
     weather = weather.weatherRender(display.width, display.height)
     planetary_clock = planetary_clock.PlanetaryDisplayRender(display.width, display.height)
