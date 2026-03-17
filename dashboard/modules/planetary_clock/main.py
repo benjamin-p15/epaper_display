@@ -300,10 +300,10 @@ class PlanetaryDisplayRender:
             self.screen.add_text([{"text": f"Orbit: {mission['orbit']} {probability}", "size": 16}], position=(0.005, 0.09+0.04+status_padding), align="left", bold=True)
             self.screen.add_text([{"text": f"Pad: {mission['pad']} {probability}", "size": 16}], position=(0.005, 0.13+0.04+status_padding), align="left", bold=True)
 
-            description=re.sub(r'\s+', ' ', (mission["description"].replace('\x00', ''))).strip()
+            #description=re.sub(r'\s+', ' ', (mission["description"].replace('\x00', ''))).strip()
             #print(self.wrap_text(description))
 
-            self.screen.add_text([{"text": f"Info: ", "size": 16},{"text": f"{self.wrap_text(description,56)} {probability}", "size": 10}], position=(0.005, 0.17+0.04+status_padding), align="left", bold=True)
+            #self.screen.add_text([{"text": f"Info: ", "size": 16},{"text": f"{self.wrap_text(description,56)} {probability}", "size": 10}], position=(0.005, 0.17+0.04+status_padding), align="left", bold=True)
 
 
             self.screen.add_rectangle(position=(0.75, 0.45), size=(0.3, 0.125), fill=None, radius=6, thickness=2)

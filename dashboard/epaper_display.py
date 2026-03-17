@@ -81,27 +81,15 @@ class EpaperDisplay:
     # Send image to display and then render whole image to display
     def display_image(self, img, threshold):
         img = img.convert("L").resize((self.width, self.height))
-        img = ImageOps.invert(img)
-        pixels = img.load()
+        img=ImageOps.invert(img)
+        pixels = img.load()                                                     
         self.cmd(0x13)
         for y in range(self.height):
             for x in range(0, self.width, 8):
-                byte = 0xFF
+                byte = self.color_black
                 for bit in range(8):
                     if x + bit >= self.width: continue
-                    if pixels[x + bit, y] < threshold:
-                        byte &= ~(1 << (7 - bit))
-                self.data(byte)
-        self.cmd(0x12)
-        self.wait_busy()
-        self.cmd(0x13)
-        for y in range(self.height):
-            for x in range(0, self.width, 8):
-                byte = 0xFF
-                for bit in range(8):
-                    if x + bit >= self.width: continue
-                    if pixels[x + bit, y] < threshold:
-                        byte &= ~(1 << (7 - bit))
+                    if pixels[x + bit, y] < threshold: byte &= ~(1 << (7 - bit))
                 self.data(byte)
         self.cmd(0x12)
         self.wait_busy()
