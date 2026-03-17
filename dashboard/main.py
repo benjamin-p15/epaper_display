@@ -153,7 +153,7 @@ def display_loop(display):
 def screen_cycle():
     global current_layout, update_state, display, force_render, last_cycle
     now = time.time()
-    if now-last_cycle>=60*60*30:
+    if now-last_cycle>=60*15:
         try: i = layouts.index(current_layout)
         except ValueError: i = 0
         i = (i + 1) % len(layouts)

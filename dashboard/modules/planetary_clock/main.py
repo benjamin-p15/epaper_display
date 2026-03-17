@@ -209,13 +209,18 @@ class PlanetaryDisplayRender:
                         with open(self.LAUNCH_IMAGE, "wb") as f_img: f_img.write(resp.content)
                         with open(self.LAUNCH_IMAGE_CATCHE, "w") as f: f.write(image_url)
                     except Exception as e: image_url = None
-
+            mission = launch.get("mission") or {}
+            pad = launch.get("pad") or {}       
             return {
                 "name": name,
                 "launch_date_utc": launch_dt,
                 "status": launch.get("status", {}).get("name"),
                 "probability": launch.get("probability"),
-                "webcast_live": launch.get("webcast_live")
+                "webcast_live": launch.get("webcast_live"),
+
+                "pad": pad.get("name"),
+                "orbit": (mission.get("orbit") or {}).get("name"),
+                "description": mission.get("description"),
             }
 
         with open(self.LAUNCH_FILE, "r") as f: launches = json.load(f)
@@ -284,7 +289,22 @@ class PlanetaryDisplayRender:
                 status_padding=0.05
 
             self.screen.add_text([{"text": f"{timee}", "size": 20}], position=(0.97, 0.5+0.01), align="right", bold=True)
-            self.screen.add_text([{"text": f"Status: {mission['status']} {probability}", "size": 16}], position=(0.005, 0.06+0.02+status_padding), align="left", bold=True)
+
+            status_text=f"Status: {mission['status']} {probability}"
+            self.screen.add_text([{"text": status_text, "size": 18}], position=(0.005, 0.06+0.02+status_padding), align="left", bold=True)
+
+            self.screen.add_rectangle(position=(0.005, 0.1+0.025+status_padding), size=(len(status_text)*0.56*18,1.0), fill=0, radius=6, thickness=None)
+
+
+
+            self.screen.add_text([{"text": f"Orbit: {mission['orbit']} {probability}", "size": 16}], position=(0.005, 0.09+0.04+status_padding), align="left", bold=True)
+            self.screen.add_text([{"text": f"Pad: {mission['pad']} {probability}", "size": 16}], position=(0.005, 0.13+0.04+status_padding), align="left", bold=True)
+
+            description=re.sub(r'\s+', ' ', (mission["description"].replace('\x00', ''))).strip()
+            #print(self.wrap_text(description))
+
+            self.screen.add_text([{"text": f"Info: ", "size": 16},{"text": f"{self.wrap_text(description,56)} {probability}", "size": 10}], position=(0.005, 0.17+0.04+status_padding), align="left", bold=True)
+
 
             self.screen.add_rectangle(position=(0.75, 0.45), size=(0.3, 0.125), fill=None, radius=6, thickness=2)
             self.screen.add_image(self.LAUNCH_IMAGE, position=(0.5, 0), size=(0.5, 0.5))
@@ -298,6 +318,21 @@ class PlanetaryDisplayRender:
             if(self._cache_img is None): return None, False
             else: return self._cache_img, True 
         return self._cache_img, False
+    
+    def wrap_text(self, text, max_len=30):
+        words = text.split()
+        lines = []
+        current_line = ""
+
+        for word in words:
+            if len(current_line) + len(word) + (1 if current_line else 0) <= max_len:
+                if current_line: current_line += " "
+                current_line += word
+            else:
+                lines.append(current_line)
+                current_line = word
+        if current_line: lines.append(current_line)
+        return "\n".join(lines)
     
 
 
