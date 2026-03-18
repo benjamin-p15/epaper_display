@@ -153,17 +153,21 @@ def display_loop(display):
 # Handle button interface switcher
 def screen_cycle():
     global current_layout, update_state, display, force_render, last_cycle
-    now = time.time()
-    if now-last_cycle>=60*15:
-        try: i = layouts.index(current_layout)
-        except ValueError: i = 0
-        i = (i + 1) % len(layouts)
-        current_layout = layouts[i]
-        update_state = True
-        force_render = True
-        last_cycle=now
-        display.clear_display()
-    time.sleep(0.05)
+    while True:
+        now = time.time()
+        if now - last_cycle >= 60*15: 
+            try:
+                i = layouts.index(current_layout)
+            except ValueError:
+                i = 0
+            i = (i + 1) % len(layouts)
+            if i == 2: i+=1
+            current_layout = layouts[i]
+            update_state = True
+            force_render = True
+            last_cycle = now
+            display.clear_display()
+        time.sleep(0.05)
 
 def button_loop():
     global current_layout, update_state, last_button_time, message_time, display, force_render
