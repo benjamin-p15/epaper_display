@@ -59,6 +59,7 @@ class analogClockRenderer:
 
     # Renders a calender
     def renderCalender(self):
+        # Setup calender size and element spacing
         columns, rows = 7, 5
         x_element_offset = 0.75
         rect_width = 0.05
@@ -67,54 +68,63 @@ class analogClockRenderer:
         gap_y = 0.01 * self.scale_factor
         start_x = x_element_offset - (columns * rect_width + (columns - 1) * gap_x) / 2
         start_y = 0.5 - (rows * rect_height + (rows - 1) * gap_y) / 2
+        label_y = start_y - rect_height * 0.6
+
+        # Get current month data array
         today = datetime.date.today()
         year, month = today.year, today.month
+        calendar.setfirstweekday(calendar.SUNDAY)
         month_grid = calendar.monthcalendar(year, month)
-        first_weekday, days_in_month = calendar.monthrange(year, month)
+
+        # Get data about previous months days
         previous_month = month - 1 or 12
         previous_year = year - 1 if month == 1 else year
         _, days_in_previous_month = calendar.monthrange(previous_year, previous_month)
-        next_day_counter = 1
 
+        # Setup grid of days
         weekday_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        label_y = start_y - rect_height * 0.6
-
         self.screen.add_rectangle((start_x,start_y-0.06),(rect_width*columns+gap_x*(columns-1),0.05),fill=0,thickness=1,radius=7)
 
-        for week_index in range(rows):
-            for weekday_index in range(columns):
-                x = start_x + weekday_index * (rect_width + gap_x)
-                self.screen.add_text([{"text": weekday_labels[weekday_index], "size": 14, "bold": True}],position=(x + rect_width * 0.5, label_y),font="DejaVuSans-Bold.ttf")
+        # Calulate days of other months
+        other_month_grid=[[0] * 7 for _ in range(len(month_grid))]
+        day_count=0
+        for i in range(len(month_grid[0]) - 1, -1, -1):
+            day = month_grid[0][i]
+            if day != 0: continue
+            other_month_grid[0][i]=days_in_previous_month-day_count
+            day_count+=1
 
+        day_count=1
+        for i in range(len(month_grid[-1])):
+            day = month_grid[-1][i]
+            if day != 0: continue
+            other_month_grid[-1][i]=day_count
+            day_count+=1
 
-                x=start_x+weekday_index*(rect_width+gap_x)
+        # Display all month data
+        for week_index, week_array in enumerate(month_grid):
+            for day_index, day in enumerate(week_array):
+                x = start_x + day_index * (rect_width + gap_x)
+                if(week_index==0): self.screen.add_text([{"text": weekday_labels[day_index], "size": 14, "bold": True}],position=(x + rect_width * 0.5, label_y),font="DejaVuSans-Bold.ttf")
+
+                x=start_x+day_index*(rect_width+gap_x)
                 y=start_y+week_index*(rect_height+gap_y)
-                if week_index<len(month_grid): day_value=month_grid[week_index][weekday_index]
-                else: day_value=0
-                if day_value == 0:
-                    if week_index == 0: day_number=days_in_previous_month-(first_weekday-weekday_index-1)
-                    else:
-                        day_number=next_day_counter
-                        next_day_counter+=1
+                if day == 0:
+                    day=other_month_grid[week_index][day_index]
                     fill_value=0
                     text_color=1
                     thickness=1
-                    is_today=False
-                else:
-                    day_number=day_value
-                    fill_value=0
-                    text_color=0
-                    thickness=1
-                    is_today=(day_number == today.day)
-                if is_today:
+                elif day == today.day:
                     fill_value=0
                     text_color=1
                     thickness=None
+                else:
+                    fill_value=0
+                    text_color=0
+                    thickness=1
 
                 self.screen.add_rectangle((x, y),(rect_width, rect_height),fill=fill_value,thickness=thickness,radius=7)
-                self.screen.add_text([{"text": str(day_number), "size": 18, "bold": True}],position=(x + rect_width * 0.5, y + rect_height * 0.55-0.02),font="DejaVuSans.ttf",fill=text_color,stroke_width=1,stroke_fill=0)
-
-
+                self.screen.add_text([{"text": str(day), "size": 18, "bold": True}],position=(x + rect_width * 0.5, y + rect_height * 0.55-0.02),font="DejaVuSans.ttf",fill=text_color,stroke_width=1,stroke_fill=0)
 
     # Renders the screen
     def render(self, force=False) -> Tuple[Image.Image, bool]:
