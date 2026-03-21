@@ -212,7 +212,7 @@ def screen_cycle():
             try: i = layouts.index(current_layout)
             except ValueError: i = 0
             i = (i + 1) % len(layouts)
-            if i == 2: i+=1
+            if i == 3: i+=1
             current_layout = layouts[i]
             update_state = True
             force_render = True
