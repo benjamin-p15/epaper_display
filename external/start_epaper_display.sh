@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO_DIR="/home/benjaminpi2/epaper_display"
+REPO_DIR="/home/benjaminpi/epaper_display"
 SCRIPT="dashboard/main.py"
 
 echo "Waiting for internet..."

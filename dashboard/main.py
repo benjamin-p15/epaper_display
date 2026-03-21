@@ -37,7 +37,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 update_state = False
 image_threshold = 128
-layouts=["planetary_clock", "clock", "canvas", "weather", "analog_clock", "stocks"] #"image", "grapher"
+layouts=["stocks", "planetary_clock", "clock", "canvas", "weather", "analog_clock"] #"image", "grapher"
 current_layout = layouts[0]
 ENABLE_WEB = False
 force_render = False
@@ -238,7 +238,7 @@ def button_loop():
 
 # Startup script when file is ran
 def main():
-    global weather, analog_clock, display, planetary_clock, stocks
+    global weather, analog_clock, display, planetary_clock
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480,25,24,17,RASPBERRYPI)
@@ -250,7 +250,6 @@ def main():
     weather = weather.weatherRender(display.width, display.height)
     planetary_clock = planetary_clock.PlanetaryDisplayRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
-    stocks = stocks.StocksDisplayRender(display.width, display.height)
 
     # Loop display when button is pressured or every 30 minutes
     if RASPBERRYPI: threading.Thread(target=button_loop, daemon=True).start()
