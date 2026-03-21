@@ -1,25 +1,27 @@
 # Imports needed to run website dashboard and other used stuff
+RASPBERRYPI=False
+
 from flask import Flask, render_template, request
 from PIL import Image
 import threading
-import time
-import RPi.GPIO as GPIO
+import time, sys, os, requests, json
+if RASPBERRYPI: import RPi.GPIO as GPIO
 
 BUTTON_PIN = 2
-startup=True
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-try:   
-    GPIO.setup(25, GPIO.OUT)   
-    GPIO.setup(24, GPIO.IN)   
-    GPIO.setup(17, GPIO.OUT) 
+if RASPBERRYPI:
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    try:   
+        GPIO.setup(25, GPIO.OUT)   
+        GPIO.setup(24, GPIO.IN)   
+        GPIO.setup(17, GPIO.OUT) 
+        time.sleep(0.1)
+    except Exception as e:
+        print(f"GPIO Setup Error: {e}")
+        raise 
     time.sleep(0.1)
-except Exception as e:
-    print(f"GPIO Setup Error: {e}")
-    raise 
-time.sleep(0.1)
 
 # Import classes to talk to epaper display and all of the modules
 from epaper_display import EpaperDisplay
@@ -30,6 +32,7 @@ from modules.grapher import main as grapher
 from modules.canvas import main as canvas
 from modules.analog_clock import main as analog_clock
 from modules.planetary_clock import main as planetary_clock
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 update_state = False
 image_threshold = 128
@@ -41,6 +44,16 @@ display_is_sleeping = False
 last_button_time=0
 message_time=0.25
 last_cycle=time.time()
+
+LOCATION_FILE=os.path.join(os.path.dirname(__file__), "data/location.json")
+NETWORK_FILE = os.path.join(os.path.dirname(__file__), "data/network.txt")
+os.makedirs(os.path.dirname(LOCATION_FILE), exist_ok=True)
+os.makedirs(os.path.dirname(NETWORK_FILE), exist_ok=True)
+if not os.path.exists(LOCATION_FILE):
+    with open(LOCATION_FILE, "w") as f: f.write("{}")
+if not os.path.exists(NETWORK_FILE):
+    with open(NETWORK_FILE, "w") as f: f.write("")
+LOCATION_UPDATE_INTERVAL = 12*60*60
 
 # Start website
 def start_dashboard():
@@ -101,7 +114,8 @@ def display_loop(display):
     while True:
         # If layout changes refreash display
         global current_layout, update_state, image_threshold, force_render, display_is_sleeping
-        if current_layout != last_layout:    
+        if current_layout != last_layout:
+            getCurrentLocation()    
             last_layout = current_layout
             current_display = None
         update_display = False
@@ -150,16 +164,49 @@ def display_loop(display):
         force_render = False
         time.sleep(1)
 
+def getCurrentLocation():
+    def get_network_name():
+        try:
+            ssid = os.popen("iwgetid -r").read().strip()
+            return ssid if ssid else None
+        except Exception: return None
+
+    try:
+        current_network = get_network_name()
+        last_network = None
+        with open(NETWORK_FILE, "r") as f: last_network = f.read().strip()
+
+        location_data = None
+        should_refresh = False
+
+        if current_network != last_network: should_refresh = True
+        elif os.path.exists(LOCATION_FILE):
+            last_change = os.path.getmtime(LOCATION_FILE)
+            if time.time() - last_change > LOCATION_UPDATE_INTERVAL: should_refresh = True
+        else: should_refresh = True
+
+       
+        if should_refresh:
+            response = requests.get("https://ipinfo.io/json", timeout=5)
+            response.raise_for_status()
+            location_data = response.json()
+
+            with open(LOCATION_FILE, "w") as f: json.dump(location_data, f)
+            if current_network: 
+                with open(NETWORK_FILE, "w") as f: f.write(current_network)
+        else: 
+            with open(LOCATION_FILE, "r") as f: location_data = json.load(f)
+
+    except Exception as error: print("Error getting location:", error)
+
 # Handle button interface switcher
 def screen_cycle():
     global current_layout, update_state, display, force_render, last_cycle
     while True:
         now = time.time()
         if now - last_cycle >= 60*15: 
-            try:
-                i = layouts.index(current_layout)
-            except ValueError:
-                i = 0
+            try: i = layouts.index(current_layout)
+            except ValueError: i = 0
             i = (i + 1) % len(layouts)
             if i == 2: i+=1
             current_layout = layouts[i]
@@ -187,22 +234,21 @@ def button_loop():
 
 # Startup script when file is ran
 def main():
-    global weather, analog_clock, display, planetary_clock, startup
+    global weather, analog_clock, display, planetary_clock
 
     # Initilize the Epaper display and it's helper class
-    display = EpaperDisplay(800,480,25,24,17)
+    display = EpaperDisplay(800,480,25,24,17,RASPBERRYPI)
 
-    if startup:
-        startup=False
-        display.clear_display()
-        time.sleep(5)
+    display.clear_display()
+    time.sleep(5)
+    getCurrentLocation()
 
     weather = weather.weatherRender(display.width, display.height)
     planetary_clock = planetary_clock.PlanetaryDisplayRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
 
     # Loop display when button is pressured or every 30 minutes
-    threading.Thread(target=button_loop, daemon=True).start()
+    if RASPBERRYPI: threading.Thread(target=button_loop, daemon=True).start()
     threading.Thread(target=screen_cycle, daemon=True).start()
 
     # Create background thread that starts and runs website

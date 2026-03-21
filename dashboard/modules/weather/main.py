@@ -1,7 +1,8 @@
-import requests, math, time, csv, os, datetime, sys
+import requests, math, time, csv, os, datetime, sys, json
 from PIL import Image
 from typing import Tuple
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
+dashboard = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 script_directory = os.path.dirname(os.path.abspath(__file__))
 from zoneinfo import ZoneInfo
 from dashboard.epaper_display import ImageDrawer
@@ -31,6 +32,8 @@ class weatherRender:
         self.screen=ImageDrawer(width,height)
         self.scale_factor=width/height
         self._last_update=0
+
+        self.LOCATION_FILE=os.path.join(dashboard, "data/location.json")
 
         self.moon_phases=["new.png", "wax_c.png", "first_q.png", "wax_g.png", "full.png", "wan_g.png", "last_q.png", "wan_c.png"]
         if(self.metric==False): self.unit="F"
@@ -204,13 +207,14 @@ class weatherRender:
         self.screen.add_text(data, position=(0.86, data_column_y*3),align="left")
 
         #(Air quaility)
-        air,aqi_state,pollutant=self.fetchAirQuality(self.location_data["latitude"], self.location_data["longitude"],"e68ce140b337a07f309590d691db0e80")
+        latitude, longitude = map(float, self.location_data.get("loc").split(","))
+        air,aqi_state,pollutant=self.fetchAirQuality(latitude, longitude,"e68ce140b337a07f309590d691db0e80")
         self.screen.add_image(os.path.join(script_directory, "icons", "aqi.png"),(0.6, data_column_y*4),(0.05,0.08),invert=False, color_black=True)
         self.screen.add_text([{"text": f"{air}/500", "size": 26}], position=(0.65, data_column_y*4+0.01),align="left")
         self.screen.add_text([{"text": f"{aqi_state} | {pollutant}", "size": 12,"algin":"below"}], position=(0.65, data_column_y*4+0.06),align="left")
 
         #(UV index)
-        uv=self.fetchUvIndex(self.location_data["latitude"], self.location_data["longitude"])
+        uv=self.fetchUvIndex(latitude, longitude)
         self.screen.add_image(os.path.join(script_directory, "icons", "uvi.png"),(0.8, data_column_y*4),(0.05,0.08),invert=False, color_black=True)
         self.screen.add_text([{"text": f"{uv}", "size": 36}], position=(0.85, data_column_y*4-0.01),align="left")
 
@@ -259,7 +263,7 @@ class weatherRender:
 
         # Log airport data using latitude longitude and stored airports
         if any(self.location_data.get(key) is None for key in ['airport_icao_code']):
-            airports_csv = os.path.join(script_directory, "data", airport_database)
+            airports_csv = os.path.join(script_directory, "static_data", airport_database)
 
             airport, airport_distance = self.findNearestAirport(self.location_data['latitude'], self.location_data['longitude'], airports_csv)
             self.location_data.update({'airport_icao_code': airport["icao_code"], 'continent': airport["continent"], 'airport_iata_code': airport["iata_code"], 'airport_type': airport["type"], 'airport_name': airport["name"], 'elevation': airport["elevation_ft"], 'airport_distance': airport_distance})
@@ -270,7 +274,8 @@ class weatherRender:
         else: self.weather_data = {}
 
         # Get forcast data and save it to weather forcast object
-        self.forecast_data = self.fetchForecast(self.location_data["latitude"], self.location_data["longitude"]) or {}
+        latitude, longitude = map(float, self.location_data.get("loc").split(","))
+        self.forecast_data = self.fetchForecast(latitude, longitude) or {}
         self.forecast_data.setdefault("current", {})
         self.forecast_data.setdefault("hourly", [])
         self.forecast_data.setdefault("tomorrow", {})
@@ -278,28 +283,15 @@ class weatherRender:
     # Get current location info using ip address
     def getCurrentLocation(self) -> Tuple[float, float, str, str, str, str]:
         try:
-            # Attempt to get the location data from the current ip using ipinfo.io
-            response = requests.get("https://ipinfo.io/json")
-            response.raise_for_status()
-            self.location_data = response.json()
-
-            # Get latitude and longitude data
-            location_str = self.location_data.get("loc")  # format: "lat,lon"
-            if location_str: latitude, longitude = map(float, location_str.split(","))
-            else: latitude, longitude = None, None
-
-            # Get location info
+            with open(self.LOCATION_FILE, "r") as f: self.location_data = json.load(f)
             city = self.location_data.get("city")
             region = self.location_data.get("region")
             timezone = self.location_data.get("timezone")
             country = self.location_data.get("country")
-
-            # Return all location infomation
+            latitude, longitude = map(float, self.location_data.get("loc").split(","))
             return latitude, longitude, city, region, country, timezone
 
-        except Exception as error:
-            print("Error getting location:", error)
-            return None, None, None, None, None, None
+        except Exception as error: return 0, 0, "Unknown", "Unknown", "Unknown", "UTC"
         
     # Finds closest airport to a location from csv file
     def findNearestAirport(self, latitude: float, longitude: float, airports_csv: str) -> Tuple[str, float]:

@@ -4,6 +4,7 @@ import numpy as np
 from zoneinfo import ZoneInfo
 from datetime import datetime, timezone, timedelta
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
+dashboard = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 from dashboard.epaper_display import ImageDrawer
 
 class PlanetaryDisplayRender:
@@ -30,6 +31,8 @@ class PlanetaryDisplayRender:
         self.SOLAR_WIND_URL="https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json"
         self.SOLAR_FILE=os.path.join(os.path.dirname(__file__), "data/solarweather.json")
         self.SOLAR_UPDATE_INTERVAL=5 * 60
+
+        self.LOCATION_FILE=os.path.join(dashboard, "data/location.json")
     
         self.latitude=None
         self.longitude=None
@@ -89,17 +92,14 @@ class PlanetaryDisplayRender:
     # Get current location info using ip address
     def getCurrentLocation(self):
         try:
-            # Attempt to get the location data from the current ip using ipinfo.io
-            response = requests.get("https://ipinfo.io/json")
-            response.raise_for_status()
-            location_data = response.json()
+            with open(self.LOCATION_FILE, "r") as f: data = json.load(f)
+            self.latitude, self.longitude = map(float, self.location_data.get("loc").split(","))
+            self.timezone = data.get("timezone", "UTC")
 
-            # Get and return latitude and longitude data
-            location_str = location_data.get("loc")  
-            if location_str: self.latitude, self.longitude = map(float, location_str.split(","))
-            self.timezone = location_data.get("timezone")
-        
-        except Exception as error: print("Error getting location:", error)
+        except Exception as error:
+            self.latitude=0
+            self.longitude=0
+            self.timezone="UTC"
 
     def getSolarFluxState(self):
         if self.solar_xray < 1e-7: return "A"
@@ -133,8 +133,6 @@ class PlanetaryDisplayRender:
         with open(self.SOLAR_FILE, "w") as f: json.dump(data, f)
 
     def fetch_station_data(self):
-        self.getCurrentLocation()
-
         # Send iss request to get name and spline info, used to get satellite and observer timescale/other data
         time_scale = load.timescale()
         satellite = self.get_stations()
@@ -244,6 +242,7 @@ class PlanetaryDisplayRender:
         now = time.time()
         if force or (self._cache_img is None or now - self._last_update >= 10 * 60):
             self._last_update = now
+            self.getCurrentLocation()
 
             # Fetch newest screen data
             self.fetch_station_data()

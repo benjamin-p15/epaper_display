@@ -7,7 +7,7 @@ from PIL import ImageOps,Image, ImageDraw, ImageFont
 
 # Epaper display class for displaying data to the display
 class EpaperDisplay: 
-    def __init__(self, width: int=800, height: int=480, DC_pin=25,BUSY_pin=24,RST_pin=17):
+    def __init__(self, width: int=800, height: int=480, DC_pin=25,BUSY_pin=24,RST_pin=17,RASPBERRYPI=True):
         # Screen size
         self.width=width
         self.height=height
@@ -15,34 +15,39 @@ class EpaperDisplay:
         self.color_white=0x00
         self.color_black=0xFF
 
+        self.RASPBERRYPI=RASPBERRYPI
         self.DC_pin=DC_pin
         self.BUSY_pin=BUSY_pin
         self.RST_pin=RST_pin
 
         # Startup display
-        self.spi = spidev.SpiDev()           # Setup spi class
-        self.spi.open(0, 0)                  # Set spi modes
-        self.spi.max_speed_hz = 2_000_000    # Set max spi pin speed
-        self.spi.mode = 0b00                 # Set clock mode
-        
-        self.initalize_display()
+        if self.RASPBERRYPI:
+            self.spi = spidev.SpiDev()           # Setup spi class
+            self.spi.open(0, 0)                  # Set spi modes
+            self.spi.max_speed_hz = 2_000_000    # Set max spi pin speed
+            self.spi.mode = 0b00                 # Set clock mode
+            
+            self.initalize_display()
 
     def scale(self) -> float:
         return self.width/self.height
     
     # Send data array to the display
     def data(self, data):
-        GPIO.output(self.DC_pin, GPIO.HIGH)
-        self.spi.writebytes([data])
+        if self.RASPBERRYPI:
+            GPIO.output(self.DC_pin, GPIO.HIGH)
+            self.spi.writebytes([data])
 
     # Send command to the display to proform diffrent operations
     def cmd(self, data):
-        GPIO.output(self.DC_pin, GPIO.LOW)
-        self.spi.writebytes([data])
+        if self.RASPBERRYPI:
+            GPIO.output(self.DC_pin, GPIO.LOW)
+            self.spi.writebytes([data])
 
     # Wait until display is able to reacive data
     def wait_busy(self):
-        while GPIO.input(self.BUSY_pin) == 1: time.sleep(0.05)
+        if self.RASPBERRYPI:
+            while GPIO.input(self.BUSY_pin) == 1: time.sleep(0.05)
 
     # Initalize display for new usage
     def initalize_display(self):
