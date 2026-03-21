@@ -1,5 +1,5 @@
 # Imports needed to run website dashboard and other used stuff
-RASPBERRYPI=False
+RASPBERRYPI=True
 
 from flask import Flask, render_template, request
 from PIL import Image

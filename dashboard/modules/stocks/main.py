@@ -110,8 +110,8 @@ class StocksDisplayRender:
                 if i > 0: self.screen.add_line((history,precent),(history_timeframe[i-1],history_precent[i-1]),fill=0,thickness=1)
 
             self.screen.add_rectangle(position=(0.01, 0.91), size=(0.65,0.05), fill=0, radius=8, thickness=2)
-            self.screen.add_text([{"text": f"{history_bounds[0].strftime("%B %Y")}", "size": 17}], position=(0.01+0.01, 0.91+0.005), align="left", bold=True)
-            self.screen.add_text([{"text": f"{history_bounds[1].strftime("%B %Y")}", "size": 17}], position=(0.66-0.01, 0.91+0.005), align="right", bold=True)
+            self.screen.add_text([{"text": f"{history_bounds[0].strftime('%B %Y')}", "size": 17}], position=(0.01+0.01, 0.91+0.005), align="left", bold=True)
+            self.screen.add_text([{"text": f"{history_bounds[1].strftime('%B %Y')}", "size": 17}], position=(0.66-0.01, 0.91+0.005), align="right", bold=True)
 
             self.screen.add_rectangle(position=(0.68, 0.72), size=(0.31,0.24), fill=0, radius=8, thickness=2)
 
