@@ -238,7 +238,7 @@ def button_loop():
 
 # Startup script when file is ran
 def main():
-    global weather, analog_clock, display, planetary_clock
+    global weather, analog_clock, display, planetary_clock, stocks
 
     # Initilize the Epaper display and it's helper class
     display = EpaperDisplay(800,480,25,24,17,RASPBERRYPI)
@@ -250,6 +250,7 @@ def main():
     weather = weather.weatherRender(display.width, display.height)
     planetary_clock = planetary_clock.PlanetaryDisplayRender(display.width, display.height)
     analog_clock = analog_clock.analogClockRenderer(display.width, display.height)
+    stocks = stocks.StocksDisplayRender(display.width, display.height)
 
     # Loop display when button is pressured or every 30 minutes
     if RASPBERRYPI: threading.Thread(target=button_loop, daemon=True).start()
