@@ -1,6 +1,6 @@
 import os, sys, time, math
 import pandas as pd
-import yfinance as yf
+import yfinance as yf #pip install yfinance --break-system-packages
 import numpy as np 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 from dashboard.epaper_display import ImageDrawer
