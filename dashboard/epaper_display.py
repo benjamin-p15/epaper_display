@@ -1,4 +1,6 @@
-import spidev
+try: import spidev
+except: pass
+
 try: import RPi.GPIO as GPIO
 except: pass
 

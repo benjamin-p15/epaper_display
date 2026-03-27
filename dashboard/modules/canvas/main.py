@@ -79,7 +79,7 @@ def render(force=False):
 
         # Add top title text and rectangle around assigment boxes
         screen.add_text([{"text":"Canvas Assigments","size":32}], position=(0.5, 0.03), bold=True)
-        screen.add_rectangle(position=(0.01, y_start - 0.03), size=(0.98, 0.81), fill=None, radius=8, thickness=2)
+        #screen.add_rectangle(position=(0.01, y_start - 0.03), size=(0.98, 0.81), fill=None, radius=8, thickness=2)
 
         # Loop through next assigments and add next (max_assignments) to screen
         for idx, assignment in enumerate(all_assignments[:max_assignments]):
