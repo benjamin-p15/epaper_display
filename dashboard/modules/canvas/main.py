@@ -19,7 +19,7 @@ def render(force=False):
     global _last_update, BASE_URL, HEADER, COURSES_URL
     # Update screen every 30 minutes or if otherwise requested
     now = time.time()
-    if force or (_cache_img is None or now - _last_update >= 30 * 60):
+    if force or (now - _last_update >= 30 * 60): 
         _last_update = now
 
         # Pull all canvas courses and assiciated data
