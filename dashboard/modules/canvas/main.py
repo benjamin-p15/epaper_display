@@ -96,15 +96,13 @@ def render(force=False):
             due_box_w = 0.084
 
             # Draw three boxes, one around course name, assigment name, and due date 
-            screen.add_rectangle(position=(course_box_x, y - 0.02), size=(course_box_w, y_gap - 0.01), fill=0, radius=6, thickness=1)
-            screen.add_rectangle(position=(assignment_box_x, y - 0.02), size=(assignment_box_w, y_gap - 0.01), fill=0, radius=6, thickness=1)
-            screen.add_rectangle(position=(due_box_x, y - 0.02), size=(due_box_w, y_gap - 0.01), fill=0, radius=6, thickness=1)
-
-            #screen.add_rectangle(position=(course_box_x, y - 0.02), size=(course_box_w+assignment_box_w+due_box_w+0.05, y_gap - 0.01), fill=None, radius=4, thickness=2)
+            screen.add_rectangle(position=(course_box_x, y - 0.02), size=(course_box_w, y_gap - 0.01), fill=0, radius=6, thickness=2)
+            screen.add_rectangle(position=(assignment_box_x, y - 0.02), size=(assignment_box_w, y_gap - 0.01), fill=0, radius=6, thickness=2)
+            screen.add_rectangle(position=(due_box_x, y - 0.02), size=(due_box_w, y_gap - 0.01), fill=0, radius=6, thickness=2)
 
             # Add course name, and due date to screen
-            screen.add_text([{"text": assignment['course_name'], "size": font_size}], position=(course_box_x + 0.01, y), align="left")
-            screen.add_text([{"text": due_str, "size": font_size}], position=(due_box_x + due_box_w - 0.01, y), align="right")
+            #screen.add_text([{"text": assignment['course_name'], "size": font_size}], position=(course_box_x + 0.01, y), align="left")
+            #screen.add_text([{"text": due_str, "size": font_size}], position=(due_box_x + due_box_w - 0.01, y), align="right")
 
             # Increment loop that adds words, counting characters spliting text into two lines if max_line_length is passed
             words = assignment['name'].split()
