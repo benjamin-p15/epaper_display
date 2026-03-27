@@ -12,12 +12,11 @@ COURSES_URL = f"{BASE_URL}/courses?per_page=100"
 
 # Screen class and timing variables
 _last_update = 0
-_cache_img = None
 screen = ImageDrawer()
 
 # Screen render
 def render(force=False):
-    global _last_update, _cache_img, BASE_URL, HEADER, COURSES_URL
+    global _last_update, BASE_URL, HEADER, COURSES_URL
     # Update screen every 30 minutes or if otherwise requested
     now = time.time()
     if force or (_cache_img is None or now - _last_update >= 30 * 60):
@@ -126,7 +125,7 @@ def render(force=False):
         _cache_img=screen.render()
         if(_cache_img is None): return None, False
         else: return _cache_img, True 
-    return _cache_img, False
+    return None, False
 
 
 # Image viewer script to run code without screen
