@@ -101,8 +101,8 @@ def render(force=False):
             screen.add_rectangle(position=(due_box_x, y - 0.02), size=(due_box_w, y_gap - 0.01), fill=0, radius=6, thickness=None)
 
             # Add course name, and due date to screen
-            screen.add_text([{"text": assignment['course_name'], "size": font_size}], position=(course_box_x + 0.01, y), align="left", fill=0, font="DejaVuSans.ttf")
-            screen.add_text([{"text": due_str, "size": font_size}], position=(due_box_x + due_box_w - 0.01, y), align="right", fill=0, font="DejaVuSans.ttf")
+            screen.add_text([{"text": assignment['course_name'], "size": font_size}], position=(course_box_x + 0.01, y), align="left", fill=1, font="DejaVuSans.ttf")
+            screen.add_text([{"text": due_str, "size": font_size}], position=(due_box_x + due_box_w - 0.01, y), align="right", fill=1, font="DejaVuSans.ttf")
 
             # Increment loop that adds words, counting characters spliting text into two lines if max_line_length is passed
             words = assignment['name'].split()
@@ -119,7 +119,7 @@ def render(force=False):
             # For Add assigment to screen, if there are multiple text lines, add both with correct spacing 
             for i, line in enumerate(lines):
                 line_y =y-0.01 if len(lines) == 2 else y
-                screen.add_text([{"text": line, "size": font_size}], position=(assignment_box_x + 0.01, line_y + i * 0.03), align="left", fill=0, font="DejaVuSans.ttf")
+                screen.add_text([{"text": line, "size": font_size}], position=(assignment_box_x + 0.01, line_y + i * 0.03), align="left", fill=1, font="DejaVuSans.ttf")
 
         # Screen render stuff
         _cache_img=screen.render()
