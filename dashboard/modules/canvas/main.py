@@ -119,7 +119,7 @@ def render(force=False):
             # For Add assigment to screen, if there are multiple text lines, add both with correct spacing 
             for i, line in enumerate(lines):
                 line_y =y-0.01 if len(lines) == 2 else y
-                screen.add_text([{"text": line, "size": font_size}], position=(assignment_box_x + 0.01, line_y + i * 0.03), align="left")
+                #screen.add_text([{"text": line, "size": font_size}], position=(assignment_box_x + 0.01, line_y + i * 0.03), align="left")
 
         # Screen render stuff
         _cache_img=screen.render()
