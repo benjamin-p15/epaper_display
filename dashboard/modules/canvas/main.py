@@ -79,7 +79,7 @@ def render(force=False):
 
         # Add top title text and rectangle around assigment boxes
         screen.add_text([{"text":"Canvas Assigments","size":32}], position=(0.5, 0.03), bold=True)
-        #screen.add_rectangle(position=(0.01, y_start - 0.03), size=(0.98, 0.81), fill=None, radius=8, thickness=2)
+        screen.add_rectangle(position=(0.01, y_start - 0.03), size=(0.98, 0.81), fill=None, radius=8, thickness=2)
 
         # Loop through next assigments and add next (max_assignments) to screen
         for idx, assignment in enumerate(all_assignments[:max_assignments]):
@@ -99,6 +99,7 @@ def render(force=False):
             #screen.add_rectangle(position=(course_box_x, y - 0.02), size=(course_box_w, y_gap - 0.01), fill=None, radius=4, thickness=2)
             #screen.add_rectangle(position=(assignment_box_x, y - 0.02), size=(assignment_box_w, y_gap - 0.01), fill=None, radius=4, thickness=2)
             #screen.add_rectangle(position=(due_box_x, y - 0.02), size=(due_box_w, y_gap - 0.01), fill=None, radius=4, thickness=2)
+            screen.add_rectangle(position=(course_box_x, y - 0.02), size=(course_box_w+assignment_box_x+due_box_w, y_gap - 0.01), fill=None, radius=4, thickness=2)
 
             # Add course name, and due date to screen
             screen.add_text([{"text": assignment['course_name'], "size": font_size}], position=(course_box_x + 0.01, y), align="left")
