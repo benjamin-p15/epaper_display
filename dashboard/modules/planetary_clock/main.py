@@ -1,5 +1,5 @@
 import requests, time, os, datetime, sys, re, json
-from skyfield.api import load, wgs84        #sudo apt install python3-skyfield
+from skyfield.api import load, wgs84        #sudo apt install python3-skyfield or pip3 install skyfield
 import numpy as np
 from zoneinfo import ZoneInfo
 from datetime import datetime, timezone, timedelta
@@ -279,25 +279,31 @@ class PlanetaryDisplayRender:
 
             split_name=[s.strip() for s in mission['name'].split('|')]
 
+            self.screen.add_rectangle(position=(0, 0), size=(0.5, 0.1), fill=0, radius=0, thickness=None)
+            self.screen.add_rectangle(position=(0, 0), size=(0.5, 0.22), fill=0, radius=9, thickness=None)
+
+            
+
             if len(mission['name']) <= 28: 
-                self.screen.add_text([{"text": f"{split_name[1]} | {split_name[0]}", "size": 26}], position=(0.005, 0.02), align="left", bold=True)
+                self.screen.add_text([{"text": f"{split_name[1]} | {split_name[0]}", "size": 26}], position=(0.005, 0.02), align="left", bold=True, fill=1)
                 status_padding=0
             else:
-                self.screen.add_text([{"text": f"{split_name[1]}", "size": 26}], position=(0.005, 0.02), align="left", bold=True)
-                self.screen.add_text([{"text": f"{split_name[0]}", "size": 20}], position=(0.005, 0.07), align="left", bold=True)
+                self.screen.add_text([{"text": f"{split_name[1]}", "size": 26}], position=(0.005, 0.02), align="left", bold=True, fill=1)
+                self.screen.add_text([{"text": f"{split_name[0]}", "size": 20}], position=(0.005, 0.07), align="left", bold=True, fill=1)
                 status_padding=0.05
 
             self.screen.add_text([{"text": f"{timee}", "size": 20}], position=(0.97, 0.5+0.01), align="right", bold=True)
 
             status_text=f"Status: {mission['status']} {probability}"
-            self.screen.add_text([{"text": status_text, "size": 18}], position=(0.005, 0.06+0.02+status_padding), align="left", bold=True)
+            self.screen.add_text([{"text": status_text, "size": 18}], position=(0.005, 0.06+0.02+status_padding), align="left", bold=True, fill=1)
 
-            self.screen.add_rectangle(position=(0.005, 0.1+0.025+status_padding), size=(len(status_text)*0.56*18,1.0), fill=0, radius=6, thickness=None)
+            self.screen.add_rectangle(position=(0.005, 0.1+0.025+status_padding), size=(len(status_text)*0.56*18,1.0), fill=1, radius=6, thickness=None)
 
 
 
-            self.screen.add_text([{"text": f"Orbit: {mission['orbit']} {probability}", "size": 16}], position=(0.005, 0.09+0.04+status_padding), align="left", bold=True)
-            self.screen.add_text([{"text": f"Pad: {mission['pad']} {probability}", "size": 16}], position=(0.005, 0.13+0.04+status_padding), align="left", bold=True)
+
+            self.screen.add_text([{"text": f"Orbit: {mission['orbit']} {probability}", "size": 16}], position=(0.005, 0.09+0.04+status_padding), align="left", bold=True, fill=1)
+            self.screen.add_text([{"text": f"Pad: {mission['pad']} {probability}", "size": 16}], position=(0.005, 0.13+0.04+status_padding), align="left", bold=True, fill=1)
 
             #description=re.sub(r'\s+', ' ', (mission["description"].replace('\x00', ''))).strip()
             #print(self.wrap_text(description))
@@ -310,7 +316,8 @@ class PlanetaryDisplayRender:
             self.screen.add_rectangle(position=(0.5, -0.1), size=(0.6, 0.6), fill=None, radius=2, thickness=2)
 
             # Render screen satilight data
-            self.screen.add_text([{"text": f"{self.STATION_NAME} rise/set: {self.rise_time}-{self.rise_direction} | {self.set_time}-{self.set_direction}, Orbit: {self.orbit_number}, Range: {int(round(self.distance_km, 0))}km | {round(self.speed_km_per_s,1)}km/s", "size": 18}], position=(0.005, 0.95), align="left", bold=True)
+            self.screen.add_rectangle(position=(0, 0.95), size=(1, 0.05), fill=0, radius=0, thickness=None)
+            self.screen.add_text([{"text": f"{self.STATION_NAME} rise/set: {self.rise_time}-{self.rise_direction} | {self.set_time}-{self.set_direction}, Orbit: {self.orbit_number}, Range: {int(round(self.distance_km, 0))}km | {round(self.speed_km_per_s,1)}km/s", "size": 18}], position=(0.5, 0.96), align="center", bold=True, fill=1)
 
             # Screen render stuff
             self._cache_img=self.screen.render()
