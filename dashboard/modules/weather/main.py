@@ -98,9 +98,9 @@ class weatherRender:
     # Renders title with location and date
     def renderTitle(self):
         # Add city and date and state to screen
-        self.screen.add_text([{"text":f"{self.location_data['city']}, {self.location_data['region']}","size":40}],position=(0.5, -0.02),bold=True)
+        self.screen.add_text([{"text":f"{self.location_data['city']}, {self.location_data['region']}","size":40}],position=(0.5, 0.01),bold=True)
         todays_date = datetime.date.today().strftime("%m/%d/%Y")
-        self.screen.add_text([{"text": todays_date, "size": 18}], position=(0.5, 0.07), bold=True)
+        self.screen.add_text([{"text": todays_date, "size": 18}], position=(0.5, 0.1), bold=True)
    
     # Render current weathyer
     def renderCurrentWeather(self):
@@ -406,17 +406,18 @@ class weatherRender:
     # Using the data return form the NWS calulate which icon to use for display depending on weather type
     def weatherToIcon(self, text: str) -> Tuple[bool,str]:
         t = (text or "").lower()
-        if "thunder" in t: return False, "thunderstorms.png"
-        if "snow" in t: return True, "snowy.png"
-        if "rain" in t or "showers" in t: return True, "rain_shower.png"
-        if "drizzle" in t: return True, "drizzle.png"
-        if "fog" in t or "mist" in t: return False, "fog.png"
-        if "mostly cloudy" in t: return False, "mostly_cloudy.png"
-        if "partly cloudy" in t: return False, "partly_cloudy.png"
-        if "cloudy" in t: return True, "cloudy.png"
-        if "patchy" in t: return False, "partly_cloudy.png"
-        if "sunny" in t or "clear" in t: return True, "sunny.png"
-        return False, "sunny.png"
+        match t:
+            case _ if "thunder" in t or "thunderstorms" in t: return True, "thunderstorms.png"
+            case _ if "snow" in t: return True, "snowy.png"
+            case _ if "rain" in t or "showers" in t: return True, "rain_shower.png"
+            case _ if "drizzle" in t: return True, "drizzle.png"
+            case _ if "fog" in t or "mist" in t: return False, "fog.png"
+            case _ if "mostly cloudy" in t: return False, "mostly_cloudy.png"
+            case _ if "partly cloudy" in t: return False, "partly_cloudy.png"
+            case _ if "cloudy" in t: return True, "cloudy.png"
+            case _ if "patchy" in t: return False, "partly_cloudy.png"
+            case _ if "sunny" in t or "clear" in t: return True, "sunny.png"
+            case _: return False, "sunny.png"
     
     # Converts strings to numbers
     def toNumber(self, string: str) -> float | str | None: 
