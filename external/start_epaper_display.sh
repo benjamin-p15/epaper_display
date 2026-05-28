@@ -16,4 +16,4 @@ git fetch origin
 git reset --hard origin/main
 
 echo "Starting epaper script..."
-exec /usr/bin/python3 "$REPO_DIR/$SCRIPT"
+exec /usr/bin/python3 -u "$REPO_DIR/$SCRIPT"
