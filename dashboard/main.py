@@ -37,7 +37,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 update_state = False
 image_threshold = 128
-layouts=["stocks", "planetary_clock", "clock", "canvas", "weather", "analog_clock"] #"image", "grapher"
+layouts=["stocks", "clock", "weather", "analog_clock"] #"stocks", "planetary_clock", "clock", "canvas", "weather", "analog_clock"
 current_layout = layouts[1]
 ENABLE_WEB = False
 force_render = False
